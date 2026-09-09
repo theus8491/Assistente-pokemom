@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assistente de Treinador Pokémon</title>
+    
+    <!-- ===== BLOQUEIO DE INSPEÇÃO (F12) ===== -->
+    <script>
+        // Bloqueia clique direito
+        document.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            alert('🚫 Acesso negado!');
+        });
+
+        // Bloqueia F12 e atalhos de devtools
+        document.addEventListener('keydown', e => {
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || 
+                (e.ctrlKey && (e.key === 'u' || e.key === 'U'))) {
+                e.preventDefault();
+                alert('🚫 Acesso negado!');
+                return false;
+            }
+        });
+
+        // Detecção de DevTools via debugger
+        (function detectDevTools() {
+            const start = performance.now();
+            debugger;
+            if (performance.now() - start > 100) {
+                document.body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:20%;">🚫 Acesso negado!</h1>';
+                alert('🚫 Acesso negado!');
+            }
+        })();
+
+        // Verificação periódica
+        setInterval(function() {
+            const start = performance.now();
+            debugger;
+            if (performance.now() - start > 100) {
+                document.body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:20%;">🚫 Acesso negado!</h1>';
+                alert('🚫 Acesso negado!');
+            }
+        }, 3000);
+    </script>
+    <!-- ===== FIM DO BLOQUEIO ===== -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        /* ===== CSS COMPLETO (mesmo da versão anterior, com ajustes de nome) ===== */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1.5rem;
+            background: #0b0e1a;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.10;
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+        }
+        .bg-pokeball {
+            position: fixed;
+            right: -100px;
+            bottom: -80px;
+            font-size: 30rem;
+            opacity: 0.03;
+            color: #fff;
+            pointer-events: none;
+            z-index: 0;
+            transform: rotate(20deg);
+        }
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(18, 23, 42, 0.88);
+            backdrop-filter: blur(14px);
+            border-radius: 40px;
+            padding: 2rem 2rem 1.5rem;
+            border: 1px solid rgba(255, 215, 0, 0.08);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            position: relative;
+            z-index: 1;
+        }
+        .title-container {
+            background: linear-gradient(135deg, rgba(247, 224, 94, 0.10), rgba(240, 179, 75, 0.06));
+            border: 1px solid rgba(247, 224, 94, 0.12);
+            border-radius: 24px;
+            padding: 0.8rem 1.8rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            z-index: 1;
+            position: relative;
+        }
+        .title-left { display: flex; align-items: center; gap: 1rem; }
+        .pokeball-icon {
+            display: inline-block;
+            width: 44px;
+            height: 44px;
+            background: radial-gradient(circle at 30% 30%, #fff, #e2e8f0);
+            border-radius: 50%;
+            border: 3px solid #1e293b;
+            position: relative;
+            flex-shrink: 0;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.10);
+        }
+        .pokeball-icon::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 50%;
+            background: #ef4444;
+            border-radius: 50% 50% 0 0;
+            top: 0;
+            left: 0;
+        }
+        .pokeball-icon::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border-radius: 50%;
+            border: 3px solid #1e293b;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: inset 0 0 0 4px #ef4444;
+        }
+        .title-container h1 { font-size: 1.6rem; font-weight: 800; color: #f7e05e; letter-spacing: -0.02em; }
+        .title-container h1 span { color: #eaeef2; }
+        .badge-ativo {
+            background: rgba(74, 222, 128, 0.08);
+            border: 1px solid rgba(74, 222, 128, 0.12);
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #4ade80;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.5px;
+        }
+        .badge-ativo .dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse-dot 1.8s infinite;
+        }
+        @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.3; transform:scale(0.7); } }
+        .menu-tabs {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding-bottom: 0.5rem;
+            flex-wrap: wrap;
+            z-index: 1;
+            position: relative;
+        }
+        .menu-tabs .tab {
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #8892b0;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+        }
+        .menu-tabs .tab:hover { color: #eaeef2; background: rgba(255,255,255,0.03); }
+        .menu-tabs .tab.active { color: #f7e05e; background: rgba(247, 224, 94, 0.06); border-color: rgba(247, 224, 94, 0.12); }
+        .menu-tabs .tab i { margin-right: 6px; }
+        .tab-content { display: none; position: relative; z-index: 1; }
+        .tab-content.active { display: block; }
+
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            background: rgba(255,255,255,0.02);
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .model-selector label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: #8892b0; display: flex; align-items: center; gap: 4px; }
+        .model-selector label i { color: #f7e05e; }
+        .model-selector select {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.3rem 1.2rem;
+            border-radius: 30px;
+            border: 1px solid rgba(255,215,0,0.08);
+            background: rgba(0,0,0,0.3);
+            color: #eaeef2;
+            cursor: pointer;
+            flex: 1;
+            min-width: 140px;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23f7e05e' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.8rem center;
+            padding-right: 2rem;
+        }
+        .model-selector select:focus { outline: none; border-color: #f7e05e; }
+        .model-selector select option { background: #0b0e1a; color: #eaeef2; }
+
+        /* ===== CAMPO DE CHAVE API ===== */
+        .api-key-container {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,215,0,0.06);
+            border-radius: 20px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .api-key-container label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #8892b0;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+        }
+        .api-key-container label i {
+            color: #f7e05e;
+        }
+        .api-key-container input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.4rem 0.8rem;
+            border-radius: 30px;
+            border: 1px solid rgba(255,215,0,0.08);
+            background: rgba(0,0,0,0.3);
+            color: #eaeef2;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        .api-key-container input[type="text"]:focus {
+            outline: none;
+            border-color: #f7e05e;
+        }
+        .api-key-container .btn-salvar-api {
+            background: rgba(247,224,94,0.12);
+            color: #f7e05e;
+            border: 1px solid rgba(247,224,94,0.15);
+            padding: 0.3rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+        .api-key-container .btn-salvar-api:hover {
+            background: rgba(247,224,94,0.2);
+        }
+        .api-key-container .api-status {
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 0.1rem 0.6rem;
+            border-radius: 30px;
+        }
+        .api-key-container .api-status.ok {
+            color: #4ade80;
+            background: rgba(74,222,128,0.1);
+        }
+        .api-key-container .api-status.erro {
+            color: #f87171;
+            background: rgba(248,113,113,0.1);
+        }
+
+        .upload-area {
+            background: rgba(59,130,246,0.04);
+            border: 2px dashed rgba(59,130,246,0.15);
+            border-radius: 20px;
+            padding: 1.8rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        .upload-area:hover { border-color: #3b82f6; background: rgba(59,130,246,0.06); transform: scale(1.01); }
+        .upload-area .icon-upload { font-size: 2.5rem; color: #3b82f6; opacity: 0.5; margin-bottom: 0.3rem; }
+        .upload-area p { color: #b0bcdb; font-size: 0.85rem; }
+        .upload-area p strong { color: #3b82f6; font-weight: 600; }
+        .upload-area .formats { color: #5a647e; font-size: 0.6rem; margin-top: 4px; }
+        .upload-area img { max-width: 100%; max-height: 200px; border-radius: 14px; margin-top: 0.8rem; border: 2px solid rgba(59,130,246,0.1); display: none; }
+        .upload-area img.visivel { display: block; }
+        .upload-area input { display: none; }
+        .file-badge {
+            display: none;
+            background: rgba(59,130,246,0.06);
+            color: #60a5fa;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 0.6rem;
+            border: 1px solid rgba(59,130,246,0.06);
+            align-items: center;
+            gap: 0.4rem;
+            justify-content: center;
+        }
+        .file-badge.visivel { display: inline-flex; }
+        .btn-analisar {
+            background: linear-gradient(135deg, #f7e05e, #f0b34b);
+            color: #0b0e1a;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            box-shadow: 0 6px 30px rgba(247,224,94,0.15);
+            letter-spacing: 0.3px;
+        }
+        .btn-analisar:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 8px 40px rgba(247,224,94,0.3); }
+        .btn-analisar:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+        .loading { text-align: center; color: #f7e05e; font-weight: 600; margin-top: 1rem; display: none; font-size: 0.8rem; }
+        .loading.ativo { display: block; }
+        .resultado-box {
+            background: rgba(139,92,246,0.06);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(139,92,246,0.12);
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: #eaeef2;
+            margin-top: 1.5rem;
+            display: none;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.15);
+        }
+        .resultado-box.ativo { display: block; }
+        .resultado-box strong { color: #f7e05e; }
+
+        .ficha-subtitle { color: #f7e05e; font-size: 0.9rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .ficha-subtitle i { color: #ef4444; }
+        .status-container {
+            background: rgba(59,130,246,0.04);
+            border: 1px solid rgba(59,130,246,0.08);
+            border-radius: 24px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 0.8rem;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.02);
+            border-radius: 16px;
+            padding: 0.8rem 1rem;
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        .stat-card:hover { border-color: rgba(59,130,246,0.15); background: rgba(59,130,246,0.02); }
+        .stat-card .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .stat-card .stat-icon { font-size: 1.2rem; color: #60a5fa; opacity: 0.6; width: 28px; text-align: center; }
+        .stat-card .stat-info { flex: 1; }
+        .stat-card .stat-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.5px; color: #8892b0; font-weight: 600; }
+        .stat-card .stat-value {
+            display: flex;
+            align-items: baseline;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .stat-card .stat-value .current {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #eaeef2;
+        }
+        .stat-card .stat-value .preview {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #fbbf24;
+        }
+        .stat-card .stat-value .arrow {
+            color: #5a647e;
+            font-size: 0.8rem;
+        }
+        .stat-card .stat-value .diff {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.05rem 0.4rem;
+            border-radius: 30px;
+        }
+        .stat-card .stat-value .diff.positive {
+            color: #4ade80;
+            background: rgba(74,222,128,0.1);
+        }
+        .stat-card .stat-value .diff.negative {
+            color: #f87171;
+            background: rgba(248,113,113,0.1);
+        }
+        .stat-card .stat-value .diff.zero {
+            color: #5a647e;
+            background: rgba(255,255,255,0.03);
+        }
+        .stat-card .stat-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.06); border-radius: 10px; margin-top: 3px; overflow: hidden; }
+        .stat-card .stat-bar .fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, #60a5fa, #3b82f6); width: 0%; transition: width 0.3s; }
+        .stat-card .stat-bar .fill.preview-fill { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+
+        .stat-card .stat-ev-input {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-top: 0.2rem;
+        }
+        .stat-card .stat-ev-input label {
+            font-size: 0.5rem;
+            text-transform: uppercase;
+            color: #8892b0;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .stat-card .stat-ev-input input[type="number"] {
+            width: 55px;
+            padding: 0.1rem 0.2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255,215,0,0.08);
+            background: rgba(0,0,0,0.3);
+            color: #eaeef2;
+            font-weight: 600;
+            text-align: center;
+            font-size: 0.7rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .stat-card .stat-ev-input input[type="number"]:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+        .stat-card .stat-ev-input .ev-preset-btn {
+            background: rgba(251,191,36,0.1);
+            color: #fbbf24;
+            border: 1px solid rgba(251,191,36,0.1);
+            padding: 0.05rem 0.4rem;
+            border-radius: 20px;
+            font-size: 0.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .stat-card .stat-ev-input .ev-preset-btn:hover {
+            background: rgba(251,191,36,0.2);
+        }
+
+        .ev-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            margin: 0.5rem 0 1rem 0;
+        }
+        .ev-controls .btn-ev {
+            background: rgba(251,191,36,0.08);
+            color: #fbbf24;
+            border: 1px solid rgba(251,191,36,0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .ev-controls .btn-ev:hover {
+            background: rgba(251,191,36,0.2);
+        }
+        .ev-controls .btn-ev.primary {
+            background: #fbbf24;
+            color: #0b0e1a;
+        }
+        .ev-controls .btn-ev.primary:hover {
+            background: #f59e0b;
+        }
+        .ev-controls .btn-ev.danger {
+            background: rgba(248,113,113,0.1);
+            color: #f87171;
+            border-color: rgba(248,113,113,0.15);
+        }
+        .ev-controls .btn-ev.danger:hover {
+            background: rgba(248,113,113,0.2);
+        }
+
+        .natureza-container {
+            background: rgba(251,146,60,0.04);
+            border: 1px solid rgba(251,146,60,0.08);
+            border-radius: 20px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+        .natureza-container .label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: #fb923c; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .natureza-container .label i { color: #fb923c; }
+        .natureza-container .value { font-size: 1rem; font-weight: 700; color: #eaeef2; }
+
+        .pvp-filter {
+            background: rgba(239,68,68,0.04);
+            border: 1px solid rgba(239,68,68,0.08);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .pvp-filter .pvp-title { color: #ef4444; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; }
+        .pvp-filter .pvp-title i { color: #ef4444; }
+        .pvp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .pvp-col {
+            background: rgba(255,255,255,0.02);
+            border-radius: 16px;
+            padding: 0.8rem 1rem;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+        .pvp-col h5 {
+            color: #f7e05e;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .pvp-col h5 i { color: #ef4444; font-size: 0.6rem; }
+        .type-tag {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin: 0.15rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .type-tag.super {
+            background: rgba(74,222,128,0.1);
+            color: #4ade80;
+            border-color: rgba(74,222,128,0.15);
+        }
+        .type-tag.weak {
+            background: rgba(248,113,113,0.1);
+            color: #f87171;
+            border-color: rgba(248,113,113,0.15);
+        }
+        .type-tag.immune {
+            background: rgba(251,191,36,0.1);
+            color: #fbbf24;
+            border-color: rgba(251,191,36,0.15);
+        }
+        .type-tag.resist {
+            background: rgba(59,130,246,0.1);
+            color: #60a5fa;
+            border-color: rgba(59,130,246,0.15);
+        }
+        .pvp-score {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        .pvp-badge {
+            padding: 0.3rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .pvp-badge.good { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.15); }
+        .pvp-badge.bad { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.15); }
+        .pvp-badge.mid { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.15); }
+
+        .moves-container {
+            background: rgba(59,130,246,0.04);
+            border: 1px solid rgba(59,130,246,0.08);
+            border-radius: 20px;
+            padding: 1.2rem 1.5rem;
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+        .moves-container .moves-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: #60a5fa; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .moves-container .moves-label i { color: #60a5fa; }
+        .moves-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .move-tag { background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:0.2rem 0.8rem; border-radius:30px; font-size:0.75rem; font-weight:600; color:#eaeef2; }
+
+        .ev-recomendacao-exata {
+            background: rgba(74,222,128,0.04);
+            border: 1px solid rgba(74,222,128,0.08);
+            border-radius: 20px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .ev-recomendacao-exata h4 {
+            color: #4ade80;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .ev-recomendacao-exata .ev-loading {
+            color: #8892b0;
+            font-size: 0.85rem;
+        }
+        .ev-recomendacao-exata .ev-loading i {
+            margin-right: 0.5rem;
+        }
+        .ev-recomendacao-exata .ev-resultado {
+            color: #b0bcdb;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .ev-recomendacao-exata .ev-resultado strong {
+            color: #fbbf24;
+        }
+        .ev-recomendacao-exata .ev-resultado .ia-tag {
+            font-size: 0.6rem;
+            background: rgba(59,130,246,0.1);
+            color: #60a5fa;
+            padding: 0.05rem 0.5rem;
+            border-radius: 30px;
+            margin-left: 0.5rem;
+            border: 1px solid rgba(59,130,246,0.1);
+        }
+
+        .btn-exemplo {
+            background: rgba(251,191,36,0.12);
+            color: #fbbf24;
+            border: 1px solid rgba(251,191,36,0.15);
+            padding: 0.4rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            margin-top: 0.5rem;
+        }
+        .btn-exemplo:hover { background: rgba(251,191,36,0.2); }
+
+        /* ===== TUTORIAL ===== */
+        .tutorial-container {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,215,0,0.06);
+            border-radius: 20px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .tutorial-container h4 {
+            color: #f7e05e;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .tutorial-container h4 i { color: #3b82f6; }
+        .tutorial-container p {
+            color: #b0bcdb;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            margin-bottom: 0.3rem;
+        }
+        .tutorial-container .steps {
+            margin: 0.5rem 0 0 1.2rem;
+            color: #b0bcdb;
+            font-size: 0.8rem;
+            line-height: 1.8;
+        }
+        .tutorial-container .steps li { margin-bottom: 0.2rem; }
+        .tutorial-container .steps code {
+            background: rgba(255,255,255,0.05);
+            padding: 0.05rem 0.4rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: #f7e05e;
+        }
+        .tutorial-container .aviso-seguranca {
+            background: rgba(248,113,113,0.06);
+            border: 1px solid rgba(248,113,113,0.08);
+            border-radius: 30px;
+            padding: 0.3rem 1rem;
+            display: inline-block;
+            font-weight: 600;
+            font-size: 0.65rem;
+            color: #f87171;
+            margin-top: 0.5rem;
+        }
+
+        .footer {
+            margin-top: 2.5rem;
+            text-align: center;
+            padding: 1.2rem 0 0.5rem;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.7rem;
+            color: #5a647e;
+            line-height: 1.8;
+            z-index: 1;
+            position: relative;
+        }
+        .footer i { color: #f7e05e; margin-right: 4px; }
+        .footer .aviso {
+            background: rgba(248,113,113,0.06);
+            border: 1px solid rgba(248,113,113,0.08);
+            border-radius: 30px;
+            padding: 0.3rem 1.2rem;
+            display: inline-block;
+            font-weight: 600;
+            font-size: 0.65rem;
+            color: #f87171;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-carregado {
+            background: rgba(74,222,128,0.1);
+            color: #4ade80;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            border: 1px solid rgba(74,222,128,0.15);
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+        .status-carregado.visivel { display: inline-flex; }
+        .empty-state {
+            color: #5a647e;
+            text-align: center;
+            padding: 2rem 0;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .empty-state i { font-size: 2.5rem; color: #3b82f6; opacity: 0.3; }
+
+        @media (max-width:600px) {
+            .container { padding:1.5rem 1rem; }
+            .title-container h1 { font-size:1.2rem; }
+            .pokeball-icon { width:36px; height:36px; }
+            .pokeball-icon::after { width:12px; height:12px; }
+            .badge-ativo { font-size:0.5rem; padding:0.2rem 0.6rem; }
+            .menu-tabs .tab { font-size:0.65rem; padding:0.3rem 0.8rem; }
+            .status-grid { grid-template-columns:1fr 1fr; }
+            .stat-card { padding:0.6rem 0.8rem; }
+            .stat-card .stat-value .current,
+            .stat-card .stat-value .preview { font-size:0.9rem; }
+            .pvp-grid { grid-template-columns:1fr; }
+            .bg-image { opacity:0.05; }
+            .bg-pokeball { font-size:20rem; right:-60px; bottom:-50px; }
+            .api-key-container { flex-direction:column; align-items:stretch; }
+            .api-key-container input[type="text"] { min-width:unset; }
+            .tutorial-container .steps { margin-left:0.5rem; }
+        }
+        @media (max-width:400px) {
+            .status-grid { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <img src="https://upload.wikimedia.org/wikipedia/en/a/a6/Pok%C3%A9mon_Pikachu_art.png" alt="Pikachu fundo" class="bg-image" />
+    <div class="bg-pokeball">⚪</div>
+
+    <div class="container">
+
+        <div class="title-container">
+            <div class="title-left">
+                <div class="pokeball-icon"></div>
+                <h1>Assistente <span>de Treinador</span></h1>
+            </div>
+            <div class="badge-ativo"><span class="dot"></span> Ativo</div>
+        </div>
+
+        <div class="menu-tabs">
+            <button class="tab active" data-tab="tab-analise"><i class="fas fa-microscope"></i> Análise</button>
+            <button class="tab" data-tab="tab-ficha"><i class="fas fa-id-card"></i> Ficha Pokémon</button>
+        </div>
+
+        <!-- ABA ANÁLISE -->
+        <div class="tab-content active" id="tab-analise">
+
+            <!-- ===== CAMPO DE CHAVE API ===== -->
+            <div class="api-key-container">
+                <label><i class="fas fa-key"></i> Chave API</label>
+                <input type="text" id="apiKeyInput" placeholder="Cole sua chave do Gemini aqui..." />
+                <button class="btn-salvar-api" id="btnSalvarApi"><i class="fas fa-save"></i> Salvar</button>
+                <span class="api-status" id="apiStatus"></span>
+            </div>
+
+            <div class="model-selector">
+                <label><i class="fas fa-microchip"></i> Modelo</label>
+                <select id="modelSelect">
+                    <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+                    <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+                    <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                    <option value="gemini-3.1-flash-image">Gemini 3.1 Flash Image</option>
+                    <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite</option>
+                </select>
+            </div>
+
+            <div class="upload-area" id="uploadArea">
+                <div class="icon-upload"><i class="fas fa-cloud-upload-alt"></i></div>
+                <p>Clique aqui ou arraste uma imagem</p>
+                <p class="formats">PNG · JPG · WEBP</p>
+                <input type="file" id="fileInput" accept="image/*" />
+                <img id="preview" />
+                <div class="file-badge" id="fileBadge"><i class="fas fa-check-circle"></i> <span id="fileName">imagem.png</span></div>
+            </div>
+
+            <button class="btn-analisar" id="analisarBtn" disabled><i class="fas fa-flask"></i> Analisar com Gemini</button>
+
+            <div class="loading" id="loading"><i class="fas fa-spinner fa-spin"></i> Analisando imagem...</div>
+
+            <div class="resultado-box" id="resultadoBox"></div>
+
+            <!-- ===== TUTORIAL ===== -->
+            <div class="tutorial-container">
+                <h4><i class="fas fa-graduation-cap"></i> Como obter sua chave da API Gemini</h4>
+                <p><strong>1.</strong> Acesse o <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#60a5fa;text-decoration:underline;">Google AI Studio</a> e faça login com sua conta Google.</p>
+                <p><strong>2.</strong> Clique em <strong>"Create API Key"</strong> e copie a chave gerada.</p>
+                <p><strong>3.</strong> Cole a chave no campo acima e clique em <strong>"Salvar"</strong>.</p>
+                <div class="aviso-seguranca"><i class="fas fa-exclamation-triangle"></i> ⚠️ Nunca compartilhe sua chave publicamente. Ela fica salva apenas no seu navegador.</div>
+                <div style="margin-top:0.5rem; color:#8892b0; font-size:0.7rem; border-top:1px solid rgba(255,255,255,0.03); padding-top:0.5rem;">
+                    <i class="fas fa-info-circle"></i> A chave é necessária para a análise via IA. O plano gratuito do Gemini oferece 20 requisições por dia — o suficiente para testes.
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ABA FICHA -->
+        <div class="tab-content" id="tab-ficha">
+
+            <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; margin-bottom:1rem;">
+                <div class="ficha-subtitle" style="margin-bottom:0;"><i class="fas fa-heart"></i> Status Base</div>
+                <span class="status-carregado" id="statusCarregadoBadge"><i class="fas fa-check-circle"></i> Carregado</span>
+                <button class="btn-exemplo" id="btnCarregarExemplo"><i class="fas fa-download"></i> Carregar Exemplo (Flygon)</button>
+            </div>
+
+            <div class="status-container">
+                <div class="status-grid" id="statusGrid">
+                    <!-- Os cards serão gerados dinamicamente -->
+                </div>
+            </div>
+
+            <div class="ev-controls">
+                <button class="btn-ev primary" id="btnAplicarEVs"><i class="fas fa-check"></i> Aplicar EVs</button>
+                <button class="btn-ev" id="btnSugerirEVs"><i class="fas fa-lightbulb"></i> Sugerir EVs</button>
+                <button class="btn-ev danger" id="btnResetarEVs"><i class="fas fa-undo"></i> Resetar EVs</button>
+                <span style="color:#5a647e; font-size:0.65rem; margin-left:0.5rem;">Prévia em tempo real ao alterar os EVs</span>
+            </div>
+
+            <div class="natureza-container">
+                <div class="label"><i class="fas fa-leaf"></i> Natureza</div>
+                <div class="value" id="natureza">Nenhuma</div>
+            </div>
+
+            <div class="pvp-filter" id="pvpFilter">
+                <div class="pvp-title"><i class="fas fa-crosshairs"></i> Análise PvP</div>
+                <div id="pvpContent">
+                    <p style="color:#b0bcdb; font-size:0.85rem;">Carregue um Pokémon para ver a análise.</p>
+                </div>
+            </div>
+
+            <div class="moves-container">
+                <div class="moves-label"><i class="fas fa-bolt"></i> Melhores Moves</div>
+                <div class="moves-list" id="movesList"><span class="move-tag">Carregue um Pokémon</span></div>
+            </div>
+
+            <div class="ev-recomendacao-exata" id="evRecomendacaoExata">
+                <h4><i class="fas fa-lightbulb"></i> Recomendação de EVs (IA)</h4>
+                <div id="evRecomendacaoContainer">
+                    <div class="ev-loading" id="evLoading">
+                        <i class="fas fa-spinner fa-spin"></i> Gerando recomendação com IA...
+                    </div>
+                    <div class="ev-resultado" id="evResultado" style="display:none;"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <div class="aviso"><i class="fas fa-exclamation-triangle"></i> Este projeto está em desenvolvimento. Pode conter erros.</div>
+            <p style="margin-top:0.3rem;">
+                <i class="fas fa-egg"></i> Assistente de Treinador · Análise via Gemini
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        //  DADOS GLOBAIS (mantidos iguais)
+        // ============================================================
+        const baseStatsTabela = {
+            'flygon': { hp:100, atk:100, def:80, spa:80, spd:80, spe:100 },
+            'garchomp': { hp:108, atk:130, def:95, spa:80, spd:85, spe:102 },
+            'dragonite': { hp:91, atk:134, def:95, spa:100, spd:100, spe:80 },
+            'salamence': { hp:95, atk:135, def:80, spa:110, spd:80, spe:100 },
+            'tyranitar': { hp:100, atk:134, def:110, spa:95, spd:100, spe:61 },
+            'metagross': { hp:80, atk:135, def:130, spa:95, spd:90, spe:70 },
+            'pikachu': { hp:35, atk:55, def:40, spa:50, spd:50, spe:90 },
+            'charizard': { hp:78, atk:84, def:78, spa:109, spd:85, spe:100 },
+            'blaziken': { hp:80, atk:120, def:70, spa:110, spd:70, spe:80 },
+            'swampert': { hp:100, atk:110, def:90, spa:85, spd:90, spe:60 },
+            'gardevoir': { hp:68, atk:65, def:65, spa:125, spd:115, spe:80 },
+            'gengar': { hp:60, atk:65, def:60, spa:130, spd:75, spe:110 },
+            'mewtwo': { hp:106, atk:110, def:90, spa:154, spd:90, spe:130 },
+        };
+
+        const pokemonTypes = {
+            'flygon': ['ground','dragon'],
+            'garchomp': ['dragon','ground'],
+            'dragonite': ['dragon','flying'],
+            'salamence': ['dragon','flying'],
+            'tyranitar': ['rock','dark'],
+            'metagross': ['steel','psychic'],
+            'pikachu': ['electric'],
+            'charizard': ['fire','flying'],
+            'blaziken': ['fire','fighting'],
+            'swampert': ['water','ground'],
+            'gardevoir': ['psychic','fairy'],
+            'gengar': ['ghost','poison'],
+            'mewtwo': ['psychic'],
+        };
+
+        const pokemonMoves = {
+            'flygon': ['Earthquake','Dragon Claw','U-turn','Fire Punch'],
+            'garchomp': ['Earthquake','Dragon Claw','Swords Dance','Stone Edge'],
+            'dragonite': ['Dragon Dance','Outrage','Earthquake','Fire Punch'],
+            'salamence': ['Dragon Dance','Outrage','Earthquake','Fire Blast'],
+            'tyranitar': ['Stone Edge','Crunch','Earthquake','Dragon Dance'],
+            'metagross': ['Meteor Mash','Earthquake','Zen Headbutt','Ice Punch'],
+            'pikachu': ['Thunderbolt','Volt Switch','Surf','Grass Knot'],
+            'charizard': ['Flamethrower','Dragon Pulse','Air Slash','Solar Beam'],
+            'blaziken': ['Flare Blitz','Close Combat','Thunder Punch','Swords Dance'],
+            'swampert': ['Earthquake','Waterfall','Ice Punch','Stealth Rock'],
+            'gardevoir': ['Moonblast','Psychic','Shadow Ball','Thunderbolt'],
+            'gengar': ['Shadow Ball','Sludge Wave','Focus Blast','Thunderbolt'],
+            'mewtwo': ['Psystrike','Shadow Ball','Ice Beam','Thunderbolt'],
+        };
+
+        const typeEffectiveness = {
+            'normal': { 'rock':0.5, 'ghost':0, 'steel':0.5 },
+            'fire': { 'fire':0.5, 'water':0.5, 'grass':2, 'ice':2, 'bug':2, 'rock':0.5, 'dragon':0.5, 'steel':2 },
+            'water': { 'fire':2, 'water':0.5, 'grass':0.5, 'ground':2, 'rock':2, 'dragon':0.5 },
+            'grass': { 'fire':0.5, 'water':2, 'grass':0.5, 'poison':0.5, 'ground':2, 'flying':0.5, 'bug':0.5, 'rock':2, 'dragon':0.5, 'steel':0.5 },
+            'electric': { 'water':2, 'electric':0.5, 'grass':0.5, 'ground':0, 'flying':2, 'dragon':0.5 },
+            'ice': { 'fire':0.5, 'water':0.5, 'grass':2, 'ice':0.5, 'ground':2, 'flying':2, 'dragon':2, 'steel':0.5 },
+            'fighting': { 'normal':2, 'ice':2, 'poison':0.5, 'flying':0.5, 'psychic':0.5, 'bug':0.5, 'rock':2, 'ghost':0, 'dark':2, 'steel':0.5, 'fairy':0.5 },
+            'poison': { 'poison':0.5, 'ground':0.5, 'rock':0.5, 'ghost':0.5, 'steel':0, 'fairy':2 },
+            'ground': { 'fire':2, 'grass':0.5, 'electric':2, 'poison':2, 'flying':0, 'bug':0.5, 'rock':2, 'steel':2 },
+            'flying': { 'grass':2, 'electric':0.5, 'fighting':2, 'bug':2, 'rock':0.5, 'steel':0.5 },
+            'psychic': { 'fighting':2, 'psychic':0.5, 'steel':0.5, 'dark':0 },
+            'bug': { 'fire':0.5, 'grass':2, 'fighting':0.5, 'poison':0.5, 'flying':0.5, 'psychic':2, 'ghost':0.5, 'dark':2, 'steel':0.5, 'fairy':0.5 },
+            'rock': { 'fire':2, 'ice':2, 'fighting':0.5, 'ground':0.5, 'flying':2, 'bug':2, 'steel':0.5 },
+            'ghost': { 'normal':0, 'psychic':2, 'ghost':2, 'dark':0.5 },
+            'dragon': { 'dragon':2, 'steel':0.5, 'fairy':0 },
+            'dark': { 'fighting':0.5, 'psychic':2, 'ghost':2, 'dark':0.5, 'fairy':0.5 },
+            'steel': { 'fire':0.5, 'water':0.5, 'electric':0.5, 'ice':2, 'rock':2, 'steel':0.5, 'fairy':2 },
+            'fairy': { 'fire':0.5, 'fighting':2, 'poison':0.5, 'steel':0.5, 'dark':2, 'dragon':2 },
+        };
+
+        const typeNames = {
+            normal:'Normal', fire:'Fogo', water:'Água', grass:'Planta', electric:'Elétrico',
+            ice:'Gelo', fighting:'Lutador', poison:'Veneno', ground:'Terra', flying:'Voador',
+            psychic:'Psíquico', bug:'Inseto', rock:'Pedra', ghost:'Fantasma', dragon:'Dragão',
+            dark:'Sombrio', steel:'Aço', fairy:'Fada'
+        };
+
+        // ============================================================
+        //  ELEMENTOS E ESTADO
+        // ============================================================
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const preview = document.getElementById('preview');
+        const fileBadge = document.getElementById('fileBadge');
+        const fileName = document.getElementById('fileName');
+        const analisarBtn = document.getElementById('analisarBtn');
+        const loading = document.getElementById('loading');
+        const resultadoBox = document.getElementById('resultadoBox');
+        const modelSelect = document.getElementById('modelSelect');
+        const btnExemplo = document.getElementById('btnCarregarExemplo');
+        const statusGrid = document.getElementById('statusGrid');
+        const naturezaEl = document.getElementById('natureza');
+        const statusCarregadoBadge = document.getElementById('statusCarregadoBadge');
+        const emptyState = document.getElementById('emptyState');
+        const dadosContainer = document.getElementById('dadosContainer');
+        const pvpContent = document.getElementById('pvpContent');
+        const movesList = document.getElementById('movesList');
+        const evLoading = document.getElementById('evLoading');
+        const evResultado = document.getElementById('evResultado');
+
+        const btnAplicarEVs = document.getElementById('btnAplicarEVs');
+        const btnSugerirEVs = document.getElementById('btnSugerirEVs');
+        const btnResetarEVs = document.getElementById('btnResetarEVs');
+
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const btnSalvarApi = document.getElementById('btnSalvarApi');
+        const apiStatus = document.getElementById('apiStatus');
+
+        let dadosPokemon = {
+            nome: '',
+            stats: { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 },
+            evsOriginais: { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 },
+            evsAtuais: { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 },
+            baseStats: { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 },
+            ivs: { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 },
+            natureza: '',
+            nivel: 78
+        };
+        let dadosCarregados = false;
+        let apiKey = '';
+
+        // ============================================================
+        //  FUNÇÕES (idênticas à versão anterior)
+        // ============================================================
+        function calcularStatus(base, iv, ev, level, nature = 1.0, isHp = false) {
+            const evFloor = Math.floor(ev / 4);
+            const baseCalc = (2 * base + iv + evFloor) * level / 100;
+            if (isHp) {
+                return Math.floor(baseCalc + level + 10);
+            } else {
+                return Math.floor((baseCalc + 5) * nature);
+            }
+        }
+
+        function encontrarBaseExata(statAlvo, iv, ev, level, nature = 1.0, isHp = false) {
+            if (statAlvo <= 0) return 0;
+            for (let base = 1; base <= 255; base++) {
+                const calc = calcularStatus(base, iv, ev, level, nature, isHp);
+                if (calc === statAlvo) return base;
+            }
+            let melhorBase = 1, menorDiff = Infinity;
+            for (let base = 1; base <= 255; base++) {
+                const calc = calcularStatus(base, iv, ev, level, nature, isHp);
+                const diff = Math.abs(calc - statAlvo);
+                if (diff < menorDiff) { menorDiff = diff; melhorBase = base; }
+            }
+            return melhorBase;
+        }
+
+        // ============================================================
+        //  GERENCIAR CHAVE API
+        // ============================================================
+        function carregarChaveSalva() {
+            const salva = localStorage.getItem('geminiApiKey');
+            if (salva) {
+                apiKeyInput.value = salva;
+                apiKey = salva;
+                apiStatus.textContent = '✓ Chave carregada';
+                apiStatus.className = 'api-status ok';
+            } else {
+                apiStatus.textContent = '⚠️ Insira sua chave';
+                apiStatus.className = 'api-status erro';
+            }
+        }
+
+        btnSalvarApi.addEventListener('click', function() {
+            const chave = apiKeyInput.value.trim();
+            if (chave.length > 10) {
+                apiKey = chave;
+                localStorage.setItem('geminiApiKey', chave);
+                apiStatus.textContent = '✓ Chave salva!';
+                apiStatus.className = 'api-status ok';
+                testarChave(chave);
+            } else {
+                apiStatus.textContent = '❌ Chave inválida';
+                apiStatus.className = 'api-status erro';
+            }
+        });
+
+        async function testarChave(chave) {
+            try {
+                const resp = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models?key=${chave}`
+                );
+                if (resp.ok) {
+                    apiStatus.textContent = '✓ Chave válida!';
+                    apiStatus.className = 'api-status ok';
+                } else {
+                    const data = await resp.json();
+                    apiStatus.textContent = `❌ ${data.error?.message || 'Chave inválida'}`;
+                    apiStatus.className = 'api-status erro';
+                }
+            } catch (e) {
+                apiStatus.textContent = '❌ Erro ao testar chave';
+                apiStatus.className = 'api-status erro';
+            }
+        }
+
+        // ============================================================
+        //  ANÁLISE PVP, GERAR CARDS, ETC (idêntico à versão anterior)
+        // ============================================================
+        function analisarPVPCompleto(nome, tipos, stats) {
+            if (!tipos || tipos.length === 0) return { html: '<p style="color:#b0bcdb;font-size:0.85rem;">Tipo não identificado.</p>', score: 0 };
+
+            const atk = stats.atk || 0, def = stats.def || 0, spa = stats.spa || 0, spd = stats.spd || 0, spe = stats.spe || 0;
+
+            let score = 0, razoes = [];
+            if (atk > 120 || spa > 120) { score += 2; razoes.push('Alto poder ofensivo'); }
+            if (atk > 100 && spa > 100) { score += 1; razoes.push('Misto ofensivo'); }
+            if (def > 100 && spd > 100) { score += 1; razoes.push('Boa defesa especial'); }
+            if (spe > 100) { score += 1; razoes.push('Velocidade alta'); }
+            if (spe > 80) { score += 1; razoes.push('Boa velocidade'); }
+
+            const weaknesses = [], resistances = [], immunities = [];
+            for (const tipo of tipos) {
+                for (const [atkType, eff] of Object.entries(typeEffectiveness)) {
+                    if (eff[tipo] === 2) resistances.push(atkType);
+                    if (eff[tipo] === 0.5) weaknesses.push(atkType);
+                    if (eff[tipo] === 0) immunities.push(atkType);
+                }
+            }
+            if (weaknesses.length > 0) { razoes.push(`Fraquezas: ${weaknesses.map(t=>typeNames[t]||t).join(', ')}`); score -= weaknesses.length * 0.5; }
+            if (resistances.length > 0) { razoes.push(`Resistências: ${resistances.map(t=>typeNames[t]||t).join(', ')}`); score += resistances.length * 0.3; }
+            if (immunities.length > 0) { razoes.push(`Imunidades: ${immunities.map(t=>typeNames[t]||t).join(', ')}`); score += 1; }
+
+            const offensiveSuper = new Set();
+            const offensiveWeak = new Set();
+            const offensiveImmune = new Set();
+            for (const atkType of tipos) {
+                const effMap = typeEffectiveness[atkType];
+                if (!effMap) continue;
+                for (const [defType, val] of Object.entries(effMap)) {
+                    if (val === 2) offensiveSuper.add(defType);
+                    else if (val === 0.5) offensiveWeak.add(defType);
+                    else if (val === 0) offensiveImmune.add(defType);
+                }
+            }
+            const offensiveSuperArr = Array.from(offensiveSuper).filter(t => t !== undefined);
+            const offensiveWeakArr = Array.from(offensiveWeak).filter(t => t !== undefined);
+            const offensiveImmuneArr = Array.from(offensiveImmune).filter(t => t !== undefined);
+
+            let badge, texto;
+            if (score >= 4) { badge = 'good'; texto = '✅ Excelente para PvP!'; }
+            else if (score >= 2) { badge = 'mid'; texto = '⚖️ Razoável para PvP, pode ser usado com boas estratégias.'; }
+            else { badge = 'bad'; texto = '❌ Não é recomendado para PvP, carece de stats ou cobertura de tipos.'; }
+
+            let html = `<div class="pvp-score">
+                <span class="pvp-badge ${badge}">${texto}</span>
+                <div style="color:#b0bcdb; font-size:0.75rem;">Score: ${score.toFixed(1)}</div>
+            </div>`;
+            if (razoes.length > 0) {
+                html += `<div style="margin-top:0.5rem; color:#8892b0; font-size:0.75rem;">
+                    ${razoes.map(r => `<span style="display:inline-block; background:rgba(255,255,255,0.03); padding:0.1rem 0.6rem; border-radius:30px; margin:0.2rem;">${r}</span>`).join(' ')}
+                </div>`;
+            }
+
+            html += `<div class="pvp-grid">`;
+            html += `<div class="pvp-col"><h5><i class="fas fa-sword"></i> Ofensivo</h5>`;
+            if (offensiveSuperArr.length > 0) {
+                html += `<div><span style="color:#4ade80;font-weight:600;font-size:0.65rem;">Super efetivo (2x):</span> ${offensiveSuperArr.map(t => `<span class="type-tag super">${typeNames[t]||t}</span>`).join('')}</div>`;
+            }
+            if (offensiveWeakArr.length > 0) {
+                html += `<div><span style="color:#f87171;font-weight:600;font-size:0.65rem;">Não muito efetivo (0.5x):</span> ${offensiveWeakArr.map(t => `<span class="type-tag weak">${typeNames[t]||t}</span>`).join('')}</div>`;
+            }
+            if (offensiveImmuneArr.length > 0) {
+                html += `<div><span style="color:#fbbf24;font-weight:600;font-size:0.65rem;">Imune (0x):</span> ${offensiveImmuneArr.map(t => `<span class="type-tag immune">${typeNames[t]||t}</span>`).join('')}</div>`;
+            }
+            if (offensiveSuperArr.length === 0 && offensiveWeakArr.length === 0 && offensiveImmuneArr.length === 0) {
+                html += `<span style="color:#5a647e;font-size:0.7rem;">Nenhuma vantagem ofensiva significativa.</span>`;
+            }
+            html += `</div>`;
+            html += `<div class="pvp-col"><h5><i class="fas fa-shield-alt"></i> Defensivo</h5>`;
+            if (weaknesses.length > 0) {
+                html += `<div><span style="color:#f87171;font-weight:600;font-size:0.65rem;">Fraquezas (2x):</span> ${weaknesses.map(t => `<span class="type-tag weak">${typeNames[t]||t}</span>`).join('')}</div>`;
+            }
+            if (resistances.length > 0) {
+                html += `<div><span style="color:#60a5fa;font-weight:600;font-size:0.65rem;">Resistências (0.5x):</span> ${resistances.map(t => `<span class="type-tag resist">${typeNames[t]||t}</span>`).join('')}</div>`;
+            }
+            if (immunities.length > 0) {
+                html += `<div><span style="color:#fbbf24;font-weight:600;font-size:0.65rem;">Imunidades (0x):</span> ${immunities.map(t => `<span class="type-tag immune">${typeNames[t]||t}</span>`).join('')}</div>`;
+            }
+            if (weaknesses.length === 0 && resistances.length === 0 && immunities.length === 0) {
+                html += `<span style="color:#5a647e;font-size:0.7rem;">Sem vantagens defensivas significativas.</span>`;
+            }
+            html += `</div>`;
+            html += `</div>`;
+
+            return { html, score };
+        }
+
+        async function gerarRecomendacaoEVsIA() {
+            if (!dadosCarregados) {
+                evLoading.style.display = 'block';
+                evResultado.style.display = 'none';
+                return;
+            }
+
+            if (!apiKey) {
+                evLoading.style.display = 'none';
+                evResultado.innerHTML = '⚠️ Configure sua chave API na aba "Análise".';
+                evResultado.style.display = 'block';
+                return;
+            }
+
+            evLoading.style.display = 'block';
+            evResultado.style.display = 'none';
+            evResultado.innerHTML = '';
+
+            try {
+                const prompt = `Você é um especialista em Pokémon competitivo. Com base nos dados abaixo, recomende uma distribuição de EVs (Effort Values) para este Pokémon, seguindo o formato exato:
+
+**Distribuição recomendada:** [lista com os valores e stats, ex: 252 em Ataque, 252 em Velocidade, 4 em HP]
+**Justificativa:** [uma breve explicação de 2-3 linhas sobre por que essa distribuição é ideal para este Pokémon]
+
+Dados do Pokémon:
+- Nome: ${dadosPokemon.nome}
+- Nível: ${dadosPokemon.nivel}
+- Natureza: ${dadosPokemon.natureza || 'Não especificada'}
+- Status atuais (HP/Ataque/Defesa/SpA/SpD/Velocidade): ${dadosPokemon.stats.hp}/${dadosPokemon.stats.atk}/${dadosPokemon.stats.def}/${dadosPokemon.stats.spa}/${dadosPokemon.stats.spd}/${dadosPokemon.stats.spe}
+
+Responda APENAS com o formato solicitado, sem texto adicional. Seja objetivo e direto.`;
+
+                const payload = {
+                    contents: [{
+                        parts: [{ text: prompt }]
+                    }]
+                };
+
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/${modelSelect.value}:generateContent?key=${apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    }
+                );
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Erro ao chamar a API Gemini.');
+                }
+
+                const data = await response.json();
+                const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Não foi possível gerar uma recomendação.';
+
+                let html = texto.replace(/\n/g, '<br>');
+                html = html.replace(/(\d{1,3})\s*(?:em|de|para|no|na|nos|nas)\s*([A-Za-zÀ-ÖØ-öø-ÿ]+)/g, (match, num, stat) => {
+                    return `<strong>${num}</strong> em ${stat}`;
+                });
+                html = html.replace(/(Distribuição recomendada:)/g, '<strong style="color:#fbbf24;">$1</strong>');
+                html = html.replace(/(Justificativa:)/g, '<strong style="color:#4ade80;">$1</strong>');
+
+                evResultado.innerHTML = html + ' <span class="ia-tag">via IA</span>';
+                evResultado.style.display = 'block';
+
+            } catch (error) {
+                evResultado.innerHTML = `❌ Erro ao gerar recomendação: ${error.message}`;
+                evResultado.style.display = 'block';
+            } finally {
+                evLoading.style.display = 'none';
+            }
+        }
+
+        function gerarStatusCards(stats, evs, bases, ivs, nivel, natureza) {
+            const statKeys = ['hp','atk','def','spa','spd','spe'];
+            const labels = { hp:'HP', atk:'Ataque', def:'Defesa', spa:'SpA', spd:'SpD', spe:'Velocidade' };
+            const icons = { hp:'fa-heart', atk:'fa-fist-raised', def:'fa-shield-alt', spa:'fa-fire', spd:'fa-water', spe:'fa-wind' };
+            const maxStat = 255;
+            const natureMult = natureza && natureza.toLowerCase().includes('adamant') ? 1.1 : 1.0;
+            const isHp = { hp:true, atk:false, def:false, spa:false, spd:false, spe:false };
+
+            let html = '';
+            for (const key of statKeys) {
+                const val = stats[key] || 0;
+                const ev = evs[key] || 0;
+                const base = bases[key] || 0;
+                const iv = ivs[key] || 0;
+                const percent = Math.min((val / maxStat) * 100, 100);
+
+                html += `
+                    <div class="stat-card" data-stat="${key}">
+                        <div class="stat-header">
+                            <div class="stat-icon"><i class="fas ${icons[key]}"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-label">${labels[key]}</div>
+                                <div class="stat-value" id="stat-row-${key}">
+                                    <span class="current" id="stat-current-${key}">${val > 0 ? val : '--'}</span>
+                                    <span class="arrow" id="arrow-${key}">→</span>
+                                    <span class="preview" id="stat-preview-${key}">${val > 0 ? val : '--'}</span>
+                                    <span class="diff zero" id="diff-${key}">±0</span>
+                                </div>
+                                <div class="stat-bar">
+                                    <div class="fill" id="bar-current-${key}" style="width:${percent}%;"></div>
+                                    <div class="fill preview-fill" id="bar-preview-${key}" style="width:${percent}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-ev-input">
+                            <label>EV</label>
+                            <input type="number" id="ev-input-${key}" value="${ev}" min="0" max="252" step="4" />
+                            <button class="ev-preset-btn" data-stat="${key}" data-ev="252">252</button>
+                            <button class="ev-preset-btn" data-stat="${key}" data-ev="128">128</button>
+                            <button class="ev-preset-btn" data-stat="${key}" data-ev="4">4</button>
+                            <button class="ev-preset-btn" data-stat="${key}" data-ev="0">0</button>
+                        </div>
+                    </div>
+                `;
+            }
+            statusGrid.innerHTML = html;
+
+            document.querySelectorAll('.ev-preset-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const stat = this.dataset.stat;
+                    const ev = parseInt(this.dataset.ev);
+                    const input = document.getElementById(`ev-input-${stat}`);
+                    if (input) { input.value = ev;
+                        input.dispatchEvent(new Event('input')); }
+                });
+            });
+
+            for (const key of statKeys) {
+                const input = document.getElementById(`ev-input-${key}`);
+                if (input) {
+                    input.addEventListener('input', function() {
+                        atualizarPrevia(key);
+                    });
+                }
+            }
+
+            for (const key of statKeys) {
+                atualizarPrevia(key);
+            }
+        }
+
+        function atualizarPrevia(key) {
+            if (!dadosCarregados) return;
+            const input = document.getElementById(`ev-input-${key}`);
+            if (!input) return;
+            const ev = parseInt(input.value) || 0;
+            const base = dadosPokemon.baseStats[key] || 0;
+            const iv = dadosPokemon.ivs[key] || 0;
+            const isHp = (key === 'hp');
+            const nature = dadosPokemon.natureza || 'Sério';
+            const natureMult = nature.toLowerCase().includes('adamant') ? 1.1 : 1.0;
+            const nivel = dadosPokemon.nivel;
+
+            const statusAtual = dadosPokemon.stats[key] || 0;
+            const statusProjetado = calcularStatus(base, iv, ev, nivel, natureMult, isHp);
+
+            const currentEl = document.getElementById(`stat-current-${key}`);
+            const previewEl = document.getElementById(`stat-preview-${key}`);
+            const diffEl = document.getElementById(`diff-${key}`);
+            const barCurrent = document.getElementById(`bar-current-${key}`);
+            const barPreview = document.getElementById(`bar-preview-${key}`);
+
+            if (currentEl) currentEl.textContent = statusAtual;
+            if (previewEl) previewEl.textContent = statusProjetado;
+
+            const diff = statusProjetado - statusAtual;
+            if (diffEl) {
+                diffEl.textContent = diff > 0 ? `+${diff}` : diff < 0 ? `${diff}` : '±0';
+                diffEl.className = 'diff ' + (diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'zero');
+            }
+
+            const maxStat = 255;
+            const pctAtual = Math.min((statusAtual / maxStat) * 100, 100);
+            const pctProjetado = Math.min((statusProjetado / maxStat) * 100, 100);
+            if (barCurrent) barCurrent.style.width = pctAtual + '%';
+            if (barPreview) barPreview.style.width = pctProjetado + '%';
+        }
+
+        function atualizarInformacoes() {
+            if (!dadosCarregados) return;
+            const nomeLower = dadosPokemon.nome.toLowerCase();
+            const tipos = pokemonTypes[nomeLower] || [];
+            const pvpResult = analisarPVPCompleto(dadosPokemon.nome, tipos, dadosPokemon.stats);
+            if (pvpContent) pvpContent.innerHTML = pvpResult.html;
+
+            const moves = pokemonMoves[nomeLower] || ['Move não encontrado'];
+            if (movesList) movesList.innerHTML = moves.map(m => `<span class="move-tag">${m}</span>`).join('');
+
+            gerarRecomendacaoEVsIA();
+        }
+
+        function atualizarStatusComEVs() {
+            if (!dadosCarregados) return;
+            const keys = ['hp','atk','def','spa','spd','spe'];
+            const isHp = { hp:true, atk:false, def:false, spa:false, spd:false, spe:false };
+            const nature = dadosPokemon.natureza || 'Sério';
+            let natureMult = 1.0;
+            if (nature.toLowerCase().includes('adamant')) natureMult = 1.1;
+
+            const evs = {};
+            for (const key of keys) {
+                const input = document.getElementById(`ev-input-${key}`);
+                evs[key] = input ? parseInt(input.value) || 0 : 0;
+            }
+
+            const stats = {};
+            for (const key of keys) {
+                const base = dadosPokemon.baseStats[key] || 0;
+                const iv = dadosPokemon.ivs[key] || 0;
+                const ev = evs[key] || 0;
+                stats[key] = calcularStatus(base, iv, ev, dadosPokemon.nivel, natureMult, isHp[key]);
+            }
+
+            dadosPokemon.stats = stats;
+            dadosPokemon.evsAtuais = evs;
+
+            for (const key of keys) {
+                const input = document.getElementById(`ev-input-${key}`);
+                if (input) input.dispatchEvent(new Event('input'));
+                const el = document.getElementById(`stat-current-${key}`);
+                if (el) el.textContent = stats[key] || 0;
+                const bar = document.getElementById(`bar-current-${key}`);
+                if (bar) bar.style.width = Math.min((stats[key] / 255) * 100, 100) + '%';
+            }
+
+            atualizarInformacoes();
+        }
+
+        function sugerirEVs() {
+            if (!dadosCarregados) return;
+            const stats = dadosPokemon.stats;
+            const atk = stats.atk || 0, spa = stats.spa || 0, spe = stats.spe || 0, def = stats.def || 0, spd = stats.spd || 0;
+            const priorities = [];
+            if (atk >= 120) priorities.push('atk');
+            if (spa >= 120) priorities.push('spa');
+            if (spe >= 100) priorities.push('spe');
+            if (def >= 100) priorities.push('def');
+            if (spd >= 100) priorities.push('spd');
+            if (priorities.length === 0) {
+                const sorted = Object.entries({ atk, spa, spe, def, spd }).sort((a,b) => b[1] - a[1]);
+                priorities.push(sorted[0][0]);
+                if (sorted[1][1] > 50) priorities.push(sorted[1][0]);
+            }
+            const keys = ['hp','atk','def','spa','spd','spe'];
+            for (const key of keys) {
+                const input = document.getElementById(`ev-input-${key}`);
+                if (!input) continue;
+                if (priorities.includes(key)) {
+                    if (key === priorities[0]) input.value = 252;
+                    else if (key === priorities[1]) input.value = 252;
+                    else input.value = 4;
+                } else {
+                    input.value = 0;
+                }
+                input.dispatchEvent(new Event('input'));
+            }
+        }
+
+        function resetarEVs() {
+            if (!dadosCarregados) return;
+            const keys = ['hp','atk','def','spa','spd','spe'];
+            for (const key of keys) {
+                const input = document.getElementById(`ev-input-${key}`);
+                if (input) {
+                    input.value = dadosPokemon.evsOriginais[key] || 0;
+                    input.dispatchEvent(new Event('input'));
+                }
+            }
+            atualizarStatusComEVs();
+        }
+
+        function carregarExemplo() {
+            const dados = {
+                nome: 'Flygon',
+                stats: { hp:235, atk:200, def:149, spa:124, spd:140, spe:182 },
+                evs: { hp:80, atk:90, def:100, spa:140, spd:0, spe:0 },
+                natureza: 'Adamant',
+                nivel: 78
+            };
+            const baseTabela = baseStatsTabela['flygon'];
+            const ivs = { hp:29, atk:28, def:25, spa:11, spd:14, spe:27 };
+            const bases = baseTabela;
+
+            dadosPokemon.nome = dados.nome;
+            dadosPokemon.stats = dados.stats;
+            dadosPokemon.evsOriginais = dados.evs;
+            dadosPokemon.evsAtuais = { ...dados.evs };
+            dadosPokemon.baseStats = bases;
+            dadosPokemon.ivs = ivs;
+            dadosPokemon.natureza = dados.natureza;
+            dadosPokemon.nivel = dados.nivel;
+            dadosCarregados = true;
+
+            if (statusCarregadoBadge) statusCarregadoBadge.classList.add('visivel');
+            if (emptyState) emptyState.style.display = 'none';
+            if (dadosContainer) dadosContainer.style.display = 'block';
+            if (naturezaEl) naturezaEl.textContent = dados.natureza;
+
+            gerarStatusCards(dados.stats, dados.evs, bases, ivs, dados.nivel, dados.natureza);
+            atualizarInformacoes();
+            document.querySelector('.tab[data-tab="tab-ficha"]').click();
+        }
+
+        btnExemplo.addEventListener('click', carregarExemplo);
+        btnAplicarEVs.addEventListener('click', atualizarStatusComEVs);
+        btnSugerirEVs.addEventListener('click', function() {
+            sugerirEVs();
+        });
+        btnResetarEVs.addEventListener('click', resetarEVs);
+
+        // ============================================================
+        //  TABS
+        // ============================================================
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ============================================================
+        //  UPLOAD E ANALISAR
+        // ============================================================
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            imagemSelecionada = file;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                preview.src = ev.target.result;
+                preview.classList.add('visivel');
+                fileName.textContent = file.name;
+                fileBadge.classList.add('visivel');
+                analisarBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        });
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = '#3b82f6'; uploadArea.style.background = 'rgba(59,130,246,0.06)'; });
+        uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = 'rgba(59,130,246,0.15)'; uploadArea.style.background = 'rgba(59,130,246,0.04)'; });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(59,130,246,0.15)';
+            uploadArea.style.background = 'rgba(59,130,246,0.04)';
+            const file = e.dataTransfer.files[0];
+            if (file) { fileInput.files = e.dataTransfer.files; fileInput.dispatchEvent(new Event('change')); }
+        });
+
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function extrairStatus(texto) {
+            let jsonMatch = texto.match(/\{[\s\S]*\}/);
+            let data = {};
+            if (jsonMatch) {
+                try { data = JSON.parse(jsonMatch[0]); } catch(e) {}
+            }
+            if (!data.stats) {
+                const lines = texto.split('\n');
+                const stats = { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 };
+                const evs = { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 };
+                let habilidade = 'Não detectada', natureza = 'Não detectada', nivel = 78, nome = 'Pokémon';
+                const patterns = {
+                    hp: [/(?:HP|hp)\s*[:=]?\s*(\d+)\s+(\d+)/, /(?:HP|hp)\s*[:=]?\s*(\d+)/],
+                    atk: [/(?:Atk|ATK|Ataque|Attack)\s*[:=]?\s*(\d+)\s+(\d+)/, /(?:Atk|ATK|Ataque|Attack)\s*[:=]?\s*(\d+)/],
+                    def: [/(?:Def|DEF|Defesa|Defense)\s*[:=]?\s*(\d+)\s+(\d+)/, /(?:Def|DEF|Defesa|Defense)\s*[:=]?\s*(\d+)/],
+                    spa: [/(?:SpA|SPA|Ataque Especial|Sp\. Atk)\s*[:=]?\s*(\d+)\s+(\d+)/, /(?:SpA|SPA|Ataque Especial|Sp\. Atk)\s*[:=]?\s*(\d+)/],
+                    spd: [/(?:SpD|SPD|Defesa Especial|Sp\. Def)\s*[:=]?\s*(\d+)\s+(\d+)/, /(?:SpD|SPD|Defesa Especial|Sp\. Def)\s*[:=]?\s*(\d+)/],
+                    spe: [/(?:Spe|SPE|Velocidade|Speed)\s*[:=]?\s*(\d+)\s+(\d+)/, /(?:Spe|SPE|Velocidade|Speed)\s*[:=]?\s*(\d+)/]
+                };
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    const lvMatch = trimmed.match(/lv\s*[:=]?\s*(\d+)/i);
+                    if (lvMatch) nivel = parseInt(lvMatch[1]);
+                    const habMatch = trimmed.match(/habilidade\s*[:=]?\s*([^\n]+)/i);
+                    if (habMatch) habilidade = habMatch[1].trim();
+                    const natMatch = trimmed.match(/natureza\s*[:=]?\s*([^\n]+)/i);
+                    if (natMatch) natureza = natMatch[1].trim();
+                    const nomeMatch = trimmed.match(/^(?:pokémon|nome)\s*[:=]?\s*([a-z]+)/i);
+                    if (nomeMatch) nome = nomeMatch[1].trim();
+                    for (const [key, pats] of Object.entries(patterns)) {
+                        for (const pat of pats) {
+                            const match = trimmed.match(pat);
+                            if (match) {
+                                if (match.length === 3) {
+                                    const val = parseInt(match[2]);
+                                    if (!isNaN(val) && val > 0) { stats[key] = val; break; }
+                                } else if (match.length === 2) {
+                                    const val = parseInt(match[1]);
+                                    if (!isNaN(val) && val > 0) { stats[key] = val; break; }
+                                }
+                            }
+                        }
+                    }
+                    const evMatch = trimmed.match(/evs?\s*[:=]?\s*([\d\s,]+)/i);
+                    if (evMatch) {
+                        const evNumbers = evMatch[1].trim().split(/[\s,]+/).filter(n => n !== '').map(Number);
+                        const evKeys = ['hp','atk','def','spa','spd','spe'];
+                        for (let i = 0; i < Math.min(evNumbers.length, 6); i++) {
+                            if (!isNaN(evNumbers[i])) evs[evKeys[i]] = evNumbers[i];
+                        }
+                    }
+                }
+                data = { nome, stats, evs, habilidade, natureza, nivel };
+            }
+            return data;
+        }
+
+        let imagemSelecionada = null;
+        async function analisarImagem() {
+            if (!imagemSelecionada) return;
+
+            if (!apiKey) {
+                alert('⚠️ Configure sua chave API na aba "Análise" antes de analisar.');
+                return;
+            }
+
+            const modelo = modelSelect.value;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`;
+
+            loading.classList.add('ativo');
+            resultadoBox.classList.remove('ativo');
+            analisarBtn.disabled = true;
+
+            try {
+                const base64 = await toBase64(imagemSelecionada);
+                const payload = {
+                    contents: [{
+                        parts: [{
+                            text: `Analise a imagem e extraia os dados do Pokémon no formato JSON:
+
+{
+  "nome": "",
+  "stats": {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0},
+  "evs": {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0},
+  "habilidade": "",
+  "natureza": "",
+  "nivel": 0
+}
+
+Exemplo para Flygon:
+{
+  "nome": "Flygon",
+  "stats": {"hp": 235, "atk": 200, "def": 149, "spa": 124, "spd": 140, "spe": 182},
+  "evs": {"hp": 80, "atk": 90, "def": 100, "spa": 140, "spd": 0, "spe": 0},
+  "habilidade": "Levitate",
+  "natureza": "Adamant",
+  "nivel": 78
+}
+
+Responda APENAS com o JSON, sem texto adicional.`
+                        }, {
+                            inline_data: {
+                                mime_type: imagemSelecionada.type,
+                                data: base64.split(',')[1]
+                            }
+                        }]
+                    }]
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Erro ao chamar a API Gemini.');
+                }
+
+                const data = await response.json();
+                const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Nenhuma resposta da IA.';
+                resultadoBox.innerHTML = texto.replace(/\n/g, '<br>');
+                resultadoBox.classList.add('ativo');
+
+                const dados = extrairStatus(texto);
+                processarDadosImportados(dados);
+                document.querySelector('.tab[data-tab="tab-ficha"]').click();
+
+            } catch (error) {
+                resultadoBox.innerHTML = `❌ Erro: ${error.message}`;
+                resultadoBox.classList.add('ativo');
+            } finally {
+                loading.classList.remove('ativo');
+                analisarBtn.disabled = false;
+            }
+        }
+        analisarBtn.addEventListener('click', analisarImagem);
+
+        // ============================================================
+        //  PROCESSAR DADOS IMPORTADOS
+        // ============================================================
+        function processarDadosImportados(dados) {
+            const nome = dados.nome || 'Pokémon';
+            const stats = dados.stats || { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 };
+            const evs = dados.evs || { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 };
+            const natureza = dados.natureza || 'Sério';
+            const nivel = dados.nivel || 78;
+
+            const nomeLower = nome.toLowerCase();
+            let baseTabela = baseStatsTabela[nomeLower] || null;
+            const bases = {};
+            const ivs = {};
+            if (baseTabela) {
+                for (const key of ['hp','atk','def','spa','spd','spe']) {
+                    bases[key] = baseTabela[key] || 0;
+                    const isHp = (key === 'hp');
+                    const natureMult = (natureza.toLowerCase().includes('adamant')) ? 1.1 : 1.0;
+                    const ev = evs[key] || 0;
+                    let melhorIv = 15;
+                    let menorDiff = Infinity;
+                    for (let iv = 0; iv <= 31; iv++) {
+                        const calc = calcularStatus(bases[key], iv, ev, nivel, natureMult, isHp);
+                        const diff = Math.abs(calc - stats[key]);
+                        if (diff < menorDiff) { menorDiff = diff; melhorIv = iv; }
+                    }
+                    ivs[key] = melhorIv;
+                }
+            } else {
+                for (const key of ['hp','atk','def','spa','spd','spe']) {
+                    const isHp = (key === 'hp');
+                    const natureMult = (natureza.toLowerCase().includes('adamant')) ? 1.1 : 1.0;
+                    const ev = evs[key] || 0;
+                    let melhorBase = 50, melhorIv = 15, menorDiff = Infinity;
+                    for (let base = 1; base <= 255; base++) {
+                        for (let iv = 0; iv <= 31; iv++) {
+                            const calc = calcularStatus(base, iv, ev, nivel, natureMult, isHp);
+                            const diff = Math.abs(calc - stats[key]);
+                            if (diff < menorDiff) { menorDiff = diff; melhorBase = base; melhorIv = iv; }
+                        }
+                    }
+                    bases[key] = melhorBase;
+                    ivs[key] = melhorIv;
+                }
+            }
+
+            dadosPokemon.nome = nome;
+            dadosPokemon.stats = stats;
+            dadosPokemon.evsOriginais = evs;
+            dadosPokemon.evsAtuais = { ...evs };
+            dadosPokemon.baseStats = bases;
+            dadosPokemon.ivs = ivs;
+            dadosPokemon.natureza = natureza;
+            dadosPokemon.nivel = nivel;
+            dadosCarregados = true;
+
+            if (statusCarregadoBadge) statusCarregadoBadge.classList.add('visivel');
+            if (emptyState) emptyState.style.display = 'none';
+            if (dadosContainer) dadosContainer.style.display = 'block';
+            if (naturezaEl) naturezaEl.textContent = natureza;
+
+            gerarStatusCards(stats, evs, bases, ivs, nivel, natureza);
+            atualizarInformacoes();
+        }
+
+        // ============================================================
+        //  INICIALIZAÇÃO
+        // ============================================================
+        function resetarFicha() {
+            dadosCarregados = false;
+            if (statusCarregadoBadge) statusCarregadoBadge.classList.remove('visivel');
+            if (emptyState) emptyState.style.display = 'flex';
+            if (dadosContainer) dadosContainer.style.display = 'none';
+            if (statusGrid) statusGrid.innerHTML = '';
+            if (naturezaEl) naturezaEl.textContent = 'Nenhuma';
+            if (pvpContent) pvpContent.innerHTML = '<p style="color:#b0bcdb; font-size:0.85rem;">Carregue um Pokémon para ver a análise.</p>';
+            if (movesList) movesList.innerHTML = '<span class="move-tag">Carregue um Pokémon</span>';
+            if (evLoading) evLoading.style.display = 'block';
+            if (evResultado) { evResultado.style.display = 'none'; evResultado.innerHTML = ''; }
+        }
+
+        carregarChaveSalva();
+        resetarFicha();
+    </script>
+</body>
+</html>
