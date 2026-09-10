@@ -1,1712 +1,1880 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Assistente de Treinador Pokémon</title>
-    
-    <!-- ===== BLOQUEIO DE INSPEÇÃO (F12) ===== -->
-    <script>
-        document.addEventListener('contextmenu', e => { e.preventDefault(); alert('🚫 Acesso negado!'); });
-        document.addEventListener('keydown', e => {
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && (e.key === 'u' || e.key === 'U'))) {
-                e.preventDefault();
-                alert('🚫 Acesso negado!');
-                return false;
-            }
-        });
-        (function detectDevTools() {
-            const start = performance.now();
-            debugger;
-            if (performance.now() - start > 100) {
-                document.body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:20%;">🚫 Acesso negado!</h1>';
-                alert('🚫 Acesso negado!');
-            }
-        })();
-        setInterval(function() {
-            const start = performance.now();
-            debugger;
-            if (performance.now() - start > 100) {
-                document.body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:20%;">🚫 Acesso negado!</h1>';
-                alert('🚫 Acesso negado!');
-            }
-        }, 3000);
-    </script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Assistente de Treinador Pokémon</title>
+<script>
+document.addEventListener('contextmenu', e => { e.preventDefault(); alert('🚫 Acesso negado!'); });
+document.addEventListener('keydown', e => {
+    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && (e.key === 'u' || e.key === 'U'))) {
+        e.preventDefault(); alert('🚫 Acesso negado!'); return false;
+    }
+});
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<style>
+/* ============ TEMA CLARO / MODERNO / POKÉMON ============ */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    display:flex; justify-content:center; align-items:center;
+    padding:2rem 1.5rem;
+    background:linear-gradient(135deg,#fef9f3 0%,#f0f9ff 50%,#fdf4ff 100%);
+    color:#0f172a;
+    overflow-x:hidden;
+    position:relative;
+}
+body::before {
+    content:'';
+    position:fixed;
+    top:-20%; right:-10%;
+    width:700px; height:700px;
+    background:radial-gradient(circle, rgba(255,203,5,0.20), transparent 70%);
+    pointer-events:none;
+    z-index:0;
+    animation:float1 20s ease-in-out infinite;
+}
+body::after {
+    content:'';
+    position:fixed;
+    bottom:-20%; left:-10%;
+    width:600px; height:600px;
+    background:radial-gradient(circle, rgba(99,144,240,0.18), transparent 70%);
+    pointer-events:none;
+    z-index:0;
+    animation:float2 25s ease-in-out infinite;
+}
+@keyframes float1 { 0%,100%{transform:translate(0,0);} 50%{transform:translate(-30px,30px);} }
+@keyframes float2 { 0%,100%{transform:translate(0,0);} 50%{transform:translate(30px,-30px);} }
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-    <style>
-        /* ===== CSS ===== */
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem 1.5rem;
-            background: #0b0e1a;
-            position: relative;
-            overflow-x: hidden;
-            color: #eaeef2;
-        }
-        .bg-image {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.10;
-            pointer-events: none;
-            z-index: 0;
-            user-select: none;
-        }
-        .bg-pokeball {
-            position: fixed;
-            right: -100px;
-            bottom: -80px;
-            font-size: 30rem;
-            opacity: 0.03;
-            color: #fff;
-            pointer-events: none;
-            z-index: 0;
-            transform: rotate(20deg);
-        }
-        .container {
-            max-width: 1000px;
-            width: 100%;
-            background: rgba(18, 23, 42, 0.88);
-            backdrop-filter: blur(14px);
-            border-radius: 40px;
-            padding: 2rem 2rem 1.5rem;
-            border: 1px solid rgba(255, 215, 0, 0.08);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-            position: relative;
-            z-index: 1;
-        }
-        .title-container {
-            background: linear-gradient(135deg, rgba(247, 224, 94, 0.10), rgba(240, 179, 75, 0.06));
-            border: 1px solid rgba(247, 224, 94, 0.12);
-            border-radius: 24px;
-            padding: 0.8rem 1.8rem;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-            z-index: 1;
-            position: relative;
-        }
-        .title-left { display: flex; align-items: center; gap: 1rem; }
-        .pokeball-icon {
-            display: inline-block;
-            width: 44px;
-            height: 44px;
-            background: radial-gradient(circle at 30% 30%, #fff, #e2e8f0);
-            border-radius: 50%;
-            border: 3px solid #1e293b;
-            position: relative;
-            flex-shrink: 0;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.10);
-        }
-        .pokeball-icon::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 50%;
-            background: #ef4444;
-            border-radius: 50% 50% 0 0;
-            top: 0;
-            left: 0;
-        }
-        .pokeball-icon::after {
-            content: '';
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            background: #fff;
-            border-radius: 50%;
-            border: 3px solid #1e293b;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: inset 0 0 0 4px #ef4444;
-        }
-        .title-container h1 { font-size: 1.6rem; font-weight: 800; color: #f7e05e; letter-spacing: -0.02em; }
-        .title-container h1 span { color: #eaeef2; }
-        .badge-ativo {
-            background: rgba(74, 222, 128, 0.08);
-            border: 1px solid rgba(74, 222, 128, 0.12);
-            padding: 0.3rem 1rem;
-            border-radius: 30px;
-            font-size: 0.6rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #4ade80;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            letter-spacing: 0.5px;
-        }
-        .badge-ativo .dot {
-            display: inline-block;
-            width: 7px;
-            height: 7px;
-            background: #4ade80;
-            border-radius: 50%;
-            animation: pulse-dot 1.8s infinite;
-        }
-        @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.3; transform:scale(0.7); } }
-        .menu-tabs {
-            display: flex;
-            gap: 0.4rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            padding-bottom: 0.5rem;
-            flex-wrap: wrap;
-            z-index: 1;
-            position: relative;
-        }
-        .menu-tabs .tab {
-            padding: 0.5rem 1.2rem;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #8892b0;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-            background: transparent;
-            font-family: 'Inter', sans-serif;
-        }
-        .menu-tabs .tab:hover { color: #eaeef2; background: rgba(255,255,255,0.03); }
-        .menu-tabs .tab.active { color: #f7e05e; background: rgba(247, 224, 94, 0.06); border-color: rgba(247, 224, 94, 0.12); }
-        .menu-tabs .tab i { margin-right: 6px; }
-        .tab-content { display: none; position: relative; z-index: 1; }
-        .tab-content.active { display: block; }
+.bg-image { display:none; }
+.bg-pokeball {
+    position:fixed; right:-100px; bottom:-80px;
+    font-size:30rem; opacity:0.05;
+    color:#ef4444;
+    pointer-events:none; z-index:0; transform:rotate(20deg);
+}
+.container {
+    max-width:1100px; width:100%;
+    background:#ffffff;
+    border-radius:32px;
+    padding:2rem 2rem 1.5rem;
+    border:2px solid transparent;
+    background-image:linear-gradient(#ffffff,#ffffff), linear-gradient(135deg,#fbbf24,#ef4444,#3b82f6,#a855f7);
+    background-origin:border-box;
+    background-clip:padding-box, border-box;
+    box-shadow:0 20px 60px rgba(15,23,42,0.10), 0 0 0 1px rgba(255,255,255,0.5) inset;
+    position:relative; z-index:1;
+}
 
-        /* ===== CHAVE API ===== */
-        .api-key-container {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,215,0,0.06);
-            border-radius: 20px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.8rem;
-        }
-        .api-key-container label {
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #8892b0;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            white-space: nowrap;
-        }
-        .api-key-container label i { color: #f7e05e; }
-        .api-key-container input[type="text"] {
-            flex: 1;
-            min-width: 200px;
-            padding: 0.4rem 0.8rem;
-            border-radius: 30px;
-            border: 1px solid rgba(255,215,0,0.08);
-            background: rgba(0,0,0,0.3);
-            color: #eaeef2;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-        }
-        .api-key-container input[type="text"]:focus {
-            outline: none;
-            border-color: #f7e05e;
-        }
-        .api-key-container .btn-salvar-api {
-            background: rgba(247,224,94,0.12);
-            color: #f7e05e;
-            border: 1px solid rgba(247,224,94,0.15);
-            padding: 0.3rem 1.2rem;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: 'Inter', sans-serif;
-            white-space: nowrap;
-        }
-        .api-key-container .btn-salvar-api:hover { background: rgba(247,224,94,0.2); }
-        .api-key-container .api-status {
-            font-size: 0.6rem;
-            font-weight: 600;
-            padding: 0.1rem 0.6rem;
-            border-radius: 30px;
-        }
-        .api-key-container .api-status.ok { color: #4ade80; background: rgba(74,222,128,0.1); }
-        .api-key-container .api-status.erro { color: #f87171; background: rgba(248,113,113,0.1); }
+/* ============ HEADER ============ */
+.title-container {
+    background:linear-gradient(135deg,#fef3c7 0%,#fed7aa 35%,#fecaca 70%,#e9d5ff 100%);
+    border:2px solid #fbbf24;
+    border-radius:20px;
+    padding:0.9rem 1.8rem;
+    margin-bottom:2rem;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;
+    box-shadow:0 8px 25px rgba(251,191,36,0.25);
+    position:relative; overflow:hidden;
+}
+.title-container::before {
+    content:'';
+    position:absolute; top:-50%; right:-10%;
+    width:200px; height:200px;
+    background:radial-gradient(circle,rgba(255,255,255,0.6),transparent 70%);
+    pointer-events:none;
+}
+.title-left { display:flex; align-items:center; gap:1rem; position:relative; z-index:1; }
+.pokeball-icon {
+    display:inline-block; width:48px; height:48px;
+    background:radial-gradient(circle at 30% 30%, #fff, #e2e8f0);
+    border-radius:50%; border:3px solid #1e293b;
+    position:relative; flex-shrink:0;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    animation:rotate-ball 6s linear infinite;
+}
+@keyframes rotate-ball { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+.pokeball-icon::before {
+    content:''; position:absolute; width:100%; height:50%;
+    background:linear-gradient(135deg,#ef4444,#dc2626); border-radius:50% 50% 0 0; top:0; left:0;
+}
+.pokeball-icon::after {
+    content:''; position:absolute; width:14px; height:14px;
+    background:#fff; border-radius:50%; border:3px solid #1e293b;
+    top:50%; left:50%; transform:translate(-50%,-50%);
+    box-shadow:inset 0 0 0 4px #ef4444;
+}
+.title-container h1 { font-size:1.7rem; font-weight:900; color:#7c2d12; letter-spacing:-0.02em; text-shadow:0 1px 2px rgba(255,255,255,0.5); }
+.title-container h1 span { color:#1e40af; }
+.badge-ativo {
+    background:linear-gradient(135deg,#dcfce7,#bbf7d0);
+    border:2px solid #22c55e;
+    padding:0.35rem 1.1rem; border-radius:30px;
+    font-size:0.68rem; font-weight:800; text-transform:uppercase;
+    color:#14532d; display:flex; align-items:center; gap:6px;
+    box-shadow:0 4px 12px rgba(34,197,94,0.25);
+    position:relative; z-index:1;
+}
+.badge-ativo .dot {
+    display:inline-block; width:8px; height:8px;
+    background:#22c55e; border-radius:50%;
+    box-shadow:0 0 0 3px rgba(34,197,94,0.25);
+    animation:pulse-dot 1.8s infinite;
+}
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.4;transform:scale(0.7);} }
 
-        .model-selector {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            background: rgba(255,255,255,0.02);
-            padding: 0.5rem 1rem;
-            border-radius: 30px;
-            border: 1px solid rgba(255,255,255,0.04);
-        }
-        .model-selector label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: #8892b0; display: flex; align-items: center; gap: 4px; }
-        .model-selector label i { color: #f7e05e; }
-        .model-selector select {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 0.75rem;
-            padding: 0.3rem 1.2rem;
-            border-radius: 30px;
-            border: 1px solid rgba(255,215,0,0.08);
-            background: rgba(0,0,0,0.3);
-            color: #eaeef2;
-            cursor: pointer;
-            flex: 1;
-            min-width: 140px;
-            appearance: none;
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23f7e05e' stroke-width='2' fill='none'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 0.8rem center;
-            padding-right: 2rem;
-        }
-        .model-selector select:focus { outline: none; border-color: #f7e05e; }
-        .model-selector select option { background: #0b0e1a; color: #eaeef2; }
+/* ============ TABS COLORIDAS ============ */
+.menu-tabs {
+    display:flex; gap:0.5rem; margin-bottom:2rem;
+    border-bottom:2px dashed #e2e8f0; padding-bottom:0.7rem; flex-wrap:wrap;
+}
+.menu-tabs .tab {
+    padding:0.6rem 1.3rem; border-radius:30px;
+    font-size:0.78rem; font-weight:800; color:#475569;
+    cursor:pointer; transition:all 0.25s;
+    border:2px solid transparent; background:#f1f5f9;
+    font-family:'Inter',sans-serif;
+    position:relative;
+}
+.menu-tabs .tab:nth-child(1):hover { background:#fef3c7; color:#92400e; border-color:#fbbf24; }
+.menu-tabs .tab:nth-child(2):hover { background:#dcfce7; color:#166534; border-color:#22c55e; }
+.menu-tabs .tab:nth-child(3):hover { background:#dbeafe; color:#1e40af; border-color:#3b82f6; }
+.menu-tabs .tab:nth-child(4):hover { background:#fae8ff; color:#86198f; border-color:#d946ef; }
 
-        .upload-area {
-            background: rgba(59,130,246,0.04);
-            border: 2px dashed rgba(59,130,246,0.15);
-            border-radius: 20px;
-            padding: 1.8rem 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 1.5rem;
-        }
-        .upload-area:hover { border-color: #3b82f6; background: rgba(59,130,246,0.06); transform: scale(1.01); }
-        .upload-area .icon-upload { font-size: 2.5rem; color: #3b82f6; opacity: 0.5; margin-bottom: 0.3rem; }
-        .upload-area p { color: #b0bcdb; font-size: 0.85rem; }
-        .upload-area p strong { color: #3b82f6; font-weight: 600; }
-        .upload-area .formats { color: #5a647e; font-size: 0.6rem; margin-top: 4px; }
-        .upload-area img { max-width: 100%; max-height: 200px; border-radius: 14px; margin-top: 0.8rem; border: 2px solid rgba(59,130,246,0.1); display: none; }
-        .upload-area img.visivel { display: block; }
-        .upload-area input { display: none; }
-        .file-badge {
-            display: none;
-            background: rgba(59,130,246,0.06);
-            color: #60a5fa;
-            padding: 0.3rem 1rem;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            margin-top: 0.6rem;
-            border: 1px solid rgba(59,130,246,0.06);
-            align-items: center;
-            gap: 0.4rem;
-            justify-content: center;
-        }
-        .file-badge.visivel { display: inline-flex; }
-        .btn-analisar {
-            background: linear-gradient(135deg, #f7e05e, #f0b34b);
-            color: #0b0e1a;
-            border: none;
-            padding: 0.8rem 1.8rem;
-            border-radius: 50px;
-            font-weight: 800;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            box-shadow: 0 6px 30px rgba(247,224,94,0.15);
-            letter-spacing: 0.3px;
-        }
-        .btn-analisar:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 8px 40px rgba(247,224,94,0.3); }
-        .btn-analisar:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
-        .loading { text-align: center; color: #f7e05e; font-weight: 600; margin-top: 1rem; display: none; font-size: 0.8rem; }
-        .loading.ativo { display: block; }
-        .resultado-box {
-            background: rgba(139,92,246,0.06);
-            border-radius: 20px;
-            padding: 1.5rem;
-            border: 1px solid rgba(139,92,246,0.12);
-            white-space: pre-wrap;
-            font-size: 0.9rem;
-            line-height: 1.8;
-            color: #eaeef2;
-            margin-top: 1.5rem;
-            display: none;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.15);
-        }
-        .resultado-box.ativo { display: block; }
-        .resultado-box strong { color: #f7e05e; }
+.menu-tabs .tab.active { color:#ffffff; border-color:transparent; transform:translateY(-2px); }
+.menu-tabs .tab.active:nth-child(1) { background:linear-gradient(135deg,#fbbf24,#f59e0b); box-shadow:0 6px 20px rgba(245,158,11,0.4); }
+.menu-tabs .tab.active:nth-child(2) { background:linear-gradient(135deg,#22c55e,#16a34a); box-shadow:0 6px 20px rgba(34,197,94,0.4); }
+.menu-tabs .tab.active:nth-child(3) { background:linear-gradient(135deg,#3b82f6,#2563eb); box-shadow:0 6px 20px rgba(59,130,246,0.4); }
+.menu-tabs .tab.active:nth-child(4) { background:linear-gradient(135deg,#a855f7,#7c3aed); box-shadow:0 6px 20px rgba(168,85,247,0.4); }
 
-        .ficha-subtitle { color: #f7e05e; font-size: 0.9rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-        .ficha-subtitle i { color: #ef4444; }
-        .status-container {
-            background: rgba(59,130,246,0.04);
-            border: 1px solid rgba(59,130,246,0.08);
-            border-radius: 24px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 0.8rem;
-        }
-        .stat-card {
-            background: rgba(255,255,255,0.02);
-            border-radius: 16px;
-            padding: 0.8rem 1rem;
-            border: 1px solid rgba(255,255,255,0.03);
-            transition: 0.2s;
-            display: flex;
-            flex-direction: column;
-            gap: 0.2rem;
-        }
-        .stat-card:hover { border-color: rgba(59,130,246,0.15); background: rgba(59,130,246,0.02); }
-        .stat-card .stat-header {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-        .stat-card .stat-icon { font-size: 1.2rem; color: #60a5fa; opacity: 0.6; width: 28px; text-align: center; }
-        .stat-card .stat-info { flex: 1; }
-        .stat-card .stat-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.5px; color: #8892b0; font-weight: 600; }
-        .stat-card .stat-value {
-            display: flex;
-            align-items: baseline;
-            gap: 0.4rem;
-            flex-wrap: wrap;
-        }
-        .stat-card .stat-value .current { font-size: 1.1rem; font-weight: 800; color: #eaeef2; }
-        .stat-card .stat-value .preview { font-size: 1.1rem; font-weight: 800; color: #fbbf24; }
-        .stat-card .stat-value .arrow { color: #5a647e; font-size: 0.8rem; }
-        .stat-card .stat-value .diff {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 0.05rem 0.4rem;
-            border-radius: 30px;
-        }
-        .stat-card .stat-value .diff.positive { color: #4ade80; background: rgba(74,222,128,0.1); }
-        .stat-card .stat-value .diff.negative { color: #f87171; background: rgba(248,113,113,0.1); }
-        .stat-card .stat-value .diff.zero { color: #5a647e; background: rgba(255,255,255,0.03); }
-        .stat-card .stat-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.06); border-radius: 10px; margin-top: 3px; overflow: hidden; }
-        .stat-card .stat-bar .fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, #60a5fa, #3b82f6); width: 0%; transition: width 0.3s; }
-        .stat-card .stat-bar .fill.preview-fill { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+.menu-tabs .tab i { margin-right:6px; }
+.tab-content { display:none; }
+.tab-content.active { display:block; animation:fadeIn 0.35s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 
-        .stat-card .stat-ev-input {
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-            margin-top: 0.2rem;
-        }
-        .stat-card .stat-ev-input label {
-            font-size: 0.5rem;
-            text-transform: uppercase;
-            color: #8892b0;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-        .stat-card .stat-ev-input input[type="number"] {
-            width: 55px;
-            padding: 0.1rem 0.2rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255,215,0,0.08);
-            background: rgba(0,0,0,0.3);
-            color: #eaeef2;
-            font-weight: 600;
-            text-align: center;
-            font-size: 0.7rem;
-            font-family: 'Inter', sans-serif;
-        }
-        .stat-card .stat-ev-input input[type="number"]:focus {
-            outline: none;
-            border-color: #fbbf24;
-        }
-        .stat-card .stat-ev-input .ev-preset-btn {
-            background: rgba(251,191,36,0.1);
-            color: #fbbf24;
-            border: 1px solid rgba(251,191,36,0.1);
-            padding: 0.05rem 0.4rem;
-            border-radius: 20px;
-            font-size: 0.5rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: 'Inter', sans-serif;
-        }
-        .stat-card .stat-ev-input .ev-preset-btn:hover { background: rgba(251,191,36,0.2); }
+/* ============ API KEY / MODEL ============ */
+.api-key-container {
+    background:linear-gradient(135deg,#fff7ed,#ffedd5);
+    border:2px solid #fdba74;
+    border-radius:16px;
+    padding:1rem 1.5rem;
+    margin-bottom:1.5rem;
+    display:flex; flex-wrap:wrap; align-items:center; gap:0.8rem;
+    box-shadow:0 4px 12px rgba(253,186,116,0.2);
+}
+.api-key-container label {
+    font-size:0.68rem; font-weight:800; text-transform:uppercase;
+    color:#9a3412; display:flex; align-items:center; gap:0.4rem;
+}
+.api-key-container label i { color:#ea580c; }
+.api-key-container input[type="text"] {
+    flex:1; min-width:200px;
+    padding:0.55rem 0.95rem; border-radius:30px;
+    border:2px solid #fdba74;
+    background:#ffffff; color:#0f172a;
+    font-family:'Inter',sans-serif; font-size:0.78rem;
+    transition:0.2s;
+}
+.api-key-container input[type="text"]:focus {
+    outline:none; border-color:#ea580c;
+    box-shadow:0 0 0 4px rgba(234,88,12,0.15);
+}
+.api-key-container .btn-salvar-api {
+    background:linear-gradient(135deg,#f97316,#ea580c);
+    color:#ffffff; border:none;
+    padding:0.55rem 1.3rem; border-radius:30px;
+    font-weight:800; font-size:0.72rem;
+    cursor:pointer; transition:0.2s;
+    font-family:'Inter',sans-serif;
+    box-shadow:0 4px 12px rgba(234,88,12,0.35);
+}
+.api-key-container .btn-salvar-api:hover { transform:translateY(-2px); box-shadow:0 8px 18px rgba(234,88,12,0.45); }
+.api-key-container .api-status {
+    font-size:0.65rem; font-weight:700;
+    padding:0.2rem 0.7rem; border-radius:30px;
+}
+.api-key-container .api-status.ok { color:#166534; background:#dcfce7; border:1px solid #86efac; }
+.api-key-container .api-status.erro { color:#991b1b; background:#fee2e2; border:1px solid #fca5a5; }
 
-        .ev-controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            align-items: center;
-            margin: 0.5rem 0 1rem 0;
-        }
-        .ev-controls .btn-ev {
-            background: rgba(251,191,36,0.08);
-            color: #fbbf24;
-            border: 1px solid rgba(251,191,36,0.1);
-            padding: 0.3rem 0.8rem;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: 'Inter', sans-serif;
-        }
-        .ev-controls .btn-ev:hover { background: rgba(251,191,36,0.2); }
-        .ev-controls .btn-ev.primary { background: #fbbf24; color: #0b0e1a; }
-        .ev-controls .btn-ev.primary:hover { background: #f59e0b; }
-        .ev-controls .btn-ev.danger { background: rgba(248,113,113,0.1); color: #f87171; border-color: rgba(248,113,113,0.15); }
-        .ev-controls .btn-ev.danger:hover { background: rgba(248,113,113,0.2); }
+.model-selector {
+    display:flex; align-items:center; gap:0.8rem;
+    margin-bottom:1.5rem; flex-wrap:wrap;
+    background:linear-gradient(135deg,#eff6ff,#dbeafe);
+    padding:0.55rem 1rem;
+    border-radius:30px; border:2px solid #93c5fd;
+    box-shadow:0 4px 12px rgba(147,197,253,0.2);
+}
+.model-selector label {
+    font-size:0.68rem; font-weight:800; text-transform:uppercase;
+    color:#1e40af; display:flex; align-items:center; gap:4px;
+}
+.model-selector label i { color:#2563eb; }
+.model-selector select {
+    font-family:'Inter',sans-serif; font-weight:700; font-size:0.78rem;
+    padding:0.45rem 1.2rem; border-radius:30px;
+    border:2px solid #93c5fd;
+    background:#ffffff; color:#0f172a;
+    cursor:pointer; flex:1; min-width:140px;
+    transition:0.2s;
+}
+.model-selector select:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,0.15); }
 
-        .natureza-container {
-            background: rgba(251,146,60,0.04);
-            border: 1px solid rgba(251,146,60,0.08);
-            border-radius: 20px;
-            padding: 1.2rem 1.5rem;
-            margin-bottom: 0.8rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 0.8rem;
-        }
-        .natureza-container .label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: #fb923c; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-        .natureza-container .label i { color: #fb923c; }
-        .natureza-container .value { font-size: 1rem; font-weight: 700; color: #eaeef2; }
+/* ============ UPLOAD ============ */
+.upload-area {
+    background:linear-gradient(135deg,#f0f9ff,#e0f2fe);
+    border:3px dashed #7dd3fc;
+    border-radius:20px;
+    padding:2rem 1.5rem; text-align:center;
+    cursor:pointer; transition:all 0.3s ease;
+    margin-bottom:1.5rem;
+}
+.upload-area:hover {
+    border-color:#0284c7;
+    background:linear-gradient(135deg,#e0f2fe,#bae6fd);
+    transform:scale(1.01);
+}
+.upload-area .icon-upload { font-size:2.8rem; color:#0284c7; opacity:0.7; margin-bottom:0.4rem; }
+.upload-area p { color:#075985; font-size:0.88rem; font-weight:600; }
+.upload-area .formats { color:#0c4a6e; font-size:0.72rem; margin-top:4px; opacity:0.7; }
+.upload-area img { max-width:100%; max-height:200px; border-radius:14px; margin-top:0.8rem; border:3px solid #7dd3fc; display:none; box-shadow:0 8px 20px rgba(2,132,199,0.2); }
+.upload-area img.visivel { display:block; }
+.upload-area input { display:none; }
+.file-badge {
+    display:none; background:#dbeafe; color:#1e40af;
+    padding:0.35rem 1rem; border-radius:30px;
+    font-size:0.72rem; font-weight:700; margin-top:0.7rem;
+    border:1px solid #93c5fd;
+    align-items:center; gap:0.4rem; justify-content:center;
+}
+.file-badge.visivel { display:inline-flex; }
 
-        /* Container das naturezas recomendadas (abaixo) */
-        .natureza-recomendada-container {
-            background: rgba(74,222,128,0.04);
-            border: 1px solid rgba(74,222,128,0.08);
-            border-radius: 20px;
-            padding: 1.2rem 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 0.8rem;
-        }
-        .natureza-recomendada-container .label {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #4ade80;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .natureza-recomendada-container .label i { color: #4ade80; }
-        .natureza-recomendada-container .value {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #eaeef2;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        .natureza-recomendada-container .value .tag {
-            background: rgba(74,222,128,0.1);
-            border: 1px solid rgba(74,222,128,0.15);
-            padding: 0.2rem 0.8rem;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #4ade80;
-        }
+/* ============ BOTÕES PRINCIPAIS ============ */
+.btn-analisar, .btn-analisar-times {
+    background:linear-gradient(135deg,#fbbf24 0%,#f59e0b 50%,#ef4444 100%);
+    color:#ffffff; border:none;
+    padding:0.95rem 1.8rem; border-radius:50px;
+    font-weight:900; font-size:0.92rem; cursor:pointer;
+    width:100%; display:flex; align-items:center; justify-content:center; gap:0.6rem;
+    margin-top:0.5rem; font-family:'Inter',sans-serif;
+    box-shadow:0 8px 25px rgba(239,68,68,0.3), 0 4px 12px rgba(251,191,36,0.3);
+    transition:all 0.25s;
+    letter-spacing:0.3px;
+}
+.btn-analisar:hover:not(:disabled), .btn-analisar-times:hover:not(:disabled) {
+    transform:translateY(-3px);
+    box-shadow:0 12px 30px rgba(239,68,68,0.4), 0 6px 16px rgba(251,191,36,0.4);
+}
+.btn-analisar:disabled, .btn-analisar-times:disabled { opacity:0.4; cursor:not-allowed; }
+.loading { text-align:center; color:#ea580c; font-weight:700; margin-top:1rem; display:none; font-size:0.85rem; }
+.loading.ativo { display:block; }
+.resultado-box {
+    background:linear-gradient(135deg,#faf5ff,#f3e8ff);
+    border-radius:16px; padding:1.5rem;
+    border:2px solid #d8b4fe;
+    white-space:pre-wrap; font-size:0.9rem; line-height:1.8;
+    margin-top:1.5rem; display:none; color:#0f172a;
+    box-shadow:0 6px 20px rgba(168,85,247,0.15);
+}
+.resultado-box.ativo { display:block; }
 
-        .pvp-filter {
-            background: rgba(239,68,68,0.04);
-            border: 1px solid rgba(239,68,68,0.08);
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-        }
-        .pvp-filter .pvp-title { color: #ef4444; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; }
-        .pvp-filter .pvp-title i { color: #ef4444; }
-        .pvp-filter .pvp-loading {
-            color: #8892b0;
-            font-size: 0.85rem;
-        }
-        .pvp-filter .pvp-loading i { margin-right: 0.5rem; }
-        .pvp-filter .pvp-resultado {
-            color: #eaeef2;
-            font-size: 0.85rem;
-            line-height: 1.6;
-        }
-        .pvp-filter .pvp-resultado strong { color: #fbbf24; }
-        .pvp-filter .pvp-resultado .ia-tag {
-            font-size: 0.6rem;
-            background: rgba(59,130,246,0.1);
-            color: #60a5fa;
-            padding: 0.05rem 0.5rem;
-            border-radius: 30px;
-            margin-left: 0.5rem;
-            border: 1px solid rgba(59,130,246,0.1);
-        }
+/* ============ FICHA ============ */
+.ficha-subtitle { color:#7c2d12; font-size:0.9rem; font-weight:800; display:flex; align-items:center; gap:0.5rem; }
+.ficha-subtitle i { color:#dc2626; }
+.ficha-header {
+    display:flex; align-items:center; gap:1.5rem;
+    background:linear-gradient(135deg,#fff7ed 0%,#fef3c7 50%,#fed7aa 100%);
+    border:3px solid #fbbf24; border-radius:24px;
+    padding:1.4rem 1.6rem; margin-bottom:1.5rem; flex-wrap:wrap;
+    box-shadow:0 10px 30px rgba(251,191,36,0.25);
+    position:relative; overflow:hidden;
+}
+.ficha-header::before {
+    content:'';
+    position:absolute; top:-30%; right:-5%;
+    width:180px; height:180px;
+    background:radial-gradient(circle,rgba(255,255,255,0.7),transparent 70%);
+    pointer-events:none;
+}
+.ficha-header .ficha-sprite-box {
+    width:130px; height:130px; border-radius:50%;
+    background:radial-gradient(circle at 30% 30%,#ffffff,#fef3c7);
+    border:4px solid #fbbf24;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; overflow:hidden;
+    box-shadow:0 8px 25px rgba(251,191,36,0.4), 0 0 0 6px rgba(255,255,255,0.5);
+    position:relative; z-index:1;
+}
+.ficha-header .ficha-sprite-box img { width:120px; height:120px; object-fit:contain; image-rendering:pixelated; }
+.ficha-header .ficha-sprite-box .placeholder { color:#cbd5e1; font-size:2rem; opacity:0.6; }
+.ficha-header .ficha-info { flex:1; min-width:200px; position:relative; z-index:1; }
+.ficha-header .ficha-info .ficha-nome { font-size:1.9rem; font-weight:900; color:#7c2d12; margin-bottom:0.3rem; text-transform:capitalize; text-shadow:0 1px 3px rgba(255,255,255,0.6); }
+.ficha-header .ficha-info .ficha-tipos { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.5rem; }
+.ficha-header .ficha-info .ficha-tipos .tipo-tag {
+    padding:0.3rem 0.9rem; border-radius:30px;
+    font-size:0.72rem; font-weight:800; text-transform:uppercase;
+    border:2px solid rgba(0,0,0,0.1);
+    box-shadow:0 3px 8px rgba(0,0,0,0.08);
+}
+.ficha-header .ficha-info .ficha-meta { display:flex; gap:1rem; flex-wrap:wrap; font-size:0.8rem; color:#78350f; font-weight:600; }
+.ficha-header .ficha-info .ficha-meta i { color:#3b82f6; }
 
-        .moves-container {
-            background: rgba(59,130,246,0.04);
-            border: 1px solid rgba(59,130,246,0.08);
-            border-radius: 20px;
-            padding: 1.2rem 1.5rem;
-            margin-top: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 0.8rem;
-        }
-        .moves-container .moves-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: #60a5fa; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-        .moves-container .moves-label i { color: #60a5fa; }
-        .moves-container .moves-loading { color: #8892b0; font-size: 0.85rem; }
-        .moves-container .moves-loading i { margin-right: 0.5rem; }
-        .moves-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-        .move-tag { background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:0.2rem 0.8rem; border-radius:30px; font-size:0.75rem; font-weight:600; color:#eaeef2; }
-        .moves-container .moves-resultado {
-            color: #eaeef2;
-            font-size: 0.85rem;
-            line-height: 1.6;
-        }
-        .moves-container .moves-resultado strong { color: #fbbf24; }
-        .moves-container .moves-resultado .ia-tag {
-            font-size: 0.6rem;
-            background: rgba(59,130,246,0.1);
-            color: #60a5fa;
-            padding: 0.05rem 0.5rem;
-            border-radius: 30px;
-            margin-left: 0.5rem;
-            border: 1px solid rgba(59,130,246,0.1);
-        }
+.status-container {
+    background:linear-gradient(135deg,#f0f9ff,#e0f2fe);
+    border:2px solid #7dd3fc;
+    border-radius:20px; padding:1.5rem; margin-bottom:1.5rem;
+    box-shadow:0 6px 20px rgba(2,132,199,0.10);
+}
+.status-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:0.9rem; }
+.stat-card {
+    background:#ffffff; border-radius:14px; padding:1rem 1.1rem;
+    border:2px solid #e2e8f0;
+    display:flex; flex-direction:column; gap:0.25rem;
+    transition:all 0.25s;
+    position:relative; overflow:hidden;
+}
+.stat-card[data-stat="hp"] { border-left:5px solid #ef4444; }
+.stat-card[data-stat="atk"] { border-left:5px solid #f97316; }
+.stat-card[data-stat="def"] { border-left:5px solid #eab308; }
+.stat-card[data-stat="spa"] { border-left:5px solid #3b82f6; }
+.stat-card[data-stat="spd"] { border-left:5px solid #06b6d4; }
+.stat-card[data-stat="spe"] { border-left:5px solid #a855f7; }
+.stat-card:hover { transform:translateY(-2px); box-shadow:0 10px 25px rgba(15,23,42,0.10); }
+.stat-card .stat-header { display:flex; align-items:center; gap:0.7rem; }
+.stat-card .stat-icon { font-size:1.3rem; width:32px; text-align:center; }
+.stat-card[data-stat="hp"] .stat-icon { color:#ef4444; }
+.stat-card[data-stat="atk"] .stat-icon { color:#f97316; }
+.stat-card[data-stat="def"] .stat-icon { color:#eab308; }
+.stat-card[data-stat="spa"] .stat-icon { color:#3b82f6; }
+.stat-card[data-stat="spd"] .stat-icon { color:#06b6d4; }
+.stat-card[data-stat="spe"] .stat-icon { color:#a855f7; }
+.stat-card .stat-label { font-size:0.62rem; text-transform:uppercase; color:#64748b; font-weight:800; letter-spacing:0.7px; }
+.stat-card .stat-value { display:flex; align-items:baseline; gap:0.4rem; flex-wrap:wrap; }
+.stat-card .stat-value .current { font-size:1.2rem; font-weight:900; color:#0f172a; }
+.stat-card .stat-value .preview { font-size:1.2rem; font-weight:900; color:#f59e0b; }
+.stat-card .stat-value .arrow { color:#94a3b8; font-size:0.8rem; }
+.stat-card .stat-value .diff { font-size:0.7rem; font-weight:800; padding:0.08rem 0.5rem; border-radius:30px; }
+.stat-card .stat-value .diff.positive { color:#166534; background:#dcfce7; }
+.stat-card .stat-value .diff.negative { color:#991b1b; background:#fee2e2; }
+.stat-card .stat-value .diff.zero { color:#64748b; background:#f1f5f9; }
+.stat-card .stat-bar { width:100%; height:5px; background:#e2e8f0; border-radius:10px; margin-top:5px; overflow:hidden; }
+.stat-card .stat-bar .fill { height:100%; border-radius:10px; background:linear-gradient(90deg,#60a5fa,#3b82f6); width:0%; transition:width 0.4s; }
+.stat-card .stat-bar .fill.preview-fill { background:linear-gradient(90deg,#fbbf24,#f59e0b); }
+.stat-card[data-stat="hp"] .stat-bar .fill { background:linear-gradient(90deg,#f87171,#dc2626); }
+.stat-card[data-stat="atk"] .stat-bar .fill { background:linear-gradient(90deg,#fb923c,#ea580c); }
+.stat-card[data-stat="def"] .stat-bar .fill { background:linear-gradient(90deg,#facc15,#ca8a04); }
+.stat-card[data-stat="spa"] .stat-bar .fill { background:linear-gradient(90deg,#60a5fa,#2563eb); }
+.stat-card[data-stat="spd"] .stat-bar .fill { background:linear-gradient(90deg,#22d3ee,#0891b2); }
+.stat-card[data-stat="spe"] .stat-bar .fill { background:linear-gradient(90deg,#c084fc,#9333ea); }
+.stat-card .stat-ev-input { display:flex; align-items:center; gap:0.3rem; margin-top:0.35rem; }
+.stat-card .stat-ev-input label { font-size:0.58rem; text-transform:uppercase; color:#64748b; font-weight:800; }
+.stat-card .stat-ev-input input[type="number"] {
+    width:60px; padding:0.2rem 0.3rem; border-radius:20px;
+    border:2px solid #cbd5e1; background:#ffffff; color:#0f172a;
+    font-weight:700; text-align:center; font-size:0.72rem;
+    font-family:'Inter',sans-serif;
+}
+.stat-card .stat-ev-input input[type="number"]:focus { outline:none; border-color:#f59e0b; box-shadow:0 0 0 3px rgba(245,158,11,0.15); }
+.stat-card .stat-ev-input .ev-preset-btn {
+    background:linear-gradient(135deg,#fef3c7,#fde68a);
+    color:#92400e; border:1px solid #fcd34d;
+    padding:0.12rem 0.55rem; border-radius:20px;
+    font-size:0.58rem; font-weight:800; cursor:pointer;
+    transition:0.2s; font-family:'Inter',sans-serif;
+}
+.stat-card .stat-ev-input .ev-preset-btn:hover { background:linear-gradient(135deg,#fde68a,#fcd34d); transform:scale(1.05); }
 
-        .ev-recomendacao-exata {
-            background: rgba(74,222,128,0.04);
-            border: 1px solid rgba(74,222,128,0.08);
-            border-radius: 20px;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-        .ev-recomendacao-exata h4 {
-            color: #4ade80;
-            font-size: 0.8rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .ev-recomendacao-exata .ev-loading {
-            color: #8892b0;
-            font-size: 0.85rem;
-        }
-        .ev-recomendacao-exata .ev-loading i { margin-right: 0.5rem; }
-        .ev-recomendacao-exata .ev-resultado {
-            color: #eaeef2;
-            font-size: 0.85rem;
-            line-height: 1.6;
-        }
-        .ev-recomendacao-exata .ev-resultado strong { color: #fbbf24; }
-        .ev-recomendacao-exata .ev-resultado .ia-tag {
-            font-size: 0.6rem;
-            background: rgba(59,130,246,0.1);
-            color: #60a5fa;
-            padding: 0.05rem 0.5rem;
-            border-radius: 30px;
-            margin-left: 0.5rem;
-            border: 1px solid rgba(59,130,246,0.1);
-        }
+.ev-controls { display:flex; flex-wrap:wrap; gap:0.6rem; align-items:center; margin:0.5rem 0 1rem 0; }
+.ev-controls .btn-ev {
+    background:#ffffff; color:#92400e;
+    border:2px solid #fcd34d; padding:0.45rem 1rem;
+    border-radius:30px; font-size:0.74rem; font-weight:800;
+    cursor:pointer; transition:0.2s; font-family:'Inter',sans-serif;
+    box-shadow:0 3px 8px rgba(251,191,36,0.15);
+}
+.ev-controls .btn-ev:hover { background:#fef3c7; transform:translateY(-2px); }
+.ev-controls .btn-ev.primary { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#ffffff; border-color:#f59e0b; }
+.ev-controls .btn-ev.primary:hover { background:linear-gradient(135deg,#f59e0b,#d97706); }
+.ev-controls .btn-ev.danger { background:#fee2e2; color:#991b1b; border-color:#fca5a5; }
+.ev-controls .btn-ev.danger:hover { background:#fecaca; }
 
-        .btn-exemplo {
-            background: rgba(251,191,36,0.12);
-            color: #fbbf24;
-            border: 1px solid rgba(251,191,36,0.15);
-            padding: 0.4rem 1.2rem;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
-            margin-top: 0.5rem;
-        }
-        .btn-exemplo:hover { background: rgba(251,191,36,0.2); }
+.natureza-container {
+    background:linear-gradient(135deg,#fff7ed,#fed7aa);
+    border:2px solid #fdba74;
+    border-radius:16px; padding:1.2rem 1.5rem; margin-bottom:0.8rem;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem;
+    box-shadow:0 4px 12px rgba(253,186,116,0.2);
+}
+.natureza-container .label { font-size:0.68rem; text-transform:uppercase; color:#9a3412; font-weight:800; display:flex; align-items:center; gap:6px; }
+.natureza-container .label i { color:#ea580c; }
+.natureza-container .value { font-size:1.05rem; font-weight:900; color:#7c2d12; }
 
-        .tutorial-container {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,215,0,0.06);
-            border-radius: 20px;
-            padding: 1.2rem 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .tutorial-container h4 {
-            color: #f7e05e;
-            font-size: 0.8rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .tutorial-container h4 i { color: #3b82f6; }
-        .tutorial-container p {
-            color: #b0bcdb;
-            font-size: 0.8rem;
-            line-height: 1.6;
-            margin-bottom: 0.3rem;
-        }
-        .tutorial-container .steps {
-            margin: 0.5rem 0 0 1.2rem;
-            color: #b0bcdb;
-            font-size: 0.8rem;
-            line-height: 1.8;
-        }
-        .tutorial-container .steps li { margin-bottom: 0.2rem; }
-        .tutorial-container .steps code {
-            background: rgba(255,255,255,0.05);
-            padding: 0.05rem 0.4rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            color: #f7e05e;
-        }
-        .tutorial-container .aviso-seguranca {
-            background: rgba(248,113,113,0.06);
-            border: 1px solid rgba(248,113,113,0.08);
-            border-radius: 30px;
-            padding: 0.3rem 1rem;
-            display: inline-block;
-            font-weight: 600;
-            font-size: 0.65rem;
-            color: #f87171;
-            margin-top: 0.5rem;
-        }
+.natureza-recomendada-container {
+    background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+    border:2px solid #86efac;
+    border-radius:16px; padding:1.2rem 1.5rem; margin-bottom:1.5rem;
+    display:none; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem;
+    box-shadow:0 4px 12px rgba(34,197,94,0.15);
+}
+.natureza-recomendada-container.visivel { display:flex; }
+.natureza-recomendada-container .label { font-size:0.68rem; text-transform:uppercase; color:#166534; font-weight:800; display:flex; align-items:center; gap:6px; }
+.natureza-recomendada-container .label i { color:#16a34a; }
+.natureza-recomendada-container .value { display:flex; flex-wrap:wrap; gap:0.5rem; }
+.natureza-recomendada-container .value .tag {
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+    color:#ffffff;
+    padding:0.35rem 1.1rem; border-radius:30px;
+    font-size:0.85rem; font-weight:800;
+    display:inline-flex; align-items:center; gap:0.3rem;
+    box-shadow:0 4px 12px rgba(34,197,94,0.3);
+}
 
-        .footer {
-            margin-top: 2.5rem;
-            text-align: center;
-            padding: 1.2rem 0 0.5rem;
-            border-top: 1px solid rgba(255,255,255,0.04);
-            font-size: 0.7rem;
-            color: #5a647e;
-            line-height: 1.8;
-            z-index: 1;
-            position: relative;
-        }
-        .footer i { color: #f7e05e; margin-right: 4px; }
-        .footer .aviso {
-            background: rgba(248,113,113,0.06);
-            border: 1px solid rgba(248,113,113,0.08);
-            border-radius: 30px;
-            padding: 0.3rem 1.2rem;
-            display: inline-block;
-            font-weight: 600;
-            font-size: 0.65rem;
-            color: #f87171;
-            margin-bottom: 0.5rem;
-        }
+.pvp-filter {
+    background:linear-gradient(135deg,#fef2f2,#fee2e2);
+    border:2px solid #fca5a5; border-radius:16px; padding:1.5rem; margin-top:1.5rem;
+    box-shadow:0 4px 12px rgba(220,38,38,0.1);
+}
+.pvp-filter .pvp-title { color:#991b1b; font-size:0.9rem; font-weight:800; display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem; }
+.pvp-filter .pvp-title i { color:#dc2626; }
+.pvp-filter .pvp-loading { color:#64748b; font-size:0.85rem; }
+.pvp-filter .pvp-resultado { color:#0f172a; font-size:0.85rem; line-height:1.7; }
 
-        .status-carregado {
-            background: rgba(74,222,128,0.1);
-            color: #4ade80;
-            padding: 0.2rem 0.8rem;
-            border-radius: 30px;
-            font-size: 0.6rem;
-            font-weight: 700;
-            border: 1px solid rgba(74,222,128,0.15);
-            display: none;
-            align-items: center;
-            gap: 4px;
-        }
-        .status-carregado.visivel { display: inline-flex; }
-        .empty-state {
-            color: #5a647e;
-            text-align: center;
-            padding: 2rem 0;
-            font-size: 0.9rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .empty-state i { font-size: 2.5rem; color: #3b82f6; opacity: 0.3; }
+.moves-container {
+    background:linear-gradient(135deg,#eff6ff,#dbeafe);
+    border:2px solid #93c5fd; border-radius:16px; padding:1.2rem 1.5rem; margin-top:1.5rem;
+    display:flex; flex-direction:column; gap:0.5rem;
+    box-shadow:0 4px 12px rgba(59,130,246,0.1);
+}
+.moves-container .moves-label { font-size:0.68rem; text-transform:uppercase; color:#1e40af; font-weight:800; display:flex; align-items:center; gap:6px; }
+.moves-container .moves-label i { color:#3b82f6; }
+.moves-container .moves-loading { color:#64748b; font-size:0.85rem; }
+.moves-resultado { display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; }
+.move-tag {
+    background:linear-gradient(135deg,#ffffff,#dbeafe);
+    border:2px solid #93c5fd;
+    padding:0.35rem 1rem; border-radius:30px;
+    font-size:0.82rem; font-weight:700; color:#1e40af;
+    box-shadow:0 3px 8px rgba(59,130,246,0.15);
+}
 
-        @media (max-width:600px) {
-            .container { padding:1.5rem 1rem; }
-            .title-container h1 { font-size:1.2rem; }
-            .pokeball-icon { width:36px; height:36px; }
-            .pokeball-icon::after { width:12px; height:12px; }
-            .badge-ativo { font-size:0.5rem; padding:0.2rem 0.6rem; }
-            .menu-tabs .tab { font-size:0.65rem; padding:0.3rem 0.8rem; }
-            .status-grid { grid-template-columns:1fr 1fr; }
-            .stat-card { padding:0.6rem 0.8rem; }
-            .stat-card .stat-value .current,
-            .stat-card .stat-value .preview { font-size:0.9rem; }
-            .pvp-grid { grid-template-columns:1fr; }
-            .bg-image { opacity:0.05; }
-            .bg-pokeball { font-size:20rem; right:-60px; bottom:-50px; }
-            .api-key-container { flex-direction:column; align-items:stretch; }
-            .api-key-container input[type="text"] { min-width:unset; }
-            .tutorial-container .steps { margin-left:0.5rem; }
-        }
-        @media (max-width:400px) {
-            .status-grid { grid-template-columns:1fr; }
-        }
-    </style>
+.ev-recomendacao-exata {
+    background:linear-gradient(135deg,#f0fdf4,#bbf7d0);
+    border:2px solid #86efac; border-radius:16px; padding:1rem; margin-top:1rem;
+    box-shadow:0 4px 12px rgba(34,197,94,0.1);
+}
+.ev-recomendacao-exata h4 { color:#166534; font-size:0.82rem; font-weight:800; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem; }
+.ev-recomendacao-exata h4 i { color:#16a34a; }
+.ev-recomendacao-exata .ev-loading { color:#64748b; font-size:0.85rem; }
+.ev-recomendacao-exata .ev-resultado { color:#0f172a; font-size:0.85rem; line-height:1.7; }
+
+.btn-exemplo {
+    background:linear-gradient(135deg,#fef3c7,#fde68a);
+    color:#92400e; border:2px solid #fcd34d;
+    padding:0.5rem 1.3rem; border-radius:30px;
+    font-weight:800; font-size:0.72rem; cursor:pointer;
+    transition:all 0.2s; font-family:'Inter',sans-serif;
+    box-shadow:0 3px 10px rgba(251,191,36,0.25);
+}
+.btn-exemplo:hover { transform:translateY(-2px); background:linear-gradient(135deg,#fde68a,#fcd34d); }
+
+.tutorial-container {
+    background:linear-gradient(135deg,#f8fafc,#f1f5f9);
+    border:2px solid #cbd5e1;
+    border-radius:16px; padding:1.2rem 1.5rem; margin-bottom:1.5rem;
+}
+.tutorial-container h4 { color:#7c2d12; font-size:0.82rem; font-weight:800; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem; }
+.tutorial-container h4 i { color:#f59e0b; }
+.tutorial-container p { color:#475569; font-size:0.8rem; line-height:1.6; margin-bottom:0.3rem; }
+.tutorial-container a { color:#2563eb; text-decoration:underline; font-weight:700; }
+.tutorial-container .aviso-seguranca {
+    background:#fef2f2; border:2px solid #fca5a5;
+    border-radius:30px; padding:0.35rem 1rem;
+    display:inline-block; font-weight:700; font-size:0.68rem;
+    color:#991b1b; margin-top:0.5rem;
+}
+
+.status-carregado {
+    background:linear-gradient(135deg,#dcfce7,#bbf7d0);
+    color:#166534;
+    padding:0.3rem 0.9rem; border-radius:30px;
+    font-size:0.65rem; font-weight:800;
+    border:2px solid #86efac; display:none;
+    align-items:center; gap:4px;
+    box-shadow:0 3px 8px rgba(34,197,94,0.2);
+}
+.status-carregado.visivel { display:inline-flex; }
+
+/* ============ ANÁLISE DE TIMES ============ */
+.team-upload-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; }
+.team-upload-box {
+    background:linear-gradient(135deg,#f8fafc,#f1f5f9);
+    border:2px solid #cbd5e1;
+    border-radius:20px; padding:1.5rem; text-align:center;
+    box-shadow:0 4px 12px rgba(15,23,42,0.06);
+    position:relative; overflow:hidden;
+}
+.team-upload-box:nth-child(1) { border-color:#86efac; background:linear-gradient(135deg,#f0fdf4,#dcfce7); }
+.team-upload-box:nth-child(2) { border-color:#fca5a5; background:linear-gradient(135deg,#fef2f2,#fee2e2); }
+.team-upload-box .team-title { font-size:0.92rem; font-weight:900; color:#78350f; margin-bottom:0.6rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; }
+.team-upload-box .team-title .ally { color:#166534; }
+.team-upload-box .team-title .enemy { color:#991b1b; }
+.team-upload-box .team-upload-area {
+    border:3px dashed #cbd5e1; border-radius:14px;
+    padding:1.5rem; cursor:pointer; background:#ffffff;
+    transition:0.25s;
+}
+.team-upload-box:nth-child(1) .team-upload-area { border-color:#86efac; }
+.team-upload-box:nth-child(2) .team-upload-area { border-color:#fca5a5; }
+.team-upload-box .team-upload-area:hover { transform:scale(1.01); }
+.team-upload-box:nth-child(1) .team-upload-area:hover { border-color:#16a34a; background:#f0fdf4; }
+.team-upload-box:nth-child(2) .team-upload-area:hover { border-color:#dc2626; background:#fef2f2; }
+.team-upload-box .team-upload-area img { max-width:100%; max-height:180px; border-radius:12px; margin-top:0.5rem; display:none; }
+.team-upload-box .team-upload-area img.visivel { display:block; }
+.team-upload-box .team-upload-area input { display:none; }
+.team-upload-box .team-status { font-size:0.72rem; color:#64748b; margin-top:0.35rem; font-weight:600; }
+.team-upload-box .team-status .loaded { color:#166534; font-weight:700; }
+.team-upload-box .team-status .empty { color:#94a3b8; }
+.team-upload-box .manual-input { margin-top:0.6rem; text-align:left; }
+.team-upload-box .manual-input label { font-size:0.7rem; color:#475569; display:block; margin-bottom:0.25rem; font-weight:700; }
+.team-upload-box .manual-input input {
+    width:100%; padding:0.5rem 0.8rem; border-radius:30px;
+    border:2px solid #cbd5e1; background:#ffffff; color:#0f172a;
+    font-size:0.78rem; font-family:'Inter',sans-serif;
+    transition:0.2s;
+}
+.team-upload-box .manual-input input:focus { outline:none; border-color:#f59e0b; box-shadow:0 0 0 3px rgba(245,158,11,0.15); }
+
+.team-result { margin-top:1.5rem; }
+.team-result .result-title { color:#7c2d12; font-size:0.92rem; font-weight:900; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+.team-result .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.team-result .team-card { border-radius:16px; padding:1rem 1.2rem; border:2px solid; box-shadow:0 4px 12px rgba(15,23,42,0.06); }
+.team-result .team-card:nth-child(1) { background:linear-gradient(135deg,#f0fdf4,#dcfce7); border-color:#86efac; }
+.team-result .team-card:nth-child(2) { background:linear-gradient(135deg,#fef2f2,#fee2e2); border-color:#fca5a5; }
+.team-result .team-card .team-card-title { font-size:0.78rem; text-transform:uppercase; font-weight:900; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem; letter-spacing:0.5px; }
+.team-result .team-card .team-card-title .ally { color:#166534; }
+.team-result .team-card .team-card-title .enemy { color:#991b1b; }
+.team-result .team-card .team-pokemon { display:flex; flex-wrap:wrap; gap:0.5rem; }
+
+.poke-tag {
+    background:#ffffff; border:2px solid #e2e8f0;
+    padding:0.25rem 0.75rem 0.25rem 0.25rem; border-radius:30px;
+    font-size:0.8rem; font-weight:700; color:#0f172a;
+    display:inline-flex; align-items:center; gap:0.35rem;
+    box-shadow:0 3px 8px rgba(15,23,42,0.08);
+    transition:0.2s;
+}
+.poke-tag:hover { transform:translateY(-2px); box-shadow:0 6px 15px rgba(15,23,42,0.12); }
+.poke-tag .poke-sprite {
+    width:36px; height:36px; object-fit:contain;
+    image-rendering:pixelated; border-radius:50%;
+    background:linear-gradient(135deg,#f8fafc,#e2e8f0); padding:2px;
+}
+.poke-tag .type { font-size:0.62rem; font-weight:600; color:#64748b; margin-left:0.2rem; }
+.matchup-pair .matchup-sprite {
+    width:46px; height:46px; object-fit:contain;
+    image-rendering:pixelated; border-radius:50%;
+    background:linear-gradient(135deg,#ffffff,#f1f5f9); padding:3px;
+    border:2px solid #e2e8f0;
+    box-shadow:0 3px 8px rgba(15,23,42,0.1);
+}
+
+.team-result .matchup-analysis { margin-top:1.5rem; }
+.team-result .matchup-analysis .matchup-title { font-size:0.85rem; font-weight:900; color:#7c2d12; margin-bottom:0.6rem; }
+.team-result .matchup-analysis .matchup-grid { display:grid; grid-template-columns:1fr; gap:0.9rem; }
+.team-result .matchup-analysis .matchup-card {
+    background:linear-gradient(135deg,#ffffff,#f8fafc);
+    border:2px solid #e2e8f0; border-radius:14px; padding:0.95rem 1.1rem;
+    box-shadow:0 4px 12px rgba(15,23,42,0.05);
+    transition:0.2s;
+}
+.team-result .matchup-analysis .matchup-card:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(15,23,42,0.1); }
+.team-result .matchup-analysis .matchup-card .matchup-pair { display:flex; flex-wrap:wrap; align-items:center; gap:0.45rem; font-size:0.88rem; margin-bottom:0.5rem; padding-bottom:0.5rem; border-bottom:2px dashed #e2e8f0; font-weight:800; color:#0f172a; }
+.team-result .matchup-analysis .matchup-card .matchup-pair .vs { color:#94a3b8; font-size:0.72rem; font-weight:900; }
+.team-result .matchup-analysis .matchup-card .matchup-detail { font-size:0.74rem; color:#475569; line-height:1.65; margin-top:0.35rem; font-weight:500; }
+.team-result .matchup-analysis .matchup-card .matchup-detail .eff-2 { color:#16a34a; font-weight:800; }
+.team-result .matchup-analysis .matchup-card .matchup-detail .eff-05 { color:#d97706; font-weight:800; }
+.team-result .matchup-analysis .matchup-card .matchup-detail .eff-0 { color:#dc2626; font-weight:800; }
+
+.matchup-pair .win { color:#ffffff; background:linear-gradient(135deg,#22c55e,#16a34a); padding:0.15rem 0.8rem; border-radius:30px; font-weight:900; font-size:0.75rem; box-shadow:0 3px 8px rgba(34,197,94,0.35); }
+.matchup-pair .lose { color:#ffffff; background:linear-gradient(135deg,#ef4444,#dc2626); padding:0.15rem 0.8rem; border-radius:30px; font-weight:900; font-size:0.75rem; box-shadow:0 3px 8px rgba(239,68,68,0.35); }
+.matchup-pair .draw { color:#ffffff; background:linear-gradient(135deg,#f59e0b,#d97706); padding:0.15rem 0.8rem; border-radius:30px; font-weight:900; font-size:0.75rem; box-shadow:0 3px 8px rgba(245,158,11,0.35); }
+
+.team-result .matchup-summary {
+    margin-top:1.2rem;
+    background:linear-gradient(135deg,#ffffff,#f8fafc);
+    border:2px solid #e2e8f0;
+    border-radius:14px; padding:1.1rem;
+    display:flex; flex-wrap:wrap; gap:1rem; justify-content:center;
+    box-shadow:0 4px 12px rgba(15,23,42,0.05);
+}
+.team-result .matchup-summary .summary-item { display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; font-weight:700; color:#475569; }
+.team-result .matchup-summary .summary-item .badge { border-radius:30px; padding:0.2rem 0.8rem; font-weight:900; background:#f1f5f9; color:#334155; border:2px solid #e2e8f0; }
+.team-result .matchup-summary .summary-item .badge.win { color:#ffffff; background:linear-gradient(135deg,#22c55e,#16a34a); border-color:#16a34a; box-shadow:0 3px 8px rgba(34,197,94,0.3); }
+.team-result .matchup-summary .summary-item .badge.lose { color:#ffffff; background:linear-gradient(135deg,#ef4444,#dc2626); border-color:#dc2626; box-shadow:0 3px 8px rgba(239,68,68,0.3); }
+.team-result .matchup-summary .summary-item .badge.draw { color:#ffffff; background:linear-gradient(135deg,#f59e0b,#d97706); border-color:#d97706; box-shadow:0 3px 8px rgba(245,158,11,0.3); }
+
+.team-result .extracted-names {
+    background:linear-gradient(135deg,#eff6ff,#dbeafe);
+    border:2px solid #93c5fd;
+    border-radius:14px; padding:0.9rem 1.1rem; margin-bottom:1rem;
+    font-size:0.82rem; color:#1e40af; font-weight:800;
+    box-shadow:0 4px 12px rgba(59,130,246,0.15);
+}
+
+/* ============ SKILLS SECTION ============ */
+.skills-section {
+    margin-top:1.5rem;
+    background:linear-gradient(135deg,#faf5ff 0%,#f3e8ff 50%,#e9d5ff 100%);
+    border:2px solid #d8b4fe; border-radius:20px; padding:1.3rem 1.6rem;
+    box-shadow:0 6px 20px rgba(168,85,247,0.12);
+}
+.skills-section .skills-title { font-size:0.92rem; font-weight:900; color:#6b21a8; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+.skills-section .skills-title i { color:#a855f7; }
+.skills-section .skills-matchup-title {
+    font-size:0.8rem; font-weight:900; color:#7c2d12;
+    margin:1rem 0 0.55rem; padding:0.5rem 0.9rem;
+    border-radius:30px;
+    background:linear-gradient(135deg,#fef3c7,#fde68a);
+    border:2px solid #fcd34d;
+    display:flex; align-items:center; gap:0.5rem;
+    box-shadow:0 3px 10px rgba(251,191,36,0.2);
+}
+.skills-section .skills-matchup-title:first-of-type { margin-top:0; }
+.skills-section .skills-matchup-title i { color:#ea580c; }
+.skills-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
+.skills-card {
+    background:#ffffff; border:2px solid #e9d5ff;
+    border-radius:14px; padding:0.95rem 1.05rem;
+    box-shadow:0 3px 10px rgba(168,85,247,0.08);
+    transition:0.2s;
+}
+.skills-card:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(168,85,247,0.15); }
+.skills-card .skills-card-header {
+    display:flex; align-items:center; gap:0.5rem;
+    margin-bottom:0.65rem; padding-bottom:0.5rem;
+    border-bottom:2px dashed #f1f5f9;
+}
+.skills-card .skills-card-header img {
+    width:44px; height:44px; object-fit:contain;
+    image-rendering:pixelated; border-radius:50%;
+    background:linear-gradient(135deg,#faf5ff,#e9d5ff); padding:3px;
+    border:2px solid #d8b4fe;
+}
+.skills-card .skills-card-header .skills-poke-name { font-size:0.88rem; font-weight:900; color:#0f172a; text-transform:capitalize; }
+.skills-card .skills-card-header .skills-poke-types { display:flex; gap:0.25rem; margin-left:auto; flex-wrap:wrap; }
+.skills-card .skills-card-header .skills-poke-types .mini-type {
+    font-size:0.58rem; padding:0.15rem 0.5rem; border-radius:20px;
+    font-weight:800; text-transform:uppercase;
+    border:1px solid rgba(0,0,0,0.08);
+}
+
+.skill-item {
+    display:flex; align-items:center; gap:0.4rem;
+    padding:0.45rem 0.6rem; border-radius:10px; margin-bottom:0.3rem;
+    background:linear-gradient(135deg,#f8fafc,#f1f5f9);
+    font-size:0.78rem; flex-wrap:wrap;
+    border:1px solid #e2e8f0;
+    transition:0.15s;
+}
+.skill-item:hover { background:linear-gradient(135deg,#ffffff,#f8fafc); border-color:#cbd5e1; }
+.skill-item .skill-name { flex:1; font-weight:800; color:#0f172a; text-transform:capitalize; min-width:90px; }
+.skill-item .skill-type { font-size:0.62rem; padding:0.15rem 0.6rem; border-radius:20px; font-weight:800; text-transform:uppercase; border:1px solid rgba(0,0,0,0.08); }
+.skill-item .skill-power { font-size:0.68rem; color:#64748b; font-weight:800; }
+.skill-item .skill-stab {
+    font-size:0.58rem; padding:0.1rem 0.5rem; border-radius:20px;
+    font-weight:900; background:linear-gradient(135deg,#fef3c7,#fde68a);
+    color:#92400e; border:1px solid #fcd34d;
+    box-shadow:0 2px 6px rgba(251,191,36,0.2);
+}
+.skill-item .skill-eff { font-size:0.62rem; padding:0.15rem 0.6rem; border-radius:20px; font-weight:800; margin-left:auto; border:1px solid; }
+.skill-eff.eff-immune { background:#f1f5f9; color:#64748b; border-color:#cbd5e1; }
+.skill-eff.eff-very-low { background:#fee2e2; color:#991b1b; border-color:#fca5a5; }
+.skill-eff.eff-low { background:#fef3c7; color:#92400e; border-color:#fcd34d; }
+.skill-eff.eff-neutral { background:#f1f5f9; color:#475569; border-color:#cbd5e1; }
+.skill-eff.eff-super { background:#dcfce7; color:#166534; border-color:#86efac; }
+.skill-eff.eff-ultra { background:linear-gradient(135deg,#22c55e,#16a34a); color:#ffffff; border-color:#16a34a; box-shadow:0 3px 8px rgba(34,197,94,0.3); }
+
+/* ============ IA VEREDITO ============ */
+.ia-analysis {
+    margin-top:1.5rem;
+    background:linear-gradient(135deg,#faf5ff 0%,#f3e8ff 100%);
+    border-radius:16px; padding:1.5rem;
+    border:2px solid #d8b4fe; display:none;
+    box-shadow:0 6px 20px rgba(168,85,247,0.15);
+}
+.ia-analysis h4 { color:#6b21a8; display:flex; align-items:center; gap:0.5rem; font-size:0.92rem; margin-bottom:0.8rem; font-weight:900; }
+.ia-analysis h4 i { color:#a855f7; }
+.ia-analysis .ia-loading { color:#64748b; display:none; font-size:0.85rem; }
+.ia-analysis .ia-resultado { white-space:pre-wrap; line-height:1.85; font-size:0.9rem; color:#0f172a; font-weight:500; }
+.ia-analysis .ia-resultado .winner {
+    display:inline-block; padding:0.3rem 1.2rem;
+    border-radius:30px; font-weight:900; margin-right:0.5rem;
+    letter-spacing:0.5px;
+}
+.ia-analysis .ia-resultado .winner.win { background:linear-gradient(135deg,#22c55e,#16a34a); color:#ffffff; box-shadow:0 4px 12px rgba(34,197,94,0.35); }
+.ia-analysis .ia-resultado .winner.lose { background:linear-gradient(135deg,#ef4444,#dc2626); color:#ffffff; box-shadow:0 4px 12px rgba(239,68,68,0.35); }
+.ia-analysis .ia-resultado .winner.draw { background:linear-gradient(135deg,#f59e0b,#d97706); color:#ffffff; box-shadow:0 4px 12px rgba(245,158,11,0.35); }
+
+/* ============ TIER LIST ============ */
+.tier-container { display:flex; flex-direction:column; gap:1.5rem; margin-top:1rem; }
+.tier-section {
+    border-radius:20px; padding:1.3rem 1.6rem;
+    border:2px solid;
+    box-shadow:0 6px 20px rgba(15,23,42,0.06);
+}
+.tier-section:nth-child(1) { background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%); border-color:#fbbf24; }
+.tier-section:nth-child(2) { background:linear-gradient(135deg,#dbeafe 0%,#bfdbfe 100%); border-color:#60a5fa; }
+.tier-section:nth-child(3) { background:linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%); border-color:#22c55e; }
+.tier-section .tier-header { display:flex; align-items:center; gap:0.8rem; margin-bottom:0.9rem; }
+.tier-section .tier-header .tier-badge {
+    font-weight:900; font-size:1.3rem;
+    padding:0.2rem 1.1rem; border-radius:30px;
+    border:3px solid;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+}
+.tier-section .tier-header .tier-badge.s { color:#ffffff; background:linear-gradient(135deg,#f59e0b,#d97706); border-color:#b45309; }
+.tier-section .tier-header .tier-badge.a { color:#ffffff; background:linear-gradient(135deg,#3b82f6,#2563eb); border-color:#1d4ed8; }
+.tier-section .tier-header .tier-badge.b { color:#ffffff; background:linear-gradient(135deg,#22c55e,#16a34a); border-color:#15803d; }
+.tier-section .tier-header .tier-desc { color:#334155; font-size:0.85rem; font-weight:700; }
+.tier-section .team-list { display:flex; flex-direction:column; gap:0.8rem; }
+.tier-section .team-item {
+    background:#ffffff; border-radius:14px;
+    padding:0.95rem 1.1rem; border-left:5px solid #fbbf24;
+    box-shadow:0 3px 10px rgba(15,23,42,0.06);
+}
+.tier-section .team-item .team-name { font-weight:900; color:#7c2d12; margin-bottom:0.55rem; font-size:0.92rem; }
+.tier-section .team-item .team-pokemon { display:flex; flex-wrap:wrap; gap:0.5rem; }
+.tier-section .team-item .team-pokemon .poke-tag { padding:0.2rem 0.7rem 0.2rem 0.2rem; font-size:0.78rem; }
+.tier-section .team-item .team-pokemon .poke-tag .poke-sprite { width:30px; height:30px; }
+.tier-section .team-item .team-pokemon .poke-tag .nature {
+    color:#ffffff;
+    font-size:0.62rem; font-weight:800;
+    background:linear-gradient(135deg,#f59e0b,#d97706);
+    padding:0.12rem 0.5rem; border-radius:20px;
+    box-shadow:0 2px 6px rgba(245,158,11,0.3);
+}
+.tier-section .team-item .team-desc { color:#475569; font-size:0.78rem; margin-top:0.4rem; font-style:italic; font-weight:500; }
+
+/* ============ BUILDER ============ */
+.team-builder {
+    background:linear-gradient(135deg,#f8fafc,#f1f5f9);
+    border:2px solid #cbd5e1;
+    border-radius:20px; padding:1.5rem; margin-top:1.5rem;
+    box-shadow:0 6px 20px rgba(15,23,42,0.06);
+}
+.team-builder h3 { color:#7c2d12; font-size:0.95rem; margin-bottom:0.8rem; display:flex; align-items:center; gap:0.5rem; font-weight:900; }
+.team-builder h3 i { color:#f59e0b; }
+.builder-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:0.8rem; }
+.builder-col label { font-size:0.74rem; color:#475569; display:block; margin-bottom:0.35rem; font-weight:800; }
+.builder-col label.ally { color:#166534; }
+.builder-col label.enemy { color:#991b1b; }
+.builder-col textarea {
+    width:100%; padding:0.75rem; border-radius:14px;
+    border:2px solid #cbd5e1;
+    font-size:0.82rem; resize:vertical; min-height:95px;
+    transition:0.2s;
+}
+.builder-col:nth-child(1) textarea { background:linear-gradient(135deg,#f0fdf4,#dcfce7); border-color:#86efac; }
+.builder-col:nth-child(2) textarea { background:linear-gradient(135deg,#fef2f2,#fee2e2); border-color:#fca5a5; }
+.builder-col textarea:focus { outline:none; box-shadow:0 0 0 4px rgba(245,158,11,0.15); }
+.builder-col:nth-child(1) textarea:focus { border-color:#16a34a; }
+.builder-col:nth-child(2) textarea:focus { border-color:#dc2626; }
+
+.builder-preview { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:0.8rem; margin-bottom:0.8rem; }
+.builder-preview-team {
+    border-radius:14px; padding:0.95rem 1.05rem; min-height:80px;
+    border:2px solid;
+}
+.builder-preview-team:nth-child(1) { background:linear-gradient(135deg,#f0fdf4,#dcfce7); border-color:#86efac; }
+.builder-preview-team:nth-child(2) { background:linear-gradient(135deg,#fef2f2,#fee2e2); border-color:#fca5a5; }
+.builder-preview-label {
+    font-size:0.7rem; font-weight:900; text-transform:uppercase;
+    margin-bottom:0.6rem; display:flex; align-items:center; gap:0.35rem;
+    letter-spacing:0.7px;
+}
+.builder-preview-label.ally { color:#166534; }
+.builder-preview-label.enemy { color:#991b1b; }
+.builder-preview-pokemon { display:flex; flex-wrap:wrap; gap:0.4rem; }
+.builder-preview-pokemon .poke-tag { padding:0.25rem 0.7rem 0.25rem 0.25rem; font-size:0.8rem; }
+.builder-preview-pokemon .poke-tag .poke-sprite { width:34px; height:34px; }
+.builder-preview-empty { color:#94a3b8; font-size:0.75rem; font-style:italic; }
+
+.team-builder .btn-sugerir {
+    margin-top:0.5rem;
+    background:linear-gradient(135deg,#a855f7 0%,#7c3aed 50%,#6d28d9 100%);
+    color:#ffffff; border:none;
+    padding:0.85rem 1.5rem; border-radius:50px;
+    font-weight:900; font-size:0.88rem; cursor:pointer;
+    width:100%; display:flex; align-items:center; justify-content:center; gap:0.5rem;
+    font-family:'Inter',sans-serif;
+    box-shadow:0 8px 25px rgba(124,58,237,0.35);
+    transition:all 0.25s;
+}
+.team-builder .btn-sugerir:hover:not(:disabled) { transform:translateY(-3px); box-shadow:0 12px 30px rgba(124,58,237,0.45); }
+.team-builder .btn-sugerir:disabled { opacity:0.4; cursor:not-allowed; }
+.team-builder .builder-result {
+    margin-top:1rem;
+    background:linear-gradient(135deg,#ffffff,#f8fafc);
+    border:2px solid #cbd5e1; border-radius:14px;
+    padding:1.1rem 1.3rem; font-size:0.87rem; line-height:1.85;
+    display:none; color:#0f172a;
+    box-shadow:0 4px 12px rgba(15,23,42,0.06);
+}
+.team-builder .builder-result.visivel { display:block; }
+.team-builder .builder-loading { color:#64748b; font-size:0.85rem; display:none; margin-top:0.5rem; text-align:center; }
+
+/* ============ FOOTER ============ */
+.footer {
+    margin-top:2.5rem; text-align:center;
+    padding:1.3rem 0 0.5rem;
+    border-top:3px dashed #e2e8f0;
+    font-size:0.74rem; color:#94a3b8; line-height:1.8;
+}
+.footer .aviso {
+    background:linear-gradient(135deg,#fef2f2,#fee2e2);
+    border:2px solid #fca5a5;
+    border-radius:30px; padding:0.4rem 1.3rem;
+    display:inline-block; font-weight:800; font-size:0.7rem;
+    color:#991b1b; margin-bottom:0.6rem;
+    box-shadow:0 3px 10px rgba(220,38,38,0.15);
+}
+.footer p { color:#64748b; font-weight:600; }
+
+/* ============ BADGES DE TIPO ============ */
+.tipo-normal { background:#f3f4f6; color:#4b5563; }
+.tipo-fire { background:linear-gradient(135deg,#fee2e2,#fecaca); color:#b91c1c; }
+.tipo-water { background:linear-gradient(135deg,#dbeafe,#bfdbfe); color:#1d4ed8; }
+.tipo-grass { background:linear-gradient(135deg,#dcfce7,#bbf7d0); color:#15803d; }
+.tipo-electric { background:linear-gradient(135deg,#fef9c3,#fde68a); color:#a16207; }
+.tipo-ice { background:linear-gradient(135deg,#cffafe,#a5f3fc); color:#0e7490; }
+.tipo-fighting { background:linear-gradient(135deg,#fee2e2,#fecaca); color:#991b1b; }
+.tipo-poison { background:linear-gradient(135deg,#f3e8ff,#e9d5ff); color:#7c3aed; }
+.tipo-ground { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#a16207; }
+.tipo-flying { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:#4338ca; }
+.tipo-psychic { background:linear-gradient(135deg,#fce7f3,#fbcfe8); color:#be185d; }
+.tipo-bug { background:linear-gradient(135deg,#ecfccb,#d9f99d); color:#4d7c0f; }
+.tipo-rock { background:linear-gradient(135deg,#fef3c7,#fcd34d); color:#92400e; }
+.tipo-ghost { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#6d28d9; }
+.tipo-dragon { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:#3730a3; }
+.tipo-dark { background:linear-gradient(135deg,#e7e5e4,#d6d3d1); color:#44403c; }
+.tipo-steel { background:linear-gradient(135deg,#f1f5f9,#e2e8f0); color:#334155; }
+.tipo-fairy { background:linear-gradient(135deg,#fce7f3,#fbcfe8); color:#9d174d; }
+.tipo-desconhecido { background:#f1f5f9; color:#64748b; }
+
+/* ============ RESPONSIVO ============ */
+@media (max-width:700px) {
+    .team-upload-grid, .team-result .result-grid, .skills-grid, .builder-grid, .builder-preview { grid-template-columns:1fr; }
+    .ficha-header { flex-direction:column; text-align:center; }
+}
+@media (max-width:600px) {
+    .container { padding:1.5rem 1rem; border-radius:24px; }
+    .api-key-container { flex-direction:column; align-items:stretch; }
+    .api-key-container input[type="text"] { min-width:unset; }
+    .status-grid { grid-template-columns:1fr 1fr; }
+    .title-container { padding:0.8rem 1rem; }
+    .title-container h1 { font-size:1.3rem; }
+}
+@media (max-width:400px) {
+    .status-grid { grid-template-columns:1fr; }
+}
+</style>
 </head>
 <body>
+<div class="bg-pokeball">⚪</div>
+<div class="container">
 
-    <img src="zap.jpeg" alt="Pikachu fundo" class="bg-image" />
-    <div class="bg-pokeball">⚪</div>
-
-    <div class="container">
-
-        <div class="title-container">
-            <div class="title-left">
-                <div class="pokeball-icon"></div>
-                <h1>Assistente <span>de Treinador</span></h1>
-            </div>
-            <div class="badge-ativo"><span class="dot"></span> Ativo</div>
-        </div>
-
-        <div class="menu-tabs">
-            <button class="tab active" data-tab="tab-analise"><i class="fas fa-microscope"></i> Análise</button>
-            <button class="tab" data-tab="tab-ficha"><i class="fas fa-id-card"></i> Ficha Pokémon</button>
-        </div>
-
-        <!-- ABA ANÁLISE -->
-        <div class="tab-content active" id="tab-analise">
-
-            <div class="api-key-container">
-                <label><i class="fas fa-key"></i> Chave API</label>
-                <input type="text" id="apiKeyInput" placeholder="Cole sua chave do Gemini aqui..." />
-                <button class="btn-salvar-api" id="btnSalvarApi"><i class="fas fa-save"></i> Salvar</button>
-                <span class="api-status" id="apiStatus"></span>
-            </div>
-
-            <div class="model-selector">
-                <label><i class="fas fa-microchip"></i> Modelo</label>
-                <select id="modelSelect">
-                    <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
-                    <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
-                    <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
-                    <option value="gemini-3.1-flash-image">Gemini 3.1 Flash Image</option>
-                    <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite</option>
-                </select>
-            </div>
-
-            <div class="upload-area" id="uploadArea">
-                <div class="icon-upload"><i class="fas fa-cloud-upload-alt"></i></div>
-                <p>Clique aqui ou arraste uma imagem</p>
-                <p class="formats">PNG · JPG · WEBP</p>
-                <input type="file" id="fileInput" accept="image/*" />
-                <img id="preview" />
-                <div class="file-badge" id="fileBadge"><i class="fas fa-check-circle"></i> <span id="fileName">imagem.png</span></div>
-            </div>
-
-            <button class="btn-analisar" id="analisarBtn" disabled><i class="fas fa-flask"></i> Analisar com Gemini</button>
-
-            <div class="loading" id="loading"><i class="fas fa-spinner fa-spin"></i> Analisando imagem...</div>
-
-            <div class="resultado-box" id="resultadoBox"></div>
-
-            <div class="tutorial-container">
-                <h4><i class="fas fa-graduation-cap"></i> Como obter sua chave da API Gemini</h4>
-                <p><strong>1.</strong> Acesse o <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#60a5fa;text-decoration:underline;">Google AI Studio</a> e faça login com sua conta Google.</p>
-                <p><strong>2.</strong> Clique em <strong>"Create API Key"</strong> e copie a chave gerada.</p>
-                <p><strong>3.</strong> Cole a chave no campo acima e clique em <strong>"Salvar"</strong>.</p>
-                <div class="aviso-seguranca"><i class="fas fa-exclamation-triangle"></i> ⚠️ Nunca compartilhe sua chave publicamente. Ela fica salva apenas no seu navegador.</div>
-                <div style="margin-top:0.5rem; color:#8892b0; font-size:0.7rem; border-top:1px solid rgba(255,255,255,0.03); padding-top:0.5rem;">
-                    <i class="fas fa-info-circle"></i> A chave é necessária para a análise via IA. O plano gratuito do Gemini oferece 20 requisições por dia — o suficiente para testes.
-                </div>
-            </div>
-
-        </div>
-
-        <!-- ABA FICHA -->
-        <div class="tab-content" id="tab-ficha">
-
-            <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; margin-bottom:1rem;">
-                <div class="ficha-subtitle" style="margin-bottom:0;"><i class="fas fa-heart"></i> Status Base</div>
-                <span class="status-carregado" id="statusCarregadoBadge"><i class="fas fa-check-circle"></i> Carregado</span>
-                <button class="btn-exemplo" id="btnCarregarExemplo"><i class="fas fa-download"></i> Carregar Exemplo (Flygon)</button>
-            </div>
-
-            <div class="status-container">
-                <div class="status-grid" id="statusGrid"></div>
-            </div>
-
-            <div class="ev-controls">
-                <button class="btn-ev primary" id="btnAplicarEVs"><i class="fas fa-check"></i> Aplicar EVs</button>
-                <button class="btn-ev" id="btnSugerirEVs"><i class="fas fa-lightbulb"></i> Sugerir EVs</button>
-                <button class="btn-ev danger" id="btnResetarEVs"><i class="fas fa-undo"></i> Resetar EVs</button>
-                <span style="color:#5a647e; font-size:0.65rem; margin-left:0.5rem;">Prévia em tempo real ao alterar os EVs</span>
-            </div>
-
-            <!-- Natureza atual -->
-            <div class="natureza-container">
-                <div class="label"><i class="fas fa-leaf"></i> Natureza atual</div>
-                <div class="value" id="natureza">Nenhuma</div>
-            </div>
-
-            <!-- ===== NOVO CONTAINER: NATUREZAS RECOMENDADAS ===== -->
-            <div class="natureza-recomendada-container" id="naturezaRecomendadaContainer" style="display:none;">
-                <div class="label"><i class="fas fa-thumbs-up"></i> Naturezas recomendadas para PvP</div>
-                <div class="value" id="naturezasRecomendadas"></div>
-            </div>
-
-            <!-- ===== PVP VIA IA ===== -->
-            <div class="pvp-filter" id="pvpFilter">
-                <div class="pvp-title"><i class="fas fa-crosshairs"></i> Análise PvP (IA)</div>
-                <div id="pvpContent">
-                    <div class="pvp-loading" id="pvpLoading">
-                        <i class="fas fa-spinner fa-spin"></i> Gerando análise PvP com IA...
-                    </div>
-                    <div class="pvp-resultado" id="pvpResultado" style="display:none;"></div>
-                </div>
-            </div>
-
-            <!-- ===== MOVES VIA IA ===== -->
-            <div class="moves-container">
-                <div class="moves-label"><i class="fas fa-bolt"></i> Melhores Moves (IA)</div>
-                <div id="movesContent">
-                    <div class="moves-loading" id="movesLoading">
-                        <i class="fas fa-spinner fa-spin"></i> Gerando melhores moves com IA...
-                    </div>
-                    <div class="moves-resultado" id="movesResultado" style="display:none;"></div>
-                </div>
-            </div>
-
-            <!-- ===== EVS VIA IA ===== -->
-            <div class="ev-recomendacao-exata" id="evRecomendacaoExata">
-                <h4><i class="fas fa-lightbulb"></i> Recomendação de EVs (IA)</h4>
-                <div id="evRecomendacaoContainer">
-                    <div class="ev-loading" id="evLoading">
-                        <i class="fas fa-spinner fa-spin"></i> Gerando recomendação com IA...
-                    </div>
-                    <div class="ev-resultado" id="evResultado" style="display:none;"></div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- FOOTER -->
-        <div class="footer">
-            <div class="aviso"><i class="fas fa-exclamation-triangle"></i> Este projeto está em desenvolvimento. Pode conter erros.</div>
-            <p style="margin-top:0.3rem;">
-                <i class="fas fa-egg"></i> Assistente de Treinador · Análise via Gemini
-            </p>
-        </div>
-
+<div class="title-container">
+    <div class="title-left">
+        <div class="pokeball-icon"></div>
+        <h1>Assistente <span>do Treinador</span></h1>
     </div>
+    <div class="badge-ativo"><span class="dot"></span> Ativo</div>
+</div>
 
-    <script>
-        // ============================================================
-        //  DADOS GLOBAIS (apenas para fallback)
-        // ============================================================
-        const baseStatsTabela = {
-            'flygon': { hp:100, atk:100, def:80, spa:80, spd:80, spe:100 },
-            'garchomp': { hp:108, atk:130, def:95, spa:80, spd:85, spe:102 },
-            'dragonite': { hp:91, atk:134, def:95, spa:100, spd:100, spe:80 },
-            'salamence': { hp:95, atk:135, def:80, spa:110, spd:80, spe:100 },
-            'tyranitar': { hp:100, atk:134, def:110, spa:95, spd:100, spe:61 },
-            'metagross': { hp:80, atk:135, def:130, spa:95, spd:90, spe:70 },
-            'pikachu': { hp:35, atk:55, def:40, spa:50, spd:50, spe:90 },
-            'charizard': { hp:78, atk:84, def:78, spa:109, spd:85, spe:100 },
-            'blaziken': { hp:80, atk:120, def:70, spa:110, spd:70, spe:80 },
-            'swampert': { hp:100, atk:110, def:90, spa:85, spd:90, spe:60 },
-            'gardevoir': { hp:68, atk:65, def:65, spa:125, spd:115, spe:80 },
-            'gengar': { hp:60, atk:65, def:60, spa:130, spd:75, spe:110 },
-            'mewtwo': { hp:106, atk:110, def:90, spa:154, spd:90, spe:130 },
-        };
+<div class="menu-tabs">
+    <button class="tab active" data-tab="tab-analise"><i class="fas fa-microscope"></i> Análise</button>
+    <button class="tab" data-tab="tab-ficha"><i class="fas fa-id-card"></i> Ficha Pokémon</button>
+    <button class="tab" data-tab="tab-times"><i class="fas fa-users"></i> Análise de Times</button>
+    <button class="tab" data-tab="tab-tier"><i class="fas fa-trophy"></i> Tier List PvP</button>
+</div>
 
-        const pokemonTypes = {
-            'flygon': ['ground','dragon'],
-            'garchomp': ['dragon','ground'],
-            'dragonite': ['dragon','flying'],
-            'salamence': ['dragon','flying'],
-            'tyranitar': ['rock','dark'],
-            'metagross': ['steel','psychic'],
-            'pikachu': ['electric'],
-            'charizard': ['fire','flying'],
-            'blaziken': ['fire','fighting'],
-            'swampert': ['water','ground'],
-            'gardevoir': ['psychic','fairy'],
-            'gengar': ['ghost','poison'],
-            'mewtwo': ['psychic'],
-        };
+<!-- ABA ANÁLISE -->
+<div class="tab-content active" id="tab-analise">
+    <div class="api-key-container">
+        <label><i class="fas fa-key"></i> Chave API</label>
+        <input type="text" id="apiKeyInput" placeholder="Cole sua chave do Gemini aqui..." />
+        <button class="btn-salvar-api" id="btnSalvarApi"><i class="fas fa-save"></i> Salvar</button>
+        <span class="api-status" id="apiStatus"></span>
+    </div>
+    <div class="model-selector">
+        <label><i class="fas fa-microchip"></i> Modelo</label>
+        <select id="modelSelect">
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+            <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+            <option value="gemini-3.1-flash-image">Gemini 3.1 Flash Image</option>
+            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite</option>
+        </select>
+    </div>
+    <div class="upload-area" id="uploadArea">
+        <div class="icon-upload"><i class="fas fa-cloud-upload-alt"></i></div>
+        <p>Clique aqui ou arraste uma imagem</p>
+        <p class="formats">PNG · JPG · WEBP</p>
+        <input type="file" id="fileInput" accept="image/*" />
+        <img id="preview" />
+        <div class="file-badge" id="fileBadge"><i class="fas fa-check-circle"></i> <span id="fileName">imagem.png</span></div>
+    </div>
+    <button class="btn-analisar" id="analisarBtn" disabled><i class="fas fa-flask"></i> Analisar com Gemini</button>
+    <div class="loading" id="loading"><i class="fas fa-spinner fa-spin"></i> Analisando imagem...</div>
+    <div class="resultado-box" id="resultadoBox"></div>
+    <div class="tutorial-container">
+        <h4><i class="fas fa-graduation-cap"></i> Como obter sua chave da API Gemini</h4>
+        <p><strong>1.</strong> Acesse o <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a> e faça login.</p>
+        <p><strong>2.</strong> Clique em <strong>"Create API Key"</strong> e copie a chave.</p>
+        <p><strong>3.</strong> Cole a chave no campo acima e clique em <strong>"Salvar"</strong>.</p>
+        <div class="aviso-seguranca"><i class="fas fa-exclamation-triangle"></i> Nunca compartilhe sua chave publicamente.</div>
+    </div>
+</div>
 
-        // ============================================================
-        //  ELEMENTOS E ESTADO
-        // ============================================================
-        const fileInput = document.getElementById('fileInput');
-        const uploadArea = document.getElementById('uploadArea');
-        const preview = document.getElementById('preview');
-        const fileBadge = document.getElementById('fileBadge');
-        const fileName = document.getElementById('fileName');
-        const analisarBtn = document.getElementById('analisarBtn');
-        const loading = document.getElementById('loading');
-        const resultadoBox = document.getElementById('resultadoBox');
-        const modelSelect = document.getElementById('modelSelect');
-        const btnExemplo = document.getElementById('btnCarregarExemplo');
-        const statusGrid = document.getElementById('statusGrid');
-        const naturezaEl = document.getElementById('natureza');
-        const naturezaRecomendadaContainer = document.getElementById('naturezaRecomendadaContainer');
-        const naturezasRecomendadasEl = document.getElementById('naturezasRecomendadas');
-        const statusCarregadoBadge = document.getElementById('statusCarregadoBadge');
+<!-- ABA FICHA -->
+<div class="tab-content" id="tab-ficha">
+    <div class="ficha-header" id="fichaHeader" style="display:none;">
+        <div class="ficha-sprite-box" id="fichaSpriteBox"><div class="placeholder"><i class="fas fa-question"></i></div></div>
+        <div class="ficha-info">
+            <div class="ficha-nome" id="fichaNome">—</div>
+            <div class="ficha-tipos" id="fichaTipos"></div>
+            <div class="ficha-meta">
+                <span><i class="fas fa-layer-group"></i> Nível <strong id="fichaNivel">—</strong></span>
+                <span><i class="fas fa-leaf"></i> Natureza <strong id="fichaNatureza">—</strong></span>
+            </div>
+        </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; margin-bottom:1rem;">
+        <div class="ficha-subtitle" style="margin-bottom:0;"><i class="fas fa-heart"></i> Status Base</div>
+        <span class="status-carregado" id="statusCarregadoBadge"><i class="fas fa-check-circle"></i> Carregado</span>
+        <button class="btn-exemplo" id="btnCarregarExemplo"><i class="fas fa-download"></i> Carregar Exemplo (Flygon)</button>
+    </div>
+    <div class="status-container"><div class="status-grid" id="statusGrid"></div></div>
+    <div class="ev-controls">
+        <button class="btn-ev primary" id="btnAplicarEVs"><i class="fas fa-check"></i> Aplicar EVs</button>
+        <button class="btn-ev" id="btnSugerirEVs"><i class="fas fa-lightbulb"></i> Sugerir EVs</button>
+        <button class="btn-ev danger" id="btnResetarEVs"><i class="fas fa-undo"></i> Resetar EVs</button>
+    </div>
+    <div class="natureza-container">
+        <div class="label"><i class="fas fa-leaf"></i> Natureza atual</div>
+        <div class="value" id="natureza">Nenhuma</div>
+    </div>
+    <div class="natureza-recomendada-container" id="naturezaRecomendadaContainer">
+        <div class="label"><i class="fas fa-thumbs-up"></i> Naturezas recomendadas para PvP</div>
+        <div class="value" id="naturezasRecomendadas"></div>
+    </div>
+    <div class="pvp-filter">
+        <div class="pvp-title"><i class="fas fa-crosshairs"></i> Análise PvP (IA)</div>
+        <div class="pvp-loading" id="pvpLoading"><i class="fas fa-spinner fa-spin"></i> Gerando análise PvP...</div>
+        <div class="pvp-resultado" id="pvpResultado" style="display:none;"></div>
+    </div>
+    <div class="moves-container">
+        <div class="moves-label"><i class="fas fa-bolt"></i> Melhores Moves (IA)</div>
+        <div class="moves-loading" id="movesLoading"><i class="fas fa-spinner fa-spin"></i> Gerando moves...</div>
+        <div class="moves-resultado" id="movesResultado" style="display:none;"></div>
+    </div>
+    <div class="ev-recomendacao-exata">
+        <h4><i class="fas fa-lightbulb"></i> Recomendação de EVs (IA)</h4>
+        <div class="ev-loading" id="evLoading"><i class="fas fa-spinner fa-spin"></i> Gerando recomendação...</div>
+        <div class="ev-resultado" id="evResultado" style="display:none;"></div>
+    </div>
+</div>
 
-        const pvpLoading = document.getElementById('pvpLoading');
-        const pvpResultado = document.getElementById('pvpResultado');
-        const movesLoading = document.getElementById('movesLoading');
-        const movesResultado = document.getElementById('movesResultado');
-        const evLoading = document.getElementById('evLoading');
-        const evResultado = document.getElementById('evResultado');
+<!-- ABA TIMES -->
+<div class="tab-content" id="tab-times">
+    <div class="api-key-container" style="margin-bottom:1rem;">
+        <label><i class="fas fa-key"></i> Chave API</label>
+        <input type="text" id="apiKeyInputTimes" placeholder="Cole sua chave do Gemini aqui..." />
+        <button class="btn-salvar-api" id="btnSalvarApiTimes"><i class="fas fa-save"></i> Salvar</button>
+        <span class="api-status" id="apiStatusTimes"></span>
+    </div>
+    <div class="model-selector" style="margin-bottom:1.5rem;">
+        <label><i class="fas fa-microchip"></i> Modelo</label>
+        <select id="modelSelectTimes">
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+            <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+            <option value="gemini-3.1-flash-image">Gemini 3.1 Flash Image</option>
+            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite</option>
+        </select>
+    </div>
+    <p style="color:#475569; font-size:0.85rem; margin-bottom:1rem;">
+        <i class="fas fa-info-circle" style="color:#f59e0b;"></i> Tipos, sprites e <strong style="color:#6b21a8;">habilidades</strong> são buscados em <strong style="color:#2563eb;">tempo real na PokéAPI</strong> (STAB priorizado).
+    </p>
+    <div class="team-upload-grid">
+        <div class="team-upload-box">
+            <div class="team-title"><i class="fas fa-shield-alt ally"></i> <span class="ally">Time Aliado</span></div>
+            <div class="team-upload-area" id="teamAllyArea">
+                <div><i class="fas fa-cloud-upload-alt" style="font-size:2rem; color:#16a34a; opacity:0.6;"></i></div>
+                <p style="color:#475569; font-size:0.8rem; font-weight:600;">Clique para selecionar a imagem</p>
+                <input type="file" id="teamAllyInput" accept="image/*" />
+                <img id="teamAllyPreview" />
+            </div>
+            <div class="team-status" id="teamAllyStatus"><span class="empty">Nenhuma imagem selecionada</span></div>
+            <div class="manual-input">
+                <label><i class="fas fa-pen"></i> Ou digite os nomes:</label>
+                <input type="text" id="allyManualInput" placeholder="Ex: Slowbro, Flygon, Scizor" />
+            </div>
+        </div>
+        <div class="team-upload-box">
+            <div class="team-title"><i class="fas fa-shield-alt enemy"></i> <span class="enemy">Time Rival</span></div>
+            <div class="team-upload-area" id="teamEnemyArea">
+                <div><i class="fas fa-cloud-upload-alt" style="font-size:2rem; color:#dc2626; opacity:0.6;"></i></div>
+                <p style="color:#475569; font-size:0.8rem; font-weight:600;">Clique para selecionar a imagem</p>
+                <input type="file" id="teamEnemyInput" accept="image/*" />
+                <img id="teamEnemyPreview" />
+            </div>
+            <div class="team-status" id="teamEnemyStatus"><span class="empty">Nenhuma imagem selecionada</span></div>
+            <div class="manual-input">
+                <label><i class="fas fa-pen"></i> Ou digite os nomes:</label>
+                <input type="text" id="enemyManualInput" placeholder="Ex: Rhyperior, Aggron, Metagross" />
+            </div>
+        </div>
+    </div>
+    <button class="btn-analisar-times" id="btnAnalisarTimes" disabled><i class="fas fa-crosshairs"></i> Analisar Times</button>
+    <div class="loading" id="loadingTimes" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Analisando times...</div>
+    <div class="team-result" id="teamResult" style="display:none;">
+        <div class="result-title"><i class="fas fa-chart-simple"></i> Resultado da Análise</div>
+        <div id="teamResultContent"></div>
+        <div class="ia-analysis" id="iaAnalysis">
+            <h4><i class="fas fa-robot"></i> Veredito da IA</h4>
+            <div class="ia-loading" id="iaLoading"><i class="fas fa-spinner fa-spin"></i> A IA está analisando os times...</div>
+            <div class="ia-resultado" id="iaResultado"></div>
+        </div>
+    </div>
+</div>
 
-        const btnAplicarEVs = document.getElementById('btnAplicarEVs');
-        const btnSugerirEVs = document.getElementById('btnSugerirEVs');
-        const btnResetarEVs = document.getElementById('btnResetarEVs');
-
-        const apiKeyInput = document.getElementById('apiKeyInput');
-        const btnSalvarApi = document.getElementById('btnSalvarApi');
-        const apiStatus = document.getElementById('apiStatus');
-
-        let dadosPokemon = {
-            nome: '',
-            stats: { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 },
-            evsOriginais: { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 },
-            evsAtuais: { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 },
-            baseStats: { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 },
-            ivs: { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 },
-            natureza: '',
-            nivel: 78
-        };
-        let dadosCarregados = false;
-        let apiKey = '';
-
-        // ============================================================
-        //  FUNÇÕES DE CÁLCULO
-        // ============================================================
-        function calcularStatus(base, iv, ev, level, nature = 1.0, isHp = false) {
-            const evFloor = Math.floor(ev / 4);
-            const baseCalc = (2 * base + iv + evFloor) * level / 100;
-            if (isHp) {
-                return Math.floor(baseCalc + level + 10);
-            } else {
-                return Math.floor((baseCalc + 5) * nature);
-            }
-        }
-
-        function encontrarBaseExata(statAlvo, iv, ev, level, nature = 1.0, isHp = false) {
-            if (statAlvo <= 0) return 0;
-            for (let base = 1; base <= 255; base++) {
-                const calc = calcularStatus(base, iv, ev, level, nature, isHp);
-                if (calc === statAlvo) return base;
-            }
-            let melhorBase = 1, menorDiff = Infinity;
-            for (let base = 1; base <= 255; base++) {
-                const calc = calcularStatus(base, iv, ev, level, nature, isHp);
-                const diff = Math.abs(calc - statAlvo);
-                if (diff < menorDiff) { menorDiff = diff; melhorBase = base; }
-            }
-            return melhorBase;
-        }
-
-        // ============================================================
-        //  GERENCIAR CHAVE API
-        // ============================================================
-        function carregarChaveSalva() {
-            const salva = localStorage.getItem('geminiApiKey');
-            if (salva) {
-                apiKeyInput.value = salva;
-                apiKey = salva;
-                apiStatus.textContent = '✓ Chave carregada';
-                apiStatus.className = 'api-status ok';
-            } else {
-                apiStatus.textContent = '⚠️ Insira sua chave';
-                apiStatus.className = 'api-status erro';
-            }
-        }
-
-        btnSalvarApi.addEventListener('click', function() {
-            const chave = apiKeyInput.value.trim();
-            if (chave.length > 10) {
-                apiKey = chave;
-                localStorage.setItem('geminiApiKey', chave);
-                apiStatus.textContent = '✓ Chave salva!';
-                apiStatus.className = 'api-status ok';
-                testarChave(chave);
-            } else {
-                apiStatus.textContent = '❌ Chave inválida';
-                apiStatus.className = 'api-status erro';
-            }
-        });
-
-        async function testarChave(chave) {
-            try {
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${chave}`);
-                if (resp.ok) {
-                    apiStatus.textContent = '✓ Chave válida!';
-                    apiStatus.className = 'api-status ok';
-                } else {
-                    const data = await resp.json();
-                    apiStatus.textContent = `❌ ${data.error?.message || 'Chave inválida'}`;
-                    apiStatus.className = 'api-status erro';
-                }
-            } catch (e) {
-                apiStatus.textContent = '❌ Erro ao testar chave';
-                apiStatus.className = 'api-status erro';
-            }
-        }
-
-        // ============================================================
-        //  CHAMADAS À IA
-        // ============================================================
-        async function chamarIA(prompt, loadingEl, resultadoEl, extraCallback = null) {
-            if (!apiKey) {
-                resultadoEl.innerHTML = '⚠️ Configure sua chave API na aba "Análise".';
-                resultadoEl.style.display = 'block';
-                return;
-            }
-            loadingEl.style.display = 'block';
-            resultadoEl.style.display = 'none';
-            resultadoEl.innerHTML = '';
-
-            try {
-                const payload = { contents: [{ parts: [{ text: prompt }] }] };
-                const response = await fetch(
-                    `https://generativelanguage.googleapis.com/v1beta/models/${modelSelect.value}:generateContent?key=${apiKey}`,
-                    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
-                );
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error?.message || 'Erro ao chamar a API Gemini.');
-                }
-
-                const data = await response.json();
-                const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta da IA.';
-                const html = texto.replace(/\n/g, '<br>');
-                resultadoEl.innerHTML = html + ' <span class="ia-tag">via IA</span>';
-                resultadoEl.style.display = 'block';
-
-                if (extraCallback) extraCallback(texto);
-
-            } catch (error) {
-                resultadoEl.innerHTML = `❌ Erro ao gerar: ${error.message}`;
-                resultadoEl.style.display = 'block';
-            } finally {
-                loadingEl.style.display = 'none';
-            }
-        }
-
-        // ============================================================
-        //  GERAR TODAS AS ANÁLISES VIA IA
-        // ============================================================
-        function gerarAnalisesIA() {
-            if (!dadosCarregados) {
-                pvpLoading.style.display = 'block';
-                pvpResultado.style.display = 'none';
-                movesLoading.style.display = 'block';
-                movesResultado.style.display = 'none';
-                evLoading.style.display = 'block';
-                evResultado.style.display = 'none';
-                naturezaRecomendadaContainer.style.display = 'none';
-                return;
-            }
-
-            // 1. PVP + NATUREZAS RECOMENDADAS (até 3)
-            const pvpPrompt = `Você é um especialista em Pokémon competitivo. Analise este Pokémon para PvP e responda no formato:
-
-**Avaliação geral:** [texto curto sobre se presta ou não para PvP]
-**Vantagens ofensivas:** [quais tipos ele ataca com vantagem, ex: "Super efetivo contra: Grama, Inseto, etc."]
-**Desvantagens ofensivas:** [quais tipos ele tem dificuldade, ex: "Não muito efetivo contra: Fogo, Água, etc."]
-**Fraquezas defensivas:** [quais tipos são super efetivos contra ele]
-**Resistências defensivas:** [quais tipos ele resiste]
-**Imunidades:** [se houver]
-**Score (0-10):** [nota]
-**Naturezas recomendadas (até 3):** [lista separada por vírgula, ex: Adamant, Jolly, Naive]
-
-Dados do Pokémon:
-- Nome: ${dadosPokemon.nome}
-- Nível: ${dadosPokemon.nivel}
-- Natureza atual: ${dadosPokemon.natureza || 'Não especificada'}
-- Status (HP/Ataque/Defesa/SpA/SpD/Velocidade): ${dadosPokemon.stats.hp}/${dadosPokemon.stats.atk}/${dadosPokemon.stats.def}/${dadosPokemon.stats.spa}/${dadosPokemon.stats.spd}/${dadosPokemon.stats.spe}
-
-Responda APENAS com o formato acima, sem texto adicional. Seja objetivo e direto.`;
-
-            chamarIA(pvpPrompt, pvpLoading, pvpResultado, function(texto) {
-                // Extrair naturezas recomendadas
-                const match = texto.match(/\*\*Naturezas recomendadas \(até 3\):\*\*\s*([^\n]+)/i);
-                if (match) {
-                    const lista = match[1].trim();
-                    // Divide por vírgula, remove espaços extras, filtra vazios
-                    const naturezas = lista.split(',').map(n => n.trim()).filter(n => n.length > 0);
-                    if (naturezas.length > 0) {
-                        naturezaRecomendadaContainer.style.display = 'flex';
-                        naturezasRecomendadasEl.innerHTML = naturezas.map(n => 
-                            `<span class="tag">${n}</span>`
-                        ).join('');
-                    } else {
-                        naturezaRecomendadaContainer.style.display = 'none';
-                    }
-                } else {
-                    naturezaRecomendadaContainer.style.display = 'none';
-                }
-            });
-
-            // 2. MOVES
-            const movesPrompt = `Liste os 4 melhores ataques (moves) para este Pokémon, baseado em seu perfil ofensivo (físico ou especial) e cobertura de tipos. Responda APENAS com uma lista simples, um move por linha, sem texto adicional.
-
-Dados do Pokémon:
-- Nome: ${dadosPokemon.nome}
-- Natureza: ${dadosPokemon.natureza || 'Não especificada'}
-- Status de Ataque: ${dadosPokemon.stats.atk}
-- Status de SpA: ${dadosPokemon.stats.spa}
-
-Formato:
-- Move 1
-- Move 2
-- Move 3
-- Move 4`;
-
-            chamarIA(movesPrompt, movesLoading, movesResultado);
-
-            // 3. EVs
-            const evPrompt = `Você é um especialista em Pokémon competitivo. Com base nos dados abaixo, recomende uma distribuição de EVs (Effort Values) para este Pokémon, seguindo o formato exato:
-
-**Distribuição recomendada:** [lista com os valores e stats, ex: 252 em Ataque, 252 em Velocidade, 4 em HP]
-**Justificativa:** [uma breve explicação de 2-3 linhas sobre por que essa distribuição é ideal para este Pokémon]
-
-Dados do Pokémon:
-- Nome: ${dadosPokemon.nome}
-- Nível: ${dadosPokemon.nivel}
-- Natureza: ${dadosPokemon.natureza || 'Não especificada'}
-- Status atuais (HP/Ataque/Defesa/SpA/SpD/Velocidade): ${dadosPokemon.stats.hp}/${dadosPokemon.stats.atk}/${dadosPokemon.stats.def}/${dadosPokemon.stats.spa}/${dadosPokemon.stats.spd}/${dadosPokemon.stats.spe}
-
-Responda APENAS com o formato solicitado, sem texto adicional. Seja objetivo e direto.`;
-
-            chamarIA(evPrompt, evLoading, evResultado);
-        }
-
-        // ============================================================
-        //  GERAR CARDS DE STATUS
-        // ============================================================
-        function gerarStatusCards(stats, evs, bases, ivs, nivel, natureza) {
-            const statKeys = ['hp','atk','def','spa','spd','spe'];
-            const labels = { hp:'HP', atk:'Ataque', def:'Defesa', spa:'SpA', spd:'SpD', spe:'Velocidade' };
-            const icons = { hp:'fa-heart', atk:'fa-fist-raised', def:'fa-shield-alt', spa:'fa-fire', spd:'fa-water', spe:'fa-wind' };
-            const maxStat = 255;
-            const natureMult = natureza && natureza.toLowerCase().includes('adamant') ? 1.1 : 1.0;
-            const isHp = { hp:true, atk:false, def:false, spa:false, spd:false, spe:false };
-
-            let html = '';
-            for (const key of statKeys) {
-                const val = stats[key] || 0;
-                const ev = evs[key] || 0;
-                const base = bases[key] || 0;
-                const iv = ivs[key] || 0;
-                const percent = Math.min((val / maxStat) * 100, 100);
-
-                html += `
-                    <div class="stat-card" data-stat="${key}">
-                        <div class="stat-header">
-                            <div class="stat-icon"><i class="fas ${icons[key]}"></i></div>
-                            <div class="stat-info">
-                                <div class="stat-label">${labels[key]}</div>
-                                <div class="stat-value" id="stat-row-${key}">
-                                    <span class="current" id="stat-current-${key}">${val > 0 ? val : '--'}</span>
-                                    <span class="arrow">→</span>
-                                    <span class="preview" id="stat-preview-${key}">${val > 0 ? val : '--'}</span>
-                                    <span class="diff zero" id="diff-${key}">±0</span>
-                                </div>
-                                <div class="stat-bar">
-                                    <div class="fill" id="bar-current-${key}" style="width:${percent}%;"></div>
-                                    <div class="fill preview-fill" id="bar-preview-${key}" style="width:${percent}%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="stat-ev-input">
-                            <label>EV</label>
-                            <input type="number" id="ev-input-${key}" value="${ev}" min="0" max="252" step="4" />
-                            <button class="ev-preset-btn" data-stat="${key}" data-ev="252">252</button>
-                            <button class="ev-preset-btn" data-stat="${key}" data-ev="128">128</button>
-                            <button class="ev-preset-btn" data-stat="${key}" data-ev="4">4</button>
-                            <button class="ev-preset-btn" data-stat="${key}" data-ev="0">0</button>
-                        </div>
+<!-- ABA TIER -->
+<div class="tab-content" id="tab-tier">
+    <div class="api-key-container" style="margin-bottom:1rem;">
+        <label><i class="fas fa-key"></i> Chave API</label>
+        <input type="text" id="apiKeyInputTier" placeholder="Cole sua chave do Gemini aqui..." />
+        <button class="btn-salvar-api" id="btnSalvarApiTier"><i class="fas fa-save"></i> Salvar</button>
+        <span class="api-status" id="apiStatusTier"></span>
+    </div>
+    <div class="model-selector" style="margin-bottom:1.5rem;">
+        <label><i class="fas fa-microchip"></i> Modelo</label>
+        <select id="modelSelectTier">
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+            <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+            <option value="gemini-3.1-flash-image">Gemini 3.1 Flash Image</option>
+            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite</option>
+        </select>
+    </div>
+    <h3 style="color:#7c2d12; margin-bottom:0.5rem; font-size:1rem; font-weight:900;"><i class="fas fa-list" style="color:#a855f7;"></i> Times Competitivos (Metagame)</h3>
+    <p style="color:#64748b; font-size:0.85rem; margin-bottom:1rem;">Times populares no cenário competitivo.</p>
+    <div class="tier-container">
+        <div class="tier-section">
+            <div class="tier-header"><span class="tier-badge s">S</span><span class="tier-desc">Meta dominante</span></div>
+            <div class="team-list">
+                <div class="team-item">
+                    <div class="team-name">Core Dragão + Aço</div>
+                    <div class="team-pokemon">
+                        <span class="poke-tag" data-poke="Garchomp"><span class="poke-name">Garchomp</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Dragonite"><span class="poke-name">Dragonite</span> <span class="nature">(Jolly)</span></span>
+                        <span class="poke-tag" data-poke="Metagross"><span class="poke-name">Metagross</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Tyranitar"><span class="poke-name">Tyranitar</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Salamence"><span class="poke-name">Salamence</span> <span class="nature">(Naive)</span></span>
+                        <span class="poke-tag" data-poke="Flygon"><span class="poke-name">Flygon</span> <span class="nature">(Jolly)</span></span>
                     </div>
-                `;
-            }
-            statusGrid.innerHTML = html;
+                    <div class="team-desc">Pressão ofensiva com resistências a tipos comuns.</div>
+                </div>
+            </div>
+        </div>
+        <div class="tier-section">
+            <div class="tier-header"><span class="tier-badge a">A</span><span class="tier-desc">Muito bons, com algumas fraquezas</span></div>
+            <div class="team-list">
+                <div class="team-item">
+                    <div class="team-name">Core Água + Terra</div>
+                    <div class="team-pokemon">
+                        <span class="poke-tag" data-poke="Swampert"><span class="poke-name">Swampert</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Suicune"><span class="poke-name">Suicune</span> <span class="nature">(Bold)</span></span>
+                        <span class="poke-tag" data-poke="Garchomp"><span class="poke-name">Garchomp</span> <span class="nature">(Jolly)</span></span>
+                        <span class="poke-tag" data-poke="Flygon"><span class="poke-name">Flygon</span> <span class="nature">(Jolly)</span></span>
+                        <span class="poke-tag" data-poke="Metagross"><span class="poke-name">Metagross</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Dragonite"><span class="poke-name">Dragonite</span> <span class="nature">(Adamant)</span></span>
+                    </div>
+                    <div class="team-desc">Boa defesa e ataques potentes.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="team-builder">
+        <h3><i class="fas fa-wrench"></i> Montador de Time PvP com IA</h3>
+        <p style="color:#475569; font-size:0.82rem; margin-bottom:0.8rem;">Digite os Pokémon (um por linha). Os sprites aparecem em tempo real e a IA vai sugerir as <strong>melhores TMs</strong> e os <strong>vencedores 1x1</strong>.</p>
+        <div class="builder-grid">
+            <div class="builder-col">
+                <label class="ally"><i class="fas fa-shield-alt"></i> Time Aliado</label>
+                <textarea id="builderAllyInput" placeholder="Ex:&#10;Garchomp&#10;Tyranitar&#10;Slowbro"></textarea>
+            </div>
+            <div class="builder-col">
+                <label class="enemy"><i class="fas fa-shield-alt"></i> Time Rival</label>
+                <textarea id="builderEnemyInput" placeholder="Ex:&#10;Dragonite&#10;Mew&#10;Salamence"></textarea>
+            </div>
+        </div>
 
-            document.querySelectorAll('.ev-preset-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const stat = this.dataset.stat;
-                    const ev = parseInt(this.dataset.ev);
-                    const input = document.getElementById(`ev-input-${stat}`);
-                    if (input) { input.value = ev; input.dispatchEvent(new Event('input')); }
-                });
-            });
+        <div class="builder-preview" id="builderPreview" style="display:none;">
+            <div class="builder-preview-team">
+                <div class="builder-preview-label ally"><i class="fas fa-shield-alt"></i> Time Aliado</div>
+                <div class="builder-preview-pokemon" id="builderAllyPreview"></div>
+            </div>
+            <div class="builder-preview-team">
+                <div class="builder-preview-label enemy"><i class="fas fa-shield-alt"></i> Time Rival</div>
+                <div class="builder-preview-pokemon" id="builderEnemyPreview"></div>
+            </div>
+        </div>
 
-            for (const key of statKeys) {
-                const input = document.getElementById(`ev-input-${key}`);
-                if (input) {
-                    input.addEventListener('input', function() { atualizarPrevia(key); });
-                }
-            }
+        <button class="btn-sugerir" id="btnSugerirTime"><i class="fas fa-lightbulb"></i> Analisar TMs e Confrontos 1x1</button>
+        <div class="builder-loading" id="builderLoading"><i class="fas fa-spinner fa-spin"></i> A IA está analisando...</div>
+        <div class="builder-result" id="builderResult"></div>
+    </div>
+</div>
 
-            for (const key of statKeys) {
-                atualizarPrevia(key);
-            }
+<div class="footer">
+    <div class="aviso"><i class="fas fa-exclamation-triangle"></i> Este projeto está em desenvolvimento.</div>
+    <p><i class="fas fa-egg"></i> Assistente de Treinador · Gemini + PokéAPI</p>
+</div>
+</div>
+
+<script>
+// ============ DADOS GLOBAIS ============
+const baseStatsTabela = {
+    'flygon':{hp:100,atk:100,def:80,spa:80,spd:80,spe:100},'garchomp':{hp:108,atk:130,def:95,spa:80,spd:85,spe:102},
+    'dragonite':{hp:91,atk:134,def:95,spa:100,spd:100,spe:80},'salamence':{hp:95,atk:135,def:80,spa:110,spd:80,spe:100},
+    'tyranitar':{hp:100,atk:134,def:110,spa:95,spd:100,spe:61},'metagross':{hp:80,atk:135,def:130,spa:95,spd:90,spe:70},
+    'pikachu':{hp:35,atk:55,def:40,spa:50,spd:50,spe:90},'charizard':{hp:78,atk:84,def:78,spa:109,spd:85,spe:100},
+    'blaziken':{hp:80,atk:120,def:70,spa:110,spd:70,spe:80},'swampert':{hp:100,atk:110,def:90,spa:85,spd:90,spe:60},
+    'gardevoir':{hp:68,atk:65,def:65,spa:125,spd:115,spe:80},'gengar':{hp:60,atk:65,def:60,spa:130,spd:75,spe:110},
+    'mewtwo':{hp:106,atk:110,def:90,spa:154,spd:90,spe:130},'slowbro':{hp:95,atk:75,def:110,spa:100,spd:80,spe:30},
+    'rhyperior':{hp:115,atk:140,def:130,spa:55,spd:55,spe:40},'mr. mime':{hp:40,atk:45,def:65,spa:100,spd:120,spe:90},
+    'aggron':{hp:70,atk:110,def:180,spa:60,spd:60,spe:50},'suicune':{hp:100,atk:75,def:115,spa:90,spd:115,spe:85},
+    'darkrai':{hp:70,atk:90,def:90,spa:135,spd:90,spe:125},'mew':{hp:100,atk:100,def:100,spa:100,spd:100,spe:100}
+};
+
+const pokemonTypes = {
+    'flygon':['ground','dragon'],'garchomp':['dragon','ground'],'dragonite':['dragon','flying'],
+    'salamence':['dragon','flying'],'tyranitar':['rock','dark'],'metagross':['steel','psychic'],
+    'pikachu':['electric'],'charizard':['fire','flying'],'blaziken':['fire','fighting'],
+    'swampert':['water','ground'],'gardevoir':['psychic','fairy'],'gengar':['ghost','poison'],
+    'mewtwo':['psychic'],'slowbro':['water','psychic'],'rhyperior':['ground','rock'],
+    'mr-mime':['psychic','fairy'],'aggron':['steel','rock'],'suicune':['water'],'darkrai':['dark'],
+    'mew':['psychic']
+};
+
+const typeEffectiveness = {
+    'normal':{'rock':0.5,'ghost':0,'steel':0.5},'fire':{'fire':0.5,'water':0.5,'grass':2,'ice':2,'bug':2,'rock':0.5,'dragon':0.5,'steel':2},
+    'water':{'fire':2,'water':0.5,'grass':0.5,'ground':2,'rock':2,'dragon':0.5},'grass':{'fire':0.5,'water':2,'grass':0.5,'poison':0.5,'ground':2,'flying':0.5,'bug':0.5,'rock':2,'dragon':0.5,'steel':0.5},
+    'electric':{'water':2,'electric':0.5,'grass':0.5,'ground':0,'flying':2,'dragon':0.5},'ice':{'fire':0.5,'water':0.5,'grass':2,'ice':0.5,'ground':2,'flying':2,'dragon':2,'steel':0.5},
+    'fighting':{'normal':2,'ice':2,'poison':0.5,'flying':0.5,'psychic':0.5,'bug':0.5,'rock':2,'ghost':0,'dark':2,'steel':0.5,'fairy':0.5},
+    'poison':{'poison':0.5,'ground':0.5,'rock':0.5,'ghost':0.5,'steel':0,'fairy':2},
+    'ground':{'fire':2,'grass':0.5,'electric':2,'poison':2,'flying':0,'bug':0.5,'rock':2,'steel':2},
+    'flying':{'grass':2,'electric':0.5,'fighting':2,'bug':2,'rock':0.5,'steel':0.5},
+    'psychic':{'fighting':2,'psychic':0.5,'steel':0.5,'dark':0},
+    'bug':{'fire':0.5,'grass':2,'fighting':0.5,'poison':0.5,'flying':0.5,'psychic':2,'ghost':0.5,'dark':2,'steel':0.5,'fairy':0.5},
+    'rock':{'fire':2,'ice':2,'fighting':0.5,'ground':0.5,'flying':2,'bug':2,'steel':0.5},
+    'ghost':{'normal':0,'psychic':2,'ghost':2,'dark':0.5},
+    'dragon':{'dragon':2,'steel':0.5,'fairy':0},
+    'dark':{'fighting':0.5,'psychic':2,'ghost':2,'dark':0.5,'fairy':0.5},
+    'steel':{'fire':0.5,'water':0.5,'electric':0.5,'ice':2,'rock':2,'steel':0.5,'fairy':2},
+    'fairy':{'fire':0.5,'fighting':2,'poison':0.5,'steel':0.5,'dark':2,'dragon':2}
+};
+
+const typeNames = {normal:'Normal',fire:'Fogo',water:'Água',grass:'Planta',electric:'Elétrico',ice:'Gelo',fighting:'Lutador',poison:'Veneno',ground:'Terra',flying:'Voador',psychic:'Psíquico',bug:'Inseto',rock:'Pedra',ghost:'Fantasma',dragon:'Dragão',dark:'Sombrio',steel:'Aço',fairy:'Fada'};
+
+// ============ CACHE POKÉAPI ============
+const dadosCache = {};
+const movesCache = {};
+for (const [k,t] of Object.entries(pokemonTypes)) dadosCache[k] = { types:t, sprite:null, moves:[] };
+
+function normalizarNome(nome) {
+    return String(nome).toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[.\s_]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+}
+function formatMoveName(nome) { return nome.split('-').map(p => p.charAt(0).toUpperCase()+p.slice(1)).join(' '); }
+
+async function getMoveDetails(url) {
+    if (movesCache[url]) return movesCache[url];
+    try {
+        const r = await fetch(url);
+        if (r.ok) {
+            const d = await r.json();
+            movesCache[url] = { name:d.name, type:d.type?.name||'normal', power:d.power||0, damageClass:d.damage_class?.name||'status', accuracy:d.accuracy };
+            return movesCache[url];
         }
-
-        function atualizarPrevia(key) {
-            if (!dadosCarregados) return;
-            const input = document.getElementById(`ev-input-${key}`);
-            if (!input) return;
-            const ev = parseInt(input.value) || 0;
-            const base = dadosPokemon.baseStats[key] || 0;
-            const iv = dadosPokemon.ivs[key] || 0;
-            const isHp = (key === 'hp');
-            const nature = dadosPokemon.natureza || 'Sério';
-            const natureMult = nature.toLowerCase().includes('adamant') ? 1.1 : 1.0;
-            const nivel = dadosPokemon.nivel;
-
-            const statusAtual = dadosPokemon.stats[key] || 0;
-            const statusProjetado = calcularStatus(base, iv, ev, nivel, natureMult, isHp);
-
-            const currentEl = document.getElementById(`stat-current-${key}`);
-            const previewEl = document.getElementById(`stat-preview-${key}`);
-            const diffEl = document.getElementById(`diff-${key}`);
-            const barCurrent = document.getElementById(`bar-current-${key}`);
-            const barPreview = document.getElementById(`bar-preview-${key}`);
-
-            if (currentEl) currentEl.textContent = statusAtual;
-            if (previewEl) previewEl.textContent = statusProjetado;
-
-            const diff = statusProjetado - statusAtual;
-            if (diffEl) {
-                diffEl.textContent = diff > 0 ? `+${diff}` : diff < 0 ? `${diff}` : '±0';
-                diffEl.className = 'diff ' + (diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'zero');
-            }
-
-            const maxStat = 255;
-            const pctAtual = Math.min((statusAtual / maxStat) * 100, 100);
-            const pctProjetado = Math.min((statusProjetado / maxStat) * 100, 100);
-            if (barCurrent) barCurrent.style.width = pctAtual + '%';
-            if (barPreview) barPreview.style.width = pctProjetado + '%';
-        }
-
-        function atualizarStatusComEVs() {
-            if (!dadosCarregados) return;
-            const keys = ['hp','atk','def','spa','spd','spe'];
-            const isHp = { hp:true, atk:false, def:false, spa:false, spd:false, spe:false };
-            const nature = dadosPokemon.natureza || 'Sério';
-            let natureMult = 1.0;
-            if (nature.toLowerCase().includes('adamant')) natureMult = 1.1;
-
-            const evs = {};
-            for (const key of keys) {
-                const input = document.getElementById(`ev-input-${key}`);
-                evs[key] = input ? parseInt(input.value) || 0 : 0;
-            }
-
-            const stats = {};
-            for (const key of keys) {
-                const base = dadosPokemon.baseStats[key] || 0;
-                const iv = dadosPokemon.ivs[key] || 0;
-                const ev = evs[key] || 0;
-                stats[key] = calcularStatus(base, iv, ev, dadosPokemon.nivel, natureMult, isHp[key]);
-            }
-
-            dadosPokemon.stats = stats;
-            dadosPokemon.evsAtuais = evs;
-
-            for (const key of keys) {
-                const input = document.getElementById(`ev-input-${key}`);
-                if (input) input.dispatchEvent(new Event('input'));
-                const el = document.getElementById(`stat-current-${key}`);
-                if (el) el.textContent = stats[key] || 0;
-                const bar = document.getElementById(`bar-current-${key}`);
-                if (bar) bar.style.width = Math.min((stats[key] / 255) * 100, 100) + '%';
-            }
-
-            gerarAnalisesIA();
-        }
-
-        function sugerirEVs() {
-            if (!dadosCarregados) return;
-            const stats = dadosPokemon.stats;
-            const atk = stats.atk || 0, spa = stats.spa || 0, spe = stats.spe || 0, def = stats.def || 0, spd = stats.spd || 0;
-            const priorities = [];
-            if (atk >= 120) priorities.push('atk');
-            if (spa >= 120) priorities.push('spa');
-            if (spe >= 100) priorities.push('spe');
-            if (def >= 100) priorities.push('def');
-            if (spd >= 100) priorities.push('spd');
-            if (priorities.length === 0) {
-                const sorted = Object.entries({ atk, spa, spe, def, spd }).sort((a,b) => b[1] - a[1]);
-                priorities.push(sorted[0][0]);
-                if (sorted[1][1] > 50) priorities.push(sorted[1][0]);
-            }
-            const keys = ['hp','atk','def','spa','spd','spe'];
-            for (const key of keys) {
-                const input = document.getElementById(`ev-input-${key}`);
-                if (!input) continue;
-                if (priorities.includes(key)) {
-                    if (key === priorities[0]) input.value = 252;
-                    else if (key === priorities[1]) input.value = 252;
-                    else input.value = 4;
-                } else {
-                    input.value = 0;
-                }
-                input.dispatchEvent(new Event('input'));
-            }
-        }
-
-        function resetarEVs() {
-            if (!dadosCarregados) return;
-            const keys = ['hp','atk','def','spa','spd','spe'];
-            for (const key of keys) {
-                const input = document.getElementById(`ev-input-${key}`);
-                if (input) {
-                    input.value = dadosPokemon.evsOriginais[key] || 0;
-                    input.dispatchEvent(new Event('input'));
-                }
-            }
-            atualizarStatusComEVs();
-        }
-
-        // ============================================================
-        //  CARREGAR EXEMPLO (Flygon)
-        // ============================================================
-        function carregarExemplo() {
-            const dados = {
-                nome: 'Flygon',
-                stats: { hp:235, atk:200, def:149, spa:124, spd:140, spe:182 },
-                evs: { hp:80, atk:90, def:100, spa:140, spd:0, spe:0 },
-                natureza: 'Adamant',
-                nivel: 78
-            };
-            const baseTabela = baseStatsTabela['flygon'];
-            const ivs = { hp:29, atk:28, def:25, spa:11, spd:14, spe:27 };
-            const bases = baseTabela;
-
-            dadosPokemon.nome = dados.nome;
-            dadosPokemon.stats = dados.stats;
-            dadosPokemon.evsOriginais = dados.evs;
-            dadosPokemon.evsAtuais = { ...dados.evs };
-            dadosPokemon.baseStats = bases;
-            dadosPokemon.ivs = ivs;
-            dadosPokemon.natureza = dados.natureza;
-            dadosPokemon.nivel = dados.nivel;
-            dadosCarregados = true;
-
-            if (statusCarregadoBadge) statusCarregadoBadge.classList.add('visivel');
-            if (naturezaEl) naturezaEl.textContent = dados.natureza;
-            naturezaRecomendadaContainer.style.display = 'none';
-
-            gerarStatusCards(dados.stats, dados.evs, bases, ivs, dados.nivel, dados.natureza);
-            gerarAnalisesIA();
-            document.querySelector('.tab[data-tab="tab-ficha"]').click();
-        }
-
-        btnExemplo.addEventListener('click', carregarExemplo);
-        btnAplicarEVs.addEventListener('click', atualizarStatusComEVs);
-        btnSugerirEVs.addEventListener('click', function() { sugerirEVs(); });
-        btnResetarEVs.addEventListener('click', resetarEVs);
-
-        // ============================================================
-        //  TABS
-        // ============================================================
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById(this.dataset.tab).classList.add('active');
-            });
-        });
-
-        // ============================================================
-        //  UPLOAD E ANALISAR
-        // ============================================================
-        uploadArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            imagemSelecionada = file;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                preview.src = ev.target.result;
-                preview.classList.add('visivel');
-                fileName.textContent = file.name;
-                fileBadge.classList.add('visivel');
-                analisarBtn.disabled = false;
-            };
-            reader.readAsDataURL(file);
-        });
-        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = '#3b82f6'; uploadArea.style.background = 'rgba(59,130,246,0.06)'; });
-        uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = 'rgba(59,130,246,0.15)'; uploadArea.style.background = 'rgba(59,130,246,0.04)'; });
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = 'rgba(59,130,246,0.15)';
-            uploadArea.style.background = 'rgba(59,130,246,0.04)';
-            const file = e.dataTransfer.files[0];
-            if (file) { fileInput.files = e.dataTransfer.files; fileInput.dispatchEvent(new Event('change')); }
-        });
-
-        function toBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function extrairStatus(texto) {
-            let jsonMatch = texto.match(/\{[\s\S]*\}/);
-            let data = {};
-            if (jsonMatch) {
-                try { data = JSON.parse(jsonMatch[0]); } catch(e) {}
-            }
-            if (!data.stats) {
-                const lines = texto.split('\n');
-                const stats = { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 };
-                const evs = { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 };
-                let habilidade = 'Não detectada', natureza = 'Não detectada', nivel = 78, nome = 'Pokémon';
-                const patterns = {
-                    hp: [/(?:HP|hp)\s*[:=]?\s*(\d+)\s+(\d+)/, /(?:HP|hp)\s*[:=]?\s*(\d+)/],
-                    atk: [/(?:Atk|ATK|Ataque|Attack)\s*[:=]?\s*(\d+)\s+(\d+)/, /(?:Atk|ATK|Ataque|Attack)\s*[:=]?\s*(\d+)/],
-                    def: [/(?:Def|DEF|Defesa|Defense)\s*[:=]?\s*(\d+)\s+(\d+)/, /(?:Def|DEF|Defesa|Defense)\s*[:=]?\s*(\d+)/],
-                    spa: [/(?:SpA|SPA|Ataque Especial|Sp\. Atk)\s*[:=]?\s*(\d+)\s+(\d+)/, /(?:SpA|SPA|Ataque Especial|Sp\. Atk)\s*[:=]?\s*(\d+)/],
-                    spd: [/(?:SpD|SPD|Defesa Especial|Sp\. Def)\s*[:=]?\s*(\d+)\s+(\d+)/, /(?:SpD|SPD|Defesa Especial|Sp\. Def)\s*[:=]?\s*(\d+)/],
-                    spe: [/(?:Spe|SPE|Velocidade|Speed)\s*[:=]?\s*(\d+)\s+(\d+)/, /(?:Spe|SPE|Velocidade|Speed)\s*[:=]?\s*(\d+)/]
-                };
-                for (const line of lines) {
-                    const trimmed = line.trim();
-                    const lvMatch = trimmed.match(/lv\s*[:=]?\s*(\d+)/i);
-                    if (lvMatch) nivel = parseInt(lvMatch[1]);
-                    const habMatch = trimmed.match(/habilidade\s*[:=]?\s*([^\n]+)/i);
-                    if (habMatch) habilidade = habMatch[1].trim();
-                    const natMatch = trimmed.match(/natureza\s*[:=]?\s*([^\n]+)/i);
-                    if (natMatch) natureza = natMatch[1].trim();
-                    const nomeMatch = trimmed.match(/^(?:pokémon|nome)\s*[:=]?\s*([a-z]+)/i);
-                    if (nomeMatch) nome = nomeMatch[1].trim();
-                    for (const [key, pats] of Object.entries(patterns)) {
-                        for (const pat of pats) {
-                            const match = trimmed.match(pat);
-                            if (match) {
-                                if (match.length === 3) {
-                                    const val = parseInt(match[2]);
-                                    if (!isNaN(val) && val > 0) { stats[key] = val; break; }
-                                } else if (match.length === 2) {
-                                    const val = parseInt(match[1]);
-                                    if (!isNaN(val) && val > 0) { stats[key] = val; break; }
-                                }
-                            }
-                        }
-                    }
-                    const evMatch = trimmed.match(/evs?\s*[:=]?\s*([\d\s,]+)/i);
-                    if (evMatch) {
-                        const evNumbers = evMatch[1].trim().split(/[\s,]+/).filter(n => n !== '').map(Number);
-                        const evKeys = ['hp','atk','def','spa','spd','spe'];
-                        for (let i = 0; i < Math.min(evNumbers.length, 6); i++) {
-                            if (!isNaN(evNumbers[i])) evs[evKeys[i]] = evNumbers[i];
-                        }
-                    }
-                }
-                data = { nome, stats, evs, habilidade, natureza, nivel };
-            }
-            return data;
-        }
-
-        let imagemSelecionada = null;
-        async function analisarImagem() {
-            if (!imagemSelecionada) return;
-            if (!apiKey) {
-                alert('⚠️ Configure sua chave API na aba "Análise" antes de analisar.');
-                return;
-            }
-
-            const modelo = modelSelect.value;
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`;
-
-            loading.classList.add('ativo');
-            resultadoBox.classList.remove('ativo');
-            analisarBtn.disabled = true;
-
-            try {
-                const base64 = await toBase64(imagemSelecionada);
-                const payload = {
-                    contents: [{
-                        parts: [{
-                            text: `Analise a imagem e extraia os dados do Pokémon no formato JSON:
-
-{
-  "nome": "",
-  "stats": {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0},
-  "evs": {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0},
-  "habilidade": "",
-  "natureza": "",
-  "nivel": 0
+    } catch(e) {}
+    return null;
 }
 
-Exemplo para Flygon:
-{
-  "nome": "Flygon",
-  "stats": {"hp": 235, "atk": 200, "def": 149, "spa": 124, "spd": 140, "spe": 182},
-  "evs": {"hp": 80, "atk": 90, "def": 100, "spa": 140, "spd": 0, "spe": 0},
-  "habilidade": "Levitate",
-  "natureza": "Adamant",
-  "nivel": 78
+async function buscarDadosPokemon(nome) {
+    const n = normalizarNome(nome);
+    if (dadosCache[n]?.sprite && dadosCache[n]?.moves?.length) return dadosCache[n];
+    const variacoes = [n, n.replace(/-/g,''), n.split('-')[0], n+'-male', n+'-female'];
+    for (const v of variacoes) {
+        if (dadosCache[v]?.sprite && dadosCache[v]?.moves?.length) { dadosCache[n] = dadosCache[v]; return dadosCache[v]; }
+        try {
+            const resp = await fetch(`https://pokeapi.co/api/v2/pokemon/${v}`);
+            if (resp.ok) {
+                const data = await resp.json();
+                const tipos = data.types.map(t => t.type.name);
+                const sprite = data.sprites?.front_default
+                    || data.sprites?.other?.['official-artwork']?.front_default
+                    || data.sprites?.other?.home?.front_default
+                    || null;
+                const todasMoves = (data.moves || []).slice(0, 120);
+                const moveDetails = await Promise.all(todasMoves.map(m => getMoveDetails(m.move.url)));
+                let filtrados = moveDetails.filter(m => m && m.power && m.power > 0);
+                filtrados.sort((a, b) => {
+                    const aStab = tipos.includes(a.type) ? 1 : 0;
+                    const bStab = tipos.includes(b.type) ? 1 : 0;
+                    if (aStab !== bStab) return bStab - aStab;
+                    return b.power - a.power;
+                });
+                const variados = [];
+                const contTipo = {};
+                for (const m of filtrados) {
+                    contTipo[m.type] = (contTipo[m.type] || 0) + 1;
+                    if (contTipo[m.type] <= 2) {
+                        variados.push(m);
+                        if (variados.length >= 6) break;
+                    }
+                }
+                const entrada = { types: tipos, sprite, moves: variados };
+                dadosCache[n] = entrada; dadosCache[v] = entrada;
+                return entrada;
+            }
+        } catch(e) {}
+    }
+    if (dadosCache[n]) return dadosCache[n];
+    dadosCache[n] = { types:['desconhecido'], sprite:null, moves:[] };
+    return dadosCache[n];
+}
+async function precarregarDados(lista) { await Promise.all(lista.map(p => buscarDadosPokemon(p))); }
+function getTiposSync(n) { const k = normalizarNome(n); return dadosCache[k]?.types || dadosCache[String(n).toLowerCase().trim()]?.types || ['desconhecido']; }
+function getSpriteSync(n) { const k = normalizarNome(n); return dadosCache[k]?.sprite || dadosCache[String(n).toLowerCase().trim()]?.sprite || null; }
+function getMovesSync(n) { const k = normalizarNome(n); return dadosCache[k]?.moves || dadosCache[String(n).toLowerCase().trim()]?.moves || []; }
+function tipoClass(t) { return 'tipo-'+(t||'desconhecido').toLowerCase(); }
+function calcMoveEffectiveness(moveType, defTypes) { let m=1; for (const t of defTypes) m *= typeEffectiveness[moveType]?.[t] ?? 1; return m; }
+function effLabel(mult) {
+    if (mult === 0) return { text:'Imune', cls:'eff-immune' };
+    if (mult <= 0.25) return { text:'Muito pouco efetivo', cls:'eff-very-low' };
+    if (mult < 1) return { text:'Pouco efetivo (0.5x)', cls:'eff-low' };
+    if (mult === 1) return { text:'Neutro', cls:'eff-neutral' };
+    if (mult < 4) return { text:'Super efetivo (2x)', cls:'eff-super' };
+    return { text:'Extremamente efetivo (4x)', cls:'eff-ultra' };
 }
 
-Responda APENAS com o JSON, sem texto adicional.`
-                        }, {
-                            inline_data: {
-                                mime_type: imagemSelecionada.type,
-                                data: base64.split(',')[1]
-                            }
-                        }]
-                    }]
-                };
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error?.message || 'Erro ao chamar a API Gemini.');
-                }
-
-                const data = await response.json();
-                const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Nenhuma resposta da IA.';
-                resultadoBox.innerHTML = texto.replace(/\n/g, '<br>');
-                resultadoBox.classList.add('ativo');
-
-                const dados = extrairStatus(texto);
-                processarDadosImportados(dados);
-                document.querySelector('.tab[data-tab="tab-ficha"]').click();
-
-            } catch (error) {
-                resultadoBox.innerHTML = `❌ Erro: ${error.message}`;
-                resultadoBox.classList.add('ativo');
-            } finally {
-                loading.classList.remove('ativo');
-                analisarBtn.disabled = false;
-            }
+async function carregarSpritesTierList() {
+    const tags = document.querySelectorAll('.poke-tag[data-poke]');
+    await Promise.all([...tags].map(async tag => {
+        if (tag.querySelector('.poke-sprite')) return;
+        const nome = tag.dataset.poke;
+        const d = await buscarDadosPokemon(nome);
+        if (d.sprite) {
+            const img = document.createElement('img');
+            img.src = d.sprite;
+            img.alt = nome;
+            img.className = 'poke-sprite';
+            img.loading = 'lazy';
+            img.onerror = () => img.style.display = 'none';
+            tag.insertBefore(img, tag.firstChild);
         }
-        analisarBtn.addEventListener('click', analisarImagem);
+    }));
+}
 
-        // ============================================================
-        //  PROCESSAR DADOS IMPORTADOS
-        // ============================================================
-        function processarDadosImportados(dados) {
-            const nome = dados.nome || 'Pokémon';
-            const stats = dados.stats || { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 };
-            const evs = dados.evs || { hp:0, atk:0, def:0, spa:0, spd:0, spe:0 };
-            const natureza = dados.natureza || 'Sério';
-            const nivel = dados.nivel || 78;
+// ============ PREVIEW DO BUILDER ============
+const builderAllyInput=document.getElementById('builderAllyInput'),builderEnemyInput=document.getElementById('builderEnemyInput');
+const builderPreview=document.getElementById('builderPreview');
+const builderAllyPreviewEl=document.getElementById('builderAllyPreview'),builderEnemyPreviewEl=document.getElementById('builderEnemyPreview');
+const btnSugerirTime=document.getElementById('btnSugerirTime'),builderLoading=document.getElementById('builderLoading'),builderResult=document.getElementById('builderResult');
 
-            const nomeLower = nome.toLowerCase();
-            let baseTabela = baseStatsTabela[nomeLower] || null;
-            const bases = {};
-            const ivs = {};
-            if (baseTabela) {
-                for (const key of ['hp','atk','def','spa','spd','spe']) {
-                    bases[key] = baseTabela[key] || 0;
-                    const isHp = (key === 'hp');
-                    const natureMult = (natureza.toLowerCase().includes('adamant')) ? 1.1 : 1.0;
-                    const ev = evs[key] || 0;
-                    let melhorIv = 15;
-                    let menorDiff = Infinity;
-                    for (let iv = 0; iv <= 31; iv++) {
-                        const calc = calcularStatus(bases[key], iv, ev, nivel, natureMult, isHp);
-                        const diff = Math.abs(calc - stats[key]);
-                        if (diff < menorDiff) { menorDiff = diff; melhorIv = iv; }
-                    }
-                    ivs[key] = melhorIv;
-                }
-            } else {
-                for (const key of ['hp','atk','def','spa','spd','spe']) {
-                    const isHp = (key === 'hp');
-                    const natureMult = (natureza.toLowerCase().includes('adamant')) ? 1.1 : 1.0;
-                    const ev = evs[key] || 0;
-                    let melhorBase = 50, melhorIv = 15, menorDiff = Infinity;
-                    for (let base = 1; base <= 255; base++) {
-                        for (let iv = 0; iv <= 31; iv++) {
-                            const calc = calcularStatus(base, iv, ev, nivel, natureMult, isHp);
-                            const diff = Math.abs(calc - stats[key]);
-                            if (diff < menorDiff) { menorDiff = diff; melhorBase = base; melhorIv = iv; }
-                        }
-                    }
-                    bases[key] = melhorBase;
-                    ivs[key] = melhorIv;
-                }
-            }
+function renderPreviewTag(nome) {
+    const s = getSpriteSync(nome);
+    const img = s ? `<img src="${s}" alt="${nome}" class="poke-sprite" onerror="this.style.display='none'">` : '';
+    return `<span class="poke-tag">${img}<span class="poke-name" style="text-transform:capitalize;">${nome}</span></span>`;
+}
 
-            dadosPokemon.nome = nome;
-            dadosPokemon.stats = stats;
-            dadosPokemon.evsOriginais = evs;
-            dadosPokemon.evsAtuais = { ...evs };
-            dadosPokemon.baseStats = bases;
-            dadosPokemon.ivs = ivs;
-            dadosPokemon.natureza = natureza;
-            dadosPokemon.nivel = nivel;
-            dadosCarregados = true;
+async function atualizarPreviewBuilder() {
+    const allyRaw = builderAllyInput.value.trim();
+    const enemyRaw = builderEnemyInput.value.trim();
+    const aL = allyRaw.split('\n').map(p=>p.trim()).filter(Boolean);
+    const eL = enemyRaw.split('\n').map(p=>p.trim()).filter(Boolean);
 
-            if (statusCarregadoBadge) statusCarregadoBadge.classList.add('visivel');
-            if (naturezaEl) naturezaEl.textContent = natureza;
-            naturezaRecomendadaContainer.style.display = 'none';
+    if (aL.length === 0 && eL.length === 0) {
+        builderPreview.style.display = 'none';
+        return;
+    }
+    builderPreview.style.display = 'grid';
 
-            gerarStatusCards(stats, evs, bases, ivs, nivel, natureza);
-            gerarAnalisesIA();
+    builderAllyPreviewEl.innerHTML = '<span class="builder-preview-empty"><i class="fas fa-spinner fa-spin"></i> Buscando...</span>';
+    builderEnemyPreviewEl.innerHTML = '<span class="builder-preview-empty"><i class="fas fa-spinner fa-spin"></i> Buscando...</span>';
+
+    await precarregarDados([...aL, ...eL]);
+
+    builderAllyPreviewEl.innerHTML = aL.length > 0 ? aL.map(p => renderPreviewTag(p)).join('') : '<span class="builder-preview-empty">Nenhum Pokémon</span>';
+    builderEnemyPreviewEl.innerHTML = eL.length > 0 ? eL.map(p => renderPreviewTag(p)).join('') : '<span class="builder-preview-empty">Nenhum Pokémon</span>';
+}
+
+let previewTimer = null;
+function agendarPreview() {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(atualizarPreviewBuilder, 700);
+}
+builderAllyInput.addEventListener('input', agendarPreview);
+builderEnemyInput.addEventListener('input', agendarPreview);
+
+// ============ ELEMENTOS ============
+const apiKeyInput=document.getElementById('apiKeyInput'),btnSalvarApi=document.getElementById('btnSalvarApi'),apiStatus=document.getElementById('apiStatus');
+const apiKeyInputTimes=document.getElementById('apiKeyInputTimes'),btnSalvarApiTimes=document.getElementById('btnSalvarApiTimes'),apiStatusTimes=document.getElementById('apiStatusTimes');
+const apiKeyInputTier=document.getElementById('apiKeyInputTier'),btnSalvarApiTier=document.getElementById('btnSalvarApiTier'),apiStatusTier=document.getElementById('apiStatusTier');
+const modelSelect=document.getElementById('modelSelect'),modelSelectTimes=document.getElementById('modelSelectTimes'),modelSelectTier=document.getElementById('modelSelectTier');
+let apiKey = '';
+
+function carregarChaveSalva() {
+    const s = localStorage.getItem('geminiApiKey');
+    if (s) {
+        apiKeyInput.value=s; apiKeyInputTimes.value=s; apiKeyInputTier.value=s; apiKey=s;
+        [apiStatus,apiStatusTimes,apiStatusTier].forEach(el => { el.textContent='✓ Chave carregada'; el.className='api-status ok'; });
+    } else {
+        [apiStatus,apiStatusTimes,apiStatusTier].forEach(el => { el.textContent='⚠️ Insira sua chave'; el.className='api-status erro'; });
+    }
+}
+function salvarChave(chave) {
+    apiKey=chave; localStorage.setItem('geminiApiKey',chave);
+    [apiStatus,apiStatusTimes,apiStatusTier].forEach(el => { el.textContent='✓ Chave salva!'; el.className='api-status ok'; });
+    testarChave(chave);
+}
+btnSalvarApi.addEventListener('click',()=>{const c=apiKeyInput.value.trim();if(c.length>10)salvarChave(c);else{apiStatus.textContent='❌ Chave inválida';apiStatus.className='api-status erro';}});
+btnSalvarApiTimes.addEventListener('click',()=>{const c=apiKeyInputTimes.value.trim();if(c.length>10)salvarChave(c);else{apiStatusTimes.textContent='❌ Chave inválida';apiStatusTimes.className='api-status erro';}});
+btnSalvarApiTier.addEventListener('click',()=>{const c=apiKeyInputTier.value.trim();if(c.length>10)salvarChave(c);else{apiStatusTier.textContent='❌ Chave inválida';apiStatusTier.className='api-status erro';}});
+async function testarChave(chave) {
+    try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${chave}`);
+        if (r.ok) { [apiStatus,apiStatusTimes,apiStatusTier].forEach(el=>{el.textContent='✓ Chave válida!';el.className='api-status ok';}); }
+        else { const d=await r.json(); const m=`❌ ${d.error?.message||'Chave inválida'}`; [apiStatus,apiStatusTimes,apiStatusTier].forEach(el=>{el.textContent=m;el.className='api-status erro';}); }
+    } catch(e) {}
+}
+modelSelectTimes.addEventListener('change',function(){modelSelect.value=this.value;modelSelectTier.value=this.value;});
+modelSelect.addEventListener('change',function(){modelSelectTimes.value=this.value;modelSelectTier.value=this.value;});
+modelSelectTier.addEventListener('change',function(){modelSelect.value=this.value;modelSelectTimes.value=this.value;});
+
+// ============ FICHA ============
+const fileInput=document.getElementById('fileInput'),uploadArea=document.getElementById('uploadArea'),preview=document.getElementById('preview');
+const fileBadge=document.getElementById('fileBadge'),fileName=document.getElementById('fileName'),analisarBtn=document.getElementById('analisarBtn');
+const loading=document.getElementById('loading'),resultadoBox=document.getElementById('resultadoBox'),btnExemplo=document.getElementById('btnCarregarExemplo');
+const statusGrid=document.getElementById('statusGrid'),naturezaEl=document.getElementById('natureza'),statusCarregadoBadge=document.getElementById('statusCarregadoBadge');
+const pvpLoading=document.getElementById('pvpLoading'),pvpResultado=document.getElementById('pvpResultado');
+const movesLoading=document.getElementById('movesLoading'),movesResultado=document.getElementById('movesResultado');
+const evLoading=document.getElementById('evLoading'),evResultado=document.getElementById('evResultado');
+const btnAplicarEVs=document.getElementById('btnAplicarEVs'),btnSugerirEVs=document.getElementById('btnSugerirEVs'),btnResetarEVs=document.getElementById('btnResetarEVs');
+const fichaHeader=document.getElementById('fichaHeader'),fichaSpriteBox=document.getElementById('fichaSpriteBox'),fichaNome=document.getElementById('fichaNome');
+const fichaTipos=document.getElementById('fichaTipos'),fichaNivel=document.getElementById('fichaNivel'),fichaNatureza=document.getElementById('fichaNatureza');
+const naturezaRecomendadaContainer=document.getElementById('naturezaRecomendadaContainer'),naturezasRecomendadasEl=document.getElementById('naturezasRecomendadas');
+
+let dadosPokemon = { nome:'', stats:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, evsOriginais:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, evsAtuais:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, baseStats:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, ivs:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, natureza:'', nivel:78 };
+let dadosCarregados = false, imagemSelecionada = null;
+
+function calcularStatus(base, iv, ev, level, nature=1.0, isHp=false) {
+    const evFloor = Math.floor(ev/4);
+    const baseCalc = (2*base + iv + evFloor) * level / 100;
+    if (isHp) return Math.floor(baseCalc + level + 10);
+    return Math.floor((baseCalc + 5) * nature);
+}
+
+async function atualizarFichaHeader(nome, nivel, natureza) {
+    fichaHeader.style.display='flex';
+    fichaNome.textContent=nome; fichaNivel.textContent=nivel; fichaNatureza.textContent=natureza;
+    const d = await buscarDadosPokemon(nome);
+    fichaSpriteBox.innerHTML = d.sprite ? `<img src="${d.sprite}" alt="${nome}">` : `<div class="placeholder"><i class="fas fa-question"></i></div>`;
+    fichaTipos.innerHTML = d.types.map(t => `<span class="tipo-tag ${tipoClass(t)}">${typeNames[t]||t}</span>`).join('');
+}
+
+function extrairNaturezas(texto) {
+    const linhas = texto.split('\n');
+    let nt = '';
+    for (let i=0;i<linhas.length;i++) {
+        if (/naturezas?\s+recomendadas?/i.test(linhas[i])) {
+            nt = linhas[i].replace(/.*naturezas?\s+recomendadas?\s*:?\s*/i,'').trim();
+            if (!nt && i+1<linhas.length) nt = linhas[i+1].trim();
+            break;
         }
+    }
+    if (!nt) return [];
+    let limpo = nt.replace(/[*_`~]/g,'').replace(/^[-•\s]+/,'').trim();
+    let nats = limpo.split(/[,;\/|]|\s+ou\s+|\s+e\s+/i).map(n=>n.trim()).filter(n=>n.length>1 && n.length<30).map(n=>n.replace(/^[-•\s]+|[-•\s]+$/g,'').trim()).filter(Boolean);
+    return [...new Set(nats)].slice(0,3);
+}
 
-        // ============================================================
-        //  INICIALIZAÇÃO
-        // ============================================================
-        function resetarFicha() {
-            dadosCarregados = false;
-            if (statusCarregadoBadge) statusCarregadoBadge.classList.remove('visivel');
-            if (statusGrid) statusGrid.innerHTML = '';
-            if (naturezaEl) naturezaEl.textContent = 'Nenhuma';
-            naturezaRecomendadaContainer.style.display = 'none';
-            pvpLoading.style.display = 'block';
-            pvpResultado.style.display = 'none';
-            movesLoading.style.display = 'block';
-            movesResultado.style.display = 'none';
-            evLoading.style.display = 'block';
-            evResultado.style.display = 'none';
+function renderNaturezasRecomendadas(naturezas) {
+    if (!naturezas || naturezas.length === 0) { naturezaRecomendadaContainer.classList.remove('visivel'); return; }
+    const icons = ['fa-star','fa-star-half-alt','fa-star-of-life'];
+    naturezasRecomendadasEl.innerHTML = naturezas.map((n,i) => `<span class="tag"><i class="fas ${icons[i]||'fa-star'}"></i> ${n}</span>`).join('');
+    naturezaRecomendadaContainer.classList.add('visivel');
+}
+
+async function chamarIA(prompt, loadingEl, resultadoEl, tipo='texto') {
+    if (!apiKey) { resultadoEl.innerHTML='⚠️ Configure sua chave API.'; resultadoEl.style.display='block'; return; }
+    loadingEl.style.display='block'; resultadoEl.style.display='none'; resultadoEl.innerHTML='';
+    try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelSelect.value}:generateContent?key=${apiKey}`, {
+            method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+        });
+        if (!r.ok) { const ed = await r.json(); throw new Error(ed.error?.message||'Erro.'); }
+        const data = await r.json();
+        const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
+        if (tipo === 'moves') {
+            let html = '';
+            texto.split('\n').filter(l=>l.trim()).forEach(l=>{const m=l.replace(/^[\s-*]+/,'').trim();if(m.length>0)html+=`<span class="move-tag">${m}</span>`;});
+            resultadoEl.innerHTML = html || texto.replace(/\n/g,'<br>');
+        } else {
+            resultadoEl.innerHTML = texto.replace(/\n/g,'<br>');
         }
+        resultadoEl.style.display='block';
+        if (tipo === 'pvp') renderNaturezasRecomendadas(extrairNaturezas(texto));
+    } catch(e) {
+        resultadoEl.innerHTML = `❌ Erro: ${e.message}`; resultadoEl.style.display='block';
+    } finally { loadingEl.style.display='none'; }
+}
 
-        carregarChaveSalva();
-        resetarFicha();
-    </script>
+function gerarAnalisesIA() {
+    if (!dadosCarregados) return;
+    const pvpPrompt = `Você é especialista em Pokémon competitivo. Analise este Pokémon para PvP. Use EXATAMENTE este formato:
+**Avaliação geral:** [texto]
+**Vantagens ofensivas:** [texto]
+**Desvantagens ofensivas:** [texto]
+**Fraquezas defensivas:** [texto]
+**Resistências defensivas:** [texto]
+**Imunidades:** [texto]
+**Score (0-10):** [nota]
+**Naturezas recomendadas:** [lista até 3 naturezas separadas por vírgula]
+Dados: Nome: ${dadosPokemon.nome}, Nível: ${dadosPokemon.nivel}, Natureza: ${dadosPokemon.natureza||'Não especificada'}, Status: ${dadosPokemon.stats.hp}/${dadosPokemon.stats.atk}/${dadosPokemon.stats.def}/${dadosPokemon.stats.spa}/${dadosPokemon.stats.spd}/${dadosPokemon.stats.spe}`;
+    chamarIA(pvpPrompt, pvpLoading, pvpResultado, 'pvp');
+    chamarIA(`Liste os 4 melhores ataques para ${dadosPokemon.nome}. Apenas a lista, um por linha.`, movesLoading, movesResultado, 'moves');
+    chamarIA(`Recomende EVs para ${dadosPokemon.nome}. Formato: **Distribuição:** ... **Justificativa:** ...`, evLoading, evResultado, 'texto');
+}
+
+uploadArea.addEventListener('click', ()=>fileInput.click());
+fileInput.addEventListener('change', e => {
+    const file = e.target.files[0]; if (!file) return;
+    imagemSelecionada = file;
+    const reader = new FileReader();
+    reader.onload = ev => { preview.src=ev.target.result; preview.classList.add('visivel'); fileName.textContent=file.name; fileBadge.classList.add('visivel'); analisarBtn.disabled=false; };
+    reader.readAsDataURL(file);
+});
+
+function toBase64(file) { return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);}); }
+
+function extrairStatus(texto) {
+    let m = texto.match(/\{[\s\S]*\}/);
+    let data = {};
+    if (m) { try { data = JSON.parse(m[0]); } catch(e){} }
+    if (!data.stats) data = { nome:'Pokémon', stats:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, evs:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, natureza:'Sério', nivel:78 };
+    return data;
+}
+
+async function analisarImagem() {
+    if (!imagemSelecionada || !apiKey) return;
+    loading.classList.add('ativo'); resultadoBox.classList.remove('ativo'); analisarBtn.disabled=true;
+    try {
+        const base64 = await toBase64(imagemSelecionada);
+        const payload = {contents:[{parts:[
+            {text:`Analise a imagem e extraia os dados do Pokémon em JSON:
+{"nome":"","stats":{"hp":0,"atk":0,"def":0,"spa":0,"spd":0,"spe":0},"evs":{"hp":0,"atk":0,"def":0,"spa":0,"spd":0,"spe":0},"habilidade":"","natureza":"","nivel":78}
+Responda APENAS com o JSON.`},
+            {inline_data:{mime_type:imagemSelecionada.type, data:base64.split(',')[1]}}
+        ]}]};
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelSelect.value}:generateContent?key=${apiKey}`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        if (!r.ok) { const ed = await r.json(); throw new Error(ed.error?.message||'Erro.'); }
+        const data = await r.json();
+        const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        resultadoBox.innerHTML = texto.replace(/\n/g,'<br>'); resultadoBox.classList.add('ativo');
+        await processarDadosImportados(extrairStatus(texto));
+        document.querySelector('.tab[data-tab="tab-ficha"]').click();
+    } catch(e) { resultadoBox.innerHTML=`❌ Erro: ${e.message}`; resultadoBox.classList.add('ativo'); }
+    finally { loading.classList.remove('ativo'); analisarBtn.disabled=false; }
+}
+analisarBtn.addEventListener('click', analisarImagem);
+
+async function processarDadosImportados(dados) {
+    const nome = dados.nome||'Pokémon', stats = dados.stats||{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, evs = dados.evs||{hp:0,atk:0,def:0,spa:0,spd:0,spe:0};
+    const natureza = dados.natureza||'Sério', nivel = dados.nivel||78;
+    const baseTabela = baseStatsTabela[nome.toLowerCase()]||null;
+    const bases = {}, ivs = {};
+    for (const k of ['hp','atk','def','spa','spd','spe']) {
+        const isHp = k==='hp';
+        const nm = natureza.toLowerCase().includes('adamant')?1.1:1.0;
+        const ev = evs[k]||0;
+        if (baseTabela) {
+            bases[k] = baseTabela[k]||0;
+            let best=15,diff=Infinity;
+            for (let iv=0;iv<=31;iv++) { const c=calcularStatus(bases[k],iv,ev,nivel,nm,isHp); const d=Math.abs(c-stats[k]); if (d<diff){diff=d;best=iv;} }
+            ivs[k]=best;
+        } else {
+            let bb=50,bi=15,bd=Infinity;
+            for (let b=1;b<=255;b++) for (let iv=0;iv<=31;iv++) { const c=calcularStatus(b,iv,ev,nivel,nm,isHp); const d=Math.abs(c-stats[k]); if (d<bd){bd=d;bb=b;bi=iv;} }
+            bases[k]=bb; ivs[k]=bi;
+        }
+    }
+    Object.assign(dadosPokemon,{nome,stats,evsOriginais:evs,evsAtuais:{...evs},baseStats:bases,ivs,natureza,nivel});
+    dadosCarregados = true;
+    statusCarregadoBadge.classList.add('visivel'); naturezaEl.textContent = natureza;
+    await atualizarFichaHeader(nome,nivel,natureza);
+    gerarStatusCards(stats,evs,bases,ivs,nivel,natureza);
+    gerarAnalisesIA();
+}
+
+function gerarStatusCards(stats,evs,bases,ivs,nivel,natureza) {
+    const keys = ['hp','atk','def','spa','spd','spe'];
+    const labels = {hp:'HP',atk:'Ataque',def:'Defesa',spa:'SpA',spd:'SpD',spe:'Velocidade'};
+    const icons = {hp:'fa-heart',atk:'fa-fist-raised',def:'fa-shield-alt',spa:'fa-fire',spd:'fa-water',spe:'fa-wind'};
+    let html = '';
+    for (const k of keys) {
+        const val = stats[k]||0, ev = evs[k]||0, pct = Math.min((val/255)*100,100);
+        html += `<div class="stat-card" data-stat="${k}">
+            <div class="stat-header">
+                <div class="stat-icon"><i class="fas ${icons[k]}"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">${labels[k]}</div>
+                    <div class="stat-value">
+                        <span class="current" id="stat-current-${k}">${val>0?val:'--'}</span>
+                        <span class="arrow">→</span>
+                        <span class="preview" id="stat-preview-${k}">${val>0?val:'--'}</span>
+                        <span class="diff zero" id="diff-${k}">±0</span>
+                    </div>
+                    <div class="stat-bar"><div class="fill" id="bar-current-${k}" style="width:${pct}%;"></div><div class="fill preview-fill" id="bar-preview-${k}" style="width:${pct}%;"></div></div>
+                </div>
+            </div>
+            <div class="stat-ev-input">
+                <label>EV</label>
+                <input type="number" id="ev-input-${k}" value="${ev}" min="0" max="252" step="4" />
+                <button class="ev-preset-btn" data-stat="${k}" data-ev="252">252</button>
+                <button class="ev-preset-btn" data-stat="${k}" data-ev="128">128</button>
+                <button class="ev-preset-btn" data-stat="${k}" data-ev="4">4</button>
+                <button class="ev-preset-btn" data-stat="${k}" data-ev="0">0</button>
+            </div>
+        </div>`;
+    }
+    statusGrid.innerHTML = html;
+    document.querySelectorAll('.ev-preset-btn').forEach(b => b.addEventListener('click', function() {
+        const i = document.getElementById(`ev-input-${this.dataset.stat}`);
+        if (i) { i.value = this.dataset.ev; i.dispatchEvent(new Event('input')); }
+    }));
+    for (const k of keys) { const i=document.getElementById(`ev-input-${k}`); if (i) i.addEventListener('input',()=>atualizarPrevia(k)); }
+    for (const k of keys) atualizarPrevia(k);
+}
+
+function atualizarPrevia(k) {
+    if (!dadosCarregados) return;
+    const input = document.getElementById(`ev-input-${k}`); if (!input) return;
+    const ev = parseInt(input.value)||0, base = dadosPokemon.baseStats[k]||0, iv = dadosPokemon.ivs[k]||0;
+    const isHp = k==='hp', nm = dadosPokemon.natureza.toLowerCase().includes('adamant')?1.1:1.0;
+    const sa = dadosPokemon.stats[k]||0, sp = calcularStatus(base,iv,ev,dadosPokemon.nivel,nm,isHp);
+    document.getElementById(`stat-current-${k}`).textContent = sa;
+    document.getElementById(`stat-preview-${k}`).textContent = sp;
+    const diff = sp-sa, de = document.getElementById(`diff-${k}`);
+    de.textContent = diff>0?`+${diff}`:diff<0?`${diff}`:'±0';
+    de.className = 'diff ' + (diff>0?'positive':diff<0?'negative':'zero');
+    document.getElementById(`bar-current-${k}`).style.width = Math.min((sa/255)*100,100)+'%';
+    document.getElementById(`bar-preview-${k}`).style.width = Math.min((sp/255)*100,100)+'%';
+}
+
+function atualizarStatusComEVs() {
+    if (!dadosCarregados) return;
+    const keys = ['hp','atk','def','spa','spd','spe'];
+    const isHp = {hp:true,atk:false,def:false,spa:false,spd:false,spe:false};
+    const nm = dadosPokemon.natureza.toLowerCase().includes('adamant')?1.1:1.0;
+    const evs = {}, stats = {};
+    for (const k of keys) evs[k] = parseInt(document.getElementById(`ev-input-${k}`)?.value)||0;
+    for (const k of keys) stats[k] = calcularStatus(dadosPokemon.baseStats[k],dadosPokemon.ivs[k],evs[k],dadosPokemon.nivel,nm,isHp[k]);
+    dadosPokemon.stats = stats; dadosPokemon.evsAtuais = evs;
+    for (const k of keys) {
+        document.getElementById(`stat-current-${k}`).textContent = stats[k];
+        document.getElementById(`bar-current-${k}`).style.width = Math.min((stats[k]/255)*100,100)+'%';
+        document.getElementById(`ev-input-${k}`).dispatchEvent(new Event('input'));
+    }
+    gerarAnalisesIA();
+}
+
+function sugerirEVs() {
+    if (!dadosCarregados) return;
+    const s = dadosPokemon.stats;
+    const p = [];
+    if (s.atk>=120) p.push('atk');
+    if (s.spa>=120) p.push('spa');
+    if (s.spe>=100) p.push('spe');
+    if (s.def>=100) p.push('def');
+    if (s.spd>=100) p.push('spd');
+    if (p.length===0) { const so = Object.entries({atk:s.atk,spa:s.spa,spe:s.spe,def:s.def,spd:s.spd}).sort((a,b)=>b[1]-a[1]); p.push(so[0][0]); if (so[1][1]>50) p.push(so[1][0]); }
+    ['hp','atk','def','spa','spd','spe'].forEach(k => {
+        const i = document.getElementById(`ev-input-${k}`); if (!i) return;
+        i.value = p.includes(k) ? ((k===p[0]||k===p[1])?252:4) : 0;
+        i.dispatchEvent(new Event('input'));
+    });
+}
+
+function resetarEVs() {
+    if (!dadosCarregados) return;
+    ['hp','atk','def','spa','spd','spe'].forEach(k => { const i=document.getElementById(`ev-input-${k}`); if (i){i.value=dadosPokemon.evsOriginais[k]||0;i.dispatchEvent(new Event('input'));} });
+    atualizarStatusComEVs();
+}
+
+btnAplicarEVs.addEventListener('click', atualizarStatusComEVs);
+btnSugerirEVs.addEventListener('click', sugerirEVs);
+btnResetarEVs.addEventListener('click', resetarEVs);
+
+async function carregarExemplo() {
+    const d = {nome:'Flygon',stats:{hp:235,atk:200,def:149,spa:124,spd:140,spe:182},evs:{hp:80,atk:90,def:100,spa:140,spd:0,spe:0},natureza:'Adamant',nivel:78};
+    const bt = baseStatsTabela['flygon'], ivs = {hp:29,atk:28,def:25,spa:11,spd:14,spe:27};
+    Object.assign(dadosPokemon,{nome:d.nome,stats:d.stats,evsOriginais:d.evs,evsAtuais:{...d.evs},baseStats:bt,ivs,natureza:d.natureza,nivel:d.nivel});
+    dadosCarregados = true;
+    statusCarregadoBadge.classList.add('visivel'); naturezaEl.textContent = d.natureza;
+    await atualizarFichaHeader(d.nome,d.nivel,d.natureza);
+    gerarStatusCards(d.stats,d.evs,bt,ivs,d.nivel,d.natureza);
+    gerarAnalisesIA();
+    document.querySelector('.tab[data-tab="tab-ficha"]').click();
+}
+btnExemplo.addEventListener('click', carregarExemplo);
+
+// ============ ANÁLISE DE TIMES ============
+const teamAllyInput=document.getElementById('teamAllyInput'),teamAllyArea=document.getElementById('teamAllyArea');
+const teamAllyPreview=document.getElementById('teamAllyPreview'),teamAllyStatus=document.getElementById('teamAllyStatus'),allyManualInput=document.getElementById('allyManualInput');
+const teamEnemyInput=document.getElementById('teamEnemyInput'),teamEnemyArea=document.getElementById('teamEnemyArea');
+const teamEnemyPreview=document.getElementById('teamEnemyPreview'),teamEnemyStatus=document.getElementById('teamEnemyStatus'),enemyManualInput=document.getElementById('enemyManualInput');
+const btnAnalisarTimes=document.getElementById('btnAnalisarTimes'),loadingTimes=document.getElementById('loadingTimes');
+const teamResult=document.getElementById('teamResult'),teamResultContent=document.getElementById('teamResultContent');
+const iaAnalysis=document.getElementById('iaAnalysis'),iaLoading=document.getElementById('iaLoading'),iaResultado=document.getElementById('iaResultado');
+
+let allyImage = null, enemyImage = null;
+
+teamAllyArea.addEventListener('click',()=>teamAllyInput.click());
+teamAllyInput.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;allyImage=f;const r=new FileReader();r.onload=ev=>{teamAllyPreview.src=ev.target.result;teamAllyPreview.classList.add('visivel');teamAllyStatus.innerHTML='<span class="loaded"><i class="fas fa-check-circle"></i> Imagem carregada</span>';verificarTimesProntos();};r.readAsDataURL(f);});
+teamEnemyArea.addEventListener('click',()=>teamEnemyInput.click());
+teamEnemyInput.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;enemyImage=f;const r=new FileReader();r.onload=ev=>{teamEnemyPreview.src=ev.target.result;teamEnemyPreview.classList.add('visivel');teamEnemyStatus.innerHTML='<span class="loaded"><i class="fas fa-check-circle"></i> Imagem carregada</span>';verificarTimesProntos();};r.readAsDataURL(f);});
+allyManualInput.addEventListener('input',verificarTimesProntos);
+enemyManualInput.addEventListener('input',verificarTimesProntos);
+
+function verificarTimesProntos() {
+    const a = allyManualInput.value.trim(), e = enemyManualInput.value.trim();
+    btnAnalisarTimes.disabled = !((allyImage || a.length>0) && (enemyImage || e.length>0));
+}
+
+function getEffectivenessText(eff) {
+    if (eff === 2) return 'Super efetivo (2x)';
+    if (eff === 0.5) return 'Não muito efetivo (0.5x)';
+    if (eff === 0) return 'Imune (0x)';
+    return 'Neutro (1x)';
+}
+function extrairNomesDoTexto(texto) {
+    let limpo = texto.replace(/[\[\]"]/g,'');
+    let nomes = limpo.split(/[,;\n]/).map(p=>p.trim()).filter(p=>p.length>0);
+    if (nomes.length===0) { const m = texto.match(/\b[A-Z][a-z]+\b/g); if (m) nomes = m; }
+    return nomes.filter(n => n.length>1 && !/^(pokemon|pokémon|list|time|nenhum|none)$/i.test(n));
+}
+function renderPokeTag(nome) {
+    const s = getSpriteSync(nome);
+    const tipos = getTiposSync(nome).map(t=>typeNames[t]||t).join('/');
+    const img = s ? `<img src="${s}" alt="${nome}" class="poke-sprite" onerror="this.style.display='none'">` : '';
+    return `<span class="poke-tag">${img}<span class="poke-name">${nome}</span> <span class="type">${tipos}</span></span>`;
+}
+function renderSpriteMatchup(nome) {
+    const s = getSpriteSync(nome);
+    return s ? `<img src="${s}" alt="${nome}" class="matchup-sprite" onerror="this.style.display='none'">` : '';
+}
+function renderSkillsCard(pokeNome, oppNome) {
+    const sprite = getSpriteSync(pokeNome);
+    const tipos = getTiposSync(pokeNome);
+    const moves = getMovesSync(pokeNome);
+    const oppTipos = getTiposSync(oppNome);
+    const tipoTags = tipos.map(t=>`<span class="mini-type ${tipoClass(t)}">${typeNames[t]||t}</span>`).join('');
+    const img = sprite ? `<img src="${sprite}" alt="${pokeNome}">` : '<div style="width:44px;height:44px;border-radius:50%;background:#f1f5f9;"></div>';
+    let mh = '';
+    if (moves.length === 0) mh = '<div style="color:#94a3b8; font-size:0.72rem; padding:0.4rem;">Nenhuma habilidade de dano encontrada.</div>';
+    else mh = moves.map(m => {
+        const eff = calcMoveEffectiveness(m.type, oppTipos);
+        const lbl = effLabel(eff);
+        const isStab = tipos.includes(m.type);
+        const stabTag = isStab ? '<span class="skill-stab">STAB</span>' : '';
+        return `<div class="skill-item">
+            <span class="skill-name">${formatMoveName(m.name)}</span>
+            <span class="skill-type ${tipoClass(m.type)}">${typeNames[m.type]||m.type}</span>
+            <span class="skill-power">PWR ${m.power}</span>
+            ${stabTag}
+            <span class="skill-eff ${lbl.cls}">${lbl.text}</span>
+        </div>`;
+    }).join('');
+    return `<div class="skills-card">
+        <div class="skills-card-header">${img}<span class="skills-poke-name">${pokeNome}</span><div class="skills-poke-types">${tipoTags}</div></div>
+        ${mh}
+    </div>`;
+}
+
+async function chamarIAVeredito(allyP, enemyP) {
+    iaAnalysis.style.display='block'; iaLoading.style.display='block'; iaResultado.innerHTML='';
+    const info = arr => arr.map(p => { const b = baseStatsTabela[p.toLowerCase()]; return b?`${p} (HP:${b.hp}, ATK:${b.atk}, DEF:${b.def}, SPA:${b.spa}, SPD:${b.spd}, SPE:${b.spe})`:p; }).join(', ');
+    const prompt = `Você é especialista em Pokémon competitivo. Analise os times PvP e determine quem vence (6x6):
+Time Aliado: ${allyP.join(', ')} (stats: ${info(allyP)})
+Time Rival: ${enemyP.join(', ')} (stats: ${info(enemyP)})
+Responda:
+**Vencedor:** [Aliado/Rival/Empate]
+**Análise:** [explicação]
+**Conselho:** [estratégia]`;
+    try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelSelect.value}:generateContent?key=${apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+        if (!r.ok) throw new Error('Erro na API');
+        const data = await r.json();
+        const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
+        let html = texto.replace(/\n/g,'<br>');
+        const vm = texto.match(/\*\*Vencedor:\*\*\s*(.+?)(?:\n|$)/i);
+        if (vm) { const v=vm[1].trim().toLowerCase(); let cls = v.includes('aliado')?'win':v.includes('rival')?'lose':v.includes('empate')?'draw':''; if (cls) html = html.replace(/\*\*Vencedor:\*\*\s*.+?(?:\n|$)/,`**Vencedor:** <span class="winner ${cls}">${vm[1].trim()}</span><br>`); }
+        iaResultado.innerHTML = html;
+    } catch(e) { iaResultado.innerHTML = `❌ Erro: ${e.message}`; }
+    finally { iaLoading.style.display='none'; }
+}
+
+btnAnalisarTimes.addEventListener('click', async function() {
+    const aM = allyManualInput.value.trim(), eM = enemyManualInput.value.trim();
+    let allyP = aM ? aM.split(',').map(p=>p.trim()).filter(Boolean) : [];
+    let enemyP = eM ? eM.split(',').map(p=>p.trim()).filter(Boolean) : [];
+
+    loadingTimes.style.display = 'block'; teamResult.style.display = 'none';
+
+    if (allyP.length === 0 && allyImage) {
+        try {
+            const b64 = await toBase64(allyImage);
+            const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelSelect.value}:generateContent?key=${apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'Liste todos os Pokémon desta imagem (aliado). Responda APENAS separado por vírgula.'},{inline_data:{mime_type:allyImage.type,data:b64.split(',')[1]}}]}]})});
+            const d = await r.json();
+            allyP = extrairNomesDoTexto(d.candidates?.[0]?.content?.parts?.[0]?.text || '');
+        } catch(e) { allyP = []; }
+    }
+    if (enemyP.length === 0 && enemyImage) {
+        try {
+            const b64 = await toBase64(enemyImage);
+            const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelSelect.value}:generateContent?key=${apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'Liste todos os Pokémon desta imagem (rival). Responda APENAS separado por vírgula.'},{inline_data:{mime_type:enemyImage.type,data:b64.split(',')[1]}}]}]})});
+            const d = await r.json();
+            enemyP = extrairNomesDoTexto(d.candidates?.[0]?.content?.parts?.[0]?.text || '');
+        } catch(e) { enemyP = []; }
+    }
+
+    if (allyP.length === 0 || enemyP.length === 0) {
+        teamResultContent.innerHTML = `<div class="extracted-names" style="background:#fee2e2; border-color:#fca5a5; color:#991b1b;"><strong>⚠️ Não foi possível identificar.</strong><br>Aliado: ${allyP.join(', ')||'Nenhum'}<br>Rival: ${enemyP.join(', ')||'Nenhum'}<br><span style="color:#64748b;font-size:0.75rem;">Digite manualmente.</span></div>`;
+        teamResult.style.display='block'; loadingTimes.style.display='none'; return;
+    }
+
+    loadingTimes.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando sprites, tipos e habilidades na PokéAPI...';
+    await precarregarDados([...allyP, ...enemyP]);
+
+    let matchups = [], wins = 0, losses = 0, draws = 0;
+    for (const a of allyP) {
+        for (const e of enemyP) {
+            const at = getTiposSync(a), et = getTiposSync(e);
+            let details = [], aa = 0, ea = 0;
+            for (const x of at) for (const y of et) { const ef = typeEffectiveness[x]?.[y] ?? 1; if (ef===2) aa++; else if (ef===0.5) aa-=0.5; else if (ef===0) aa-=2; details.push({text:`${typeNames[x]||x} → ${typeNames[y]||y}: ${getEffectivenessText(ef)} (aliado)`,eff:ef}); }
+            for (const x of et) for (const y of at) { const ef = typeEffectiveness[x]?.[y] ?? 1; if (ef===2) ea++; else if (ef===0.5) ea-=0.5; else if (ef===0) ea-=2; details.push({text:`${typeNames[x]||x} → ${typeNames[y]||y}: ${getEffectivenessText(ef)} (rival)`,eff:ef}); }
+            let res = 'draw'; if (aa > ea + 0.5) res = 'win'; else if (aa < ea - 0.5) res = 'lose';
+            if (res==='win') wins++; else if (res==='lose') losses++; else draws++;
+            matchups.push({ally:a, enemy:e, details, resultado:res});
+        }
+    }
+
+    let html = `
+        <div class="extracted-names"><i class="fas fa-check-circle" style="color:#16a34a;"></i> Pokémon identificados (tipos, sprites e habilidades via PokéAPI):</div>
+        <div class="result-grid">
+            <div class="team-card"><div class="team-card-title"><span class="ally"><i class="fas fa-shield-alt"></i> Time Aliado</span></div><div class="team-pokemon">${allyP.map(p=>renderPokeTag(p)).join('')}</div></div>
+            <div class="team-card"><div class="team-card-title"><span class="enemy"><i class="fas fa-shield-alt"></i> Time Rival</span></div><div class="team-pokemon">${enemyP.map(p=>renderPokeTag(p)).join('')}</div></div>
+        </div>
+        <div class="matchup-analysis">
+            <div class="matchup-title"><i class="fas fa-arrows-left-right"></i> Matchups (Win/Lose/Draw)</div>
+            <div class="matchup-grid">
+                ${matchups.map(m => {
+                    const lbl = m.resultado==='win'?'Win':m.resultado==='lose'?'Lose':'Draw';
+                    const dh = m.details.map(d=>`<span class="${d.eff===2?'eff-2':d.eff===0.5?'eff-05':d.eff===0?'eff-0':''}">${d.text}</span>`).join('<br>');
+                    return `<div class="matchup-card"><div class="matchup-pair">${renderSpriteMatchup(m.ally)}<span>${m.ally}</span><span class="vs">vs</span>${renderSpriteMatchup(m.enemy)}<span>${m.enemy}</span><span class="${m.resultado}">${lbl}</span></div><div class="matchup-detail">${dh}</div></div>`;
+                }).join('')}
+            </div>
+        </div>
+        <div class="matchup-summary">
+            <div class="summary-item"><span>Total:</span><span class="badge">${matchups.length}</span></div>
+            <div class="summary-item"><span>Wins:</span><span class="badge win">${wins}</span></div>
+            <div class="summary-item"><span>Losses:</span><span class="badge lose">${losses}</span></div>
+            <div class="summary-item"><span>Draws:</span><span class="badge draw">${draws}</span></div>
+        </div>
+        <div class="skills-section">
+            <div class="skills-title"><i class="fas fa-bolt"></i> Habilidades e Efetividade contra o oponente <span style="font-size:0.65rem; color:#d97706; margin-left:0.5rem;">(STAB priorizado)</span></div>
+            ${matchups.map(m=>`<div class="skills-matchup-title"><i class="fas fa-crosshairs"></i> ${m.ally} <span style="color:#94a3b8;">vs</span> ${m.enemy}</div><div class="skills-grid">${renderSkillsCard(m.ally,m.enemy)}${renderSkillsCard(m.enemy,m.ally)}</div>`).join('')}
+        </div>`;
+    teamResultContent.innerHTML = html;
+    teamResult.style.display = 'block';
+    loadingTimes.style.display = 'none';
+    iaAnalysis.style.display = 'none';
+    await chamarIAVeredito(allyP, enemyP);
+});
+
+// ============ BUILDER ============
+btnSugerirTime.addEventListener('click', async () => {
+    const ar = builderAllyInput.value.trim(), er = builderEnemyInput.value.trim();
+    if (!ar || !er) { builderResult.innerHTML='⚠️ Preencha os dois times.'; builderResult.classList.add('visivel'); return; }
+    if (!apiKey) { builderResult.innerHTML='⚠️ Configure a chave API.'; builderResult.classList.add('visivel'); return; }
+    const aL = ar.split('\n').map(p=>p.trim()).filter(Boolean), eL = er.split('\n').map(p=>p.trim()).filter(Boolean);
+
+    await precarregarDados([...aL, ...eL]);
+    await atualizarPreviewBuilder();
+
+    builderLoading.style.display='block'; builderResult.classList.remove('visivel');
+
+    const info = (arr) => arr.map(p => {
+        const b = baseStatsTabela[p.toLowerCase()];
+        const tipos = getTiposSync(p).map(t=>typeNames[t]||t).join('/');
+        return b ? `${p} (${tipos}, HP:${b.hp}, ATK:${b.atk}, DEF:${b.def}, SPA:${b.spa}, SPD:${b.spd}, SPE:${b.spe})` : `${p} (${tipos})`;
+    }).join(', ');
+
+    const prompt = `Você é especialista em Pokémon competitivo. Analise os times PvP:
+TIME ALIADO: ${info(aL)}
+TIME RIVAL: ${info(eL)}
+Responda:
+## MELHORES TMs - TIME ALIADO
+${aL.map(p=>`**${p}:** Move1, Move2, Move3, Move4`).join('\n')}
+## MELHORES TMs - TIME RIVAL
+${eL.map(p=>`**${p}:** Move1, Move2, Move3, Move4`).join('\n')}
+## CONFRONTOS 1x1
+${aL.map((a,i)=>`**${a} vs ${eL[i]||'?'}:** Vencedor: [Aliado/Rival/Empate] - Motivo curto`).join('\n')}
+## ANÁLISE GERAL
+**Vencedor Geral:** [Aliado/Rival/Empate]
+**Estratégia:** [explicação]`;
+
+    try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelSelect.value}:generateContent?key=${apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+        if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message||'Erro.'); }
+        const d = await r.json();
+        const texto = d.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
+        let html = texto.replace(/\n/g,'<br>');
+        html = html.replace(/\bAliado\b/g,'<span style="color:#16a34a;font-weight:800;">Aliado</span>');
+        html = html.replace(/\bRival\b/g,'<span style="color:#dc2626;font-weight:800;">Rival</span>');
+        html = html.replace(/\bEmpate\b/g,'<span style="color:#d97706;font-weight:800;">Empate</span>');
+        html = html.replace(/## (.+?)<br>/g,'<h4 style="color:#7c2d12;margin-top:0.9rem;margin-bottom:0.3rem;font-size:0.88rem;font-weight:900;"><i class="fas fa-caret-right" style="color:#a855f7;"></i> $1</h4>');
+        html = html.replace(/\*\*(.+?):\*\*/g,'<strong style="color:#2563eb;">$1:</strong>');
+        builderResult.innerHTML = html; builderResult.classList.add('visivel');
+    } catch(e) { builderResult.innerHTML='❌ '+e.message; builderResult.classList.add('visivel'); }
+    finally { builderLoading.style.display='none'; }
+});
+
+// ============ INICIALIZAÇÃO ============
+carregarChaveSalva();
+carregarSpritesTierList();
+document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById(this.dataset.tab).classList.add('active');
+}));
+</script>
 </body>
 </html>
