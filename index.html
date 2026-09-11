@@ -6,7 +6,6 @@
 <title>Assistente do Treinador Pokémon</title>
 
 <script>
-// Bloqueia APENAS a tecla F12
 document.addEventListener('keydown', function(e) {
     if (e.key === 'F12' || e.keyCode === 123) {
         e.preventDefault();
@@ -487,6 +486,7 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
                 <span class="badge"><i class="fas fa-robot"></i> Gemini IA</span>
                 <span class="badge"><i class="fas fa-database"></i> PokéAPI em tempo real</span>
                 <span class="badge"><i class="fas fa-chart-line"></i> Avaliação de IV</span>
+                <span class="badge"><i class="fas fa-compact-disc"></i> 231 TMs reais</span>
                 <span class="badge"><i class="fas fa-shield-alt"></i> PvP & PvE</span>
             </div>
         </div>
@@ -496,7 +496,7 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
                 <div class="about-card-title">O que é o Assistente do Treinador?</div>
             </div>
             <p>O <strong>Assistente do Treinador</strong> é uma ferramenta completa de análise competitiva Pokémon que utiliza <strong>Inteligência Artificial (Gemini)</strong> combinada com dados em tempo real da <strong>PokéAPI</strong> para te ajudar a montar, analisar e otimizar seus times.</p>
-            <p><strong>Novidade:</strong> A IA agora <strong>lê os IVs diretamente da imagem</strong> (coluna IV) e avalia se vale a pena upar!</p>
+            <p><strong>Novidades:</strong> A IA <strong>lê os IVs direto da imagem</strong> e recomenda <strong>apenas TMs que existem no jogo</strong> (231 TMs reais).</p>
         </div>
         <div class="about-card">
             <div class="about-card-header">
@@ -504,11 +504,11 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
                 <div class="about-card-title">O que cada aba faz</div>
             </div>
             <ul>
-                <li><i class="fas fa-id-card"></i> <strong>Ficha Pokémon PvP:</strong> Analise um Pokémon para o competitivo + Avaliação de IV.</li>
-                <li><i class="fas fa-users"></i> <strong>Análise de Times:</strong> Compare dois times com matchups (Win/Lose/Draw).</li>
-                <li><i class="fas fa-bolt"></i> <strong>Duelo 1x1 PvP:</strong> IA sugere os melhores moves/TMs. Envie foto OU digite o nome!</li>
-                <li><i class="fas fa-trophy"></i> <strong>Tier List PvP:</strong> Times do metagame em tiers S, A, B, C.</li>
-                <li><i class="fas fa-dumbbell"></i> <strong>Ficha Pokémon PvE:</strong> Builds otimizadas + Avaliação de IV.</li>
+                <li><i class="fas fa-id-card"></i> <strong>Ficha Pokémon PvP:</strong> Analise um Pokémon + Avaliação de IV + TMs reais.</li>
+                <li><i class="fas fa-users"></i> <strong>Análise de Times:</strong> Compare dois times com TMs recomendadas.</li>
+                <li><i class="fas fa-bolt"></i> <strong>Duelo 1x1 PvP:</strong> TMs corretas para o duelo.</li>
+                <li><i class="fas fa-trophy"></i> <strong>Tier List PvP:</strong> Times do metagame.</li>
+                <li><i class="fas fa-dumbbell"></i> <strong>Ficha Pokémon PvE:</strong> Builds + TMs reais.</li>
             </ul>
         </div>
         <div class="about-card" style="background:linear-gradient(135deg,#eef2ff,#e0e7ff); border-color:#818cf8;">
@@ -521,6 +521,13 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
                 <li style="border-left-color:#22c55e;"><i class="fas fa-check-circle" style="color:#22c55e;"></i> <strong>IV 100+ com natureza correta</strong> → Vale a pena upar!</li>
                 <li style="border-left-color:#f59e0b;"><i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> <strong>Natureza incorreta</strong> → Não vale upar mesmo com IV bom.</li>
             </ul>
+        </div>
+        <div class="about-card" style="background:linear-gradient(135deg,#fff7ed,#fed7aa); border-color:#fb923c;">
+            <div class="about-card-header" style="border-bottom-color:#fdba74;">
+                <div class="about-card-icon" style="background:linear-gradient(135deg,#ea580c,#c2410c);"><i class="fas fa-compact-disc"></i></div>
+                <div class="about-card-title" style="color:#7c2d12;">231 TMs reais do jogo</div>
+            </div>
+            <p>A IA agora recomenda <strong>apenas TMs que existem no jogo</strong>, filtradas por tipo do Pokémon (STAB + cobertura). Nada de moves inventados!</p>
         </div>
         <div class="about-card">
             <div class="about-card-header">
@@ -641,8 +648,8 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
         <div class="pvp-resultado" id="pvpResultado" style="display:none;"></div>
     </div>
     <div class="moves-container">
-        <div class="moves-label"><i class="fas fa-bolt"></i> Melhores Moves PvP (IA)</div>
-        <div class="moves-loading" id="movesLoading"><i class="fas fa-spinner fa-spin"></i> Gerando moves...</div>
+        <div class="moves-label"><i class="fas fa-compact-disc"></i> Melhores TMs PvP (disponíveis no jogo)</div>
+        <div class="moves-loading" id="movesLoading"><i class="fas fa-spinner fa-spin"></i> Gerando TMs...</div>
         <div class="moves-resultado" id="movesResultado" style="display:none;"></div>
     </div>
 </div>
@@ -728,8 +735,8 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
     </div>
 
     <div class="tutorial-container" style="margin-bottom:1.5rem;">
-        <h4><i class="fas fa-bolt"></i> Duelo 1x1 — Melhores Moves e TMs com IA</h4>
-        <p>Escolha o modo para cada Pokémon: <strong>Nome</strong> (usa stats base da PokéAPI) ou <strong>Foto</strong> (IA extrai IVs, EVs e stats reais da imagem).</p>
+        <h4><i class="fas fa-bolt"></i> Duelo 1x1 — TMs reais do jogo</h4>
+        <p>A IA recomenda apenas <strong>TMs que existem no jogo</strong>, sem inventar moves. Envie foto OU digite o nome!</p>
     </div>
 
     <div class="duel-grid">
@@ -784,7 +791,7 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
         </div>
     </div>
 
-    <button class="btn-analisar-times" id="btnAnalisarDuelo" disabled><i class="fas fa-bolt"></i> Gerar Melhores Moves e TMs com IA</button>
+    <button class="btn-analisar-times" id="btnAnalisarDuelo" disabled><i class="fas fa-bolt"></i> Gerar TMs corretas com IA</button>
     <div class="loading" id="loadingDuelo" style="display:none;"><i class="fas fa-spinner fa-spin"></i> A IA está analisando o confronto...</div>
     <div class="duel-ia-result" id="duelIAResult" style="display:none;"></div>
 </div>
@@ -1034,7 +1041,7 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
             <div class="pve-naturezas-grid" id="pveNaturezas"></div>
         </div>
         <div class="moves-container">
-            <div class="moves-label"><i class="fas fa-bolt"></i> Melhores Moves para PvE</div>
+            <div class="moves-label"><i class="fas fa-compact-disc"></i> Melhores TMs para PvE (reais do jogo)</div>
             <div class="moves-resultado" id="pveMoves"></div>
         </div>
         <div class="ia-analysis" id="pveStrategy" style="display:block;">
@@ -1069,11 +1076,272 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
 
 <div class="footer">
     <div class="aviso"><i class="fas fa-exclamation-triangle"></i> Este projeto está em desenvolvimento.</div>
-    <p><i class="fas fa-egg"></i> Assistente do Treinador · Gemini + PokéAPI + IV Checker</p>
+    <p><i class="fas fa-egg"></i> Assistente do Treinador · Gemini + PokéAPI + IV Checker + 231 TMs</p>
 </div>
 </div>
 
 <script>
+// ============================================================
+// BANCO DE TMs REAIS DO JOGO (231 TMs)
+// Formato: nome|tipo|categoria|poder|precisao (vazio=nunca erra)
+// categoria: f=físico, e=especial
+// ============================================================
+const TMS_RAW = `Waterfall|water|f|80|100
+Acid Spray|poison|e|40|100
+Acrobatics|flying|f|55|100
+Aerial Ace|flying|f|60|
+Air Cutter|flying|e|60|95
+Air Slash|flying|e|75|95
+Alluring Voice|fairy|e|80|100
+Assurance|dark|f|60|100
+Aura Sphere|fighting|e|80|
+Avalanche|ice|f|60|100
+Bite|dark|f|60|100
+Blast Burn|fire|e|100|90
+Blaze Kick|fire|f|85|90
+Blizzard|ice|e|110|70
+Body Press|fighting|f|80|100
+Body Slam|normal|f|85|100
+Bounce|flying|f|85|85
+Brave Bird|flying|f|120|100
+Breaking Swipe|dragon|f|60|100
+Brick Break|fighting|f|75|100
+Brine|water|e|65|100
+Brutal Swing|dark|f|60|100
+Bubble Beam|water|e|65|100
+Bug Bite|bug|f|60|100
+Bug Buzz|bug|e|90|100
+Bulldoze|ground|f|60|100
+Bullet Seed|grass|f|25|100
+Burning Jealousy|fire|e|70|100
+Charge Beam|electric|e|50|90
+Chilling Water|water|e|50|100
+Close Combat|fighting|f|120|100
+Cross Poison|poison|f|70|100
+Crunch|dark|f|80|100
+Cut|normal|f|50|95
+Dark Pulse|dark|e|80|100
+Darkest Lariat|dark|f|85|100
+Dazzling Gleam|fairy|e|80|100
+Dig|ground|f|80|100
+Disarming Voice|fairy|e|40|
+Dive|water|f|80|100
+Double Edge|normal|f|120|100
+Draco Meteor|dragon|e|130|90
+Dragon Breath|dragon|e|60|100
+Dragon Claw|dragon|f|80|100
+Dragon Pulse|dragon|e|85|100
+Dragon Rage|dragon|e||100
+Dragon Tail|dragon|f|60|90
+Drain Punch|fighting|f|75|100
+Draining Kiss|fairy|e|50|100
+Dream Eater|psychic|e|100|100
+Drill Run|ground|f|80|95
+Dual Wingbeat|flying|f|40|90
+Dynamic Punch|fighting|f|100|50
+Earth Power|ground|e|90|100
+Earthquake|ground|f|100|100
+Echoed Voice|normal|e|40|100
+Egg Bomb|normal|f|100|75
+Electroweb|electric|e|55|95
+Energy Ball|grass|e|90|100
+Expanding Force|psychic|e|80|100
+Explosion|normal|f|250|100
+Facade|normal|f|70|100
+False Swipe|normal|f|40|100
+Fire Blast|fire|e|110|85
+Fire Fang|fire|f|65|95
+Fire Pledge|fire|e|80|100
+Fire Punch|fire|f|75|100
+Fire Spin|fire|e|35|85
+Fissure|ground|f||30
+Flame Charge|fire|f|50|100
+Flamethrower|fire|e|90|100
+Flare Blitz|fire|f|120|100
+Flash Cannon|steel|e|80|100
+Flip Turn|water|f|60|100
+Fly|flying|f|90|95
+Focus Blast|fighting|e|120|70
+Focus Punch|fighting|f|100|100
+Foul Play|dark|f|95|100
+Frenzy Plant|grass|e|100|90
+Frost Breath|ice|e|60|90
+Fury Cutter|bug|f|40|95
+Future Sight|psychic|e|120|100
+Giga Drain|grass|e|75|100
+Giga Impact|normal|f|100|90
+Grass Pledge|grass|e|80|100
+Grassy Glide|grass|f|55|100
+Gunk Shot|poison|f|120|80
+Headbutt|normal|f|70|100
+Heat Wave|fire|e|95|90
+Hex|ghost|e|65|100
+Hidden Power|normal|e|60|100
+High Horsepower|ground|f|95|95
+Horn Drill|normal|f||30
+Hurricane|flying|e|110|70
+Hydro Cannon|water|e|100|90
+Hydro Pump|water|e|110|80
+Hyper Beam|normal|e|100|90
+Hyper Voice|normal|e|90|100
+Ice Beam|ice|e|90|100
+Ice Fang|ice|f|65|95
+Ice Punch|ice|f|75|100
+Ice Spinner|ice|f|80|100
+Icicle Spear|ice|f|25|100
+Icy Wind|ice|e|55|95
+Incinerate|fire|e|60|100
+Infestation|bug|e|20|100
+Iron Head|steel|f|80|100
+Iron Tail|steel|f|100|75
+Knock Off|dark|f|65|100
+Lash Out|dark|f|75|100
+Leaf Blade|grass|f|90|100
+Leaf Storm|grass|e|130|90
+Leech Life|bug|f|80|100
+Liquidation|water|f|85|100
+Low Sweep|fighting|f|65|100
+Lunge|bug|f|80|100
+Magical Leaf|grass|e|60|
+Mega Drain|grass|e|40|100
+Mega Kick|normal|f|120|75
+Mega Punch|normal|f|80|85
+Megahorn|bug|f|120|85
+Metal Claw|steel|f|50|95
+Meteor Beam|rock|e|120|90
+Misty Explosion|fairy|e|100|100
+Mud Shot|ground|e|55|95
+Mud Slap|ground|e|20|100
+Muddy Water|water|e|90|85
+Mystical Fire|fire|e|75|100
+Night Shade|ghost|e||100
+Outrage|dragon|f|105|100
+Overheat|fire|e|130|90
+Pay Day|normal|f|40|100
+Payback|dark|f|50|100
+Petal Blizzard|grass|f|90|100
+Phantom Force|ghost|f|90|100
+Pin Missile|bug|f|25|95
+Play Rough|fairy|f|90|90
+Pluck|flying|f|60|100
+Poison Jab|poison|f|80|100
+Poison Tail|poison|f|50|100
+Pollen Puff|bug|e|90|100
+Poltergeist|ghost|f|110|90
+Pounce|bug|f|50|100
+Power Gem|rock|e|80|100
+Power Up Punch|fighting|f|40|100
+Power Whip|grass|f|120|85
+Psybeam|psychic|e|65|100
+Psychic|psychic|e|90|100
+Psychic Fangs|psychic|f|85|100
+Psychic Noise|psychic|e|75|100
+Psycho Cut|psychic|f|70|100
+Psyshock|psychic|e|80|100
+Rage|normal|f|20|100
+Razor Shell|water|f|75|95
+Razor Wind|normal|e|80|100
+Retaliate|normal|f|70|100
+Revenge|fighting|f|60|100
+Rock Blast|rock|f|25|90
+Rock Climb|normal|f|90|85
+Rock Slide|rock|f|75|90
+Rock Smash|fighting|f|40|100
+Rock Throw|rock|f|50|90
+Rock Tomb|rock|f|60|95
+Rollout|rock|f|30|90
+Round|normal|e|60|100
+Sand Tomb|ground|f|35|85
+Scald|water|e|80|100
+Scale Shot|dragon|f|25|90
+Scorching Sands|ground|e|70|100
+Secret Power|normal|f|70|100
+Seed Bomb|grass|f|80|100
+Seismic Toss|fighting|f||100
+Selfdestruction|normal|f|200|100
+Shadow Ball|ghost|e|80|100
+Shadow Claw|ghost|f|70|100
+Shock Wave|electric|e|60|
+Silver Wind|bug|e|60|100
+Skitter Smack|bug|f|70|90
+Skull Bash|normal|f|130|100
+Sky Attack|flying|f|100|90
+Sky Drop|flying|f|60|100
+Sludge Bomb|poison|e|90|100
+Sludge Wave|poison|e|95|100
+Smack Down|rock|f|50|100
+Smart Strike|steel|f|70|
+Snarl|dark|e|55|95
+Snore|normal|e|50|100
+Solar Beam|grass|e|120|100
+Solar Blade|grass|f|125|100
+Steel Beam|steel|e|100|95
+Steel Wing|steel|f|70|90
+Stomping Tantrum|ground|f|75|100
+Stone Edge|rock|f|100|80
+Stored Power|psychic|e|20|100
+Strength|normal|f|80|100
+Struggle Bug|bug|e|50|100
+Submission|fighting|f|80|80
+Super Fang|normal|f||90
+Supercell Slam|electric|f|100|95
+Superpower|fighting|f|120|100
+Surf|water|e|90|100
+Swift|normal|e|60|
+Tail Slap|normal|f|25|85
+Take Down|normal|f|90|85
+Temper Flare|fire|f|75|100
+Tera Blast|normal|e|80|100
+Thief|dark|f|60|100
+Throat Chop|dark|f|80|100
+Thunder|electric|e|110|70
+Thunder Fang|electric|f|65|95
+Thunder Punch|electric|f|75|100
+Thunderbolt|electric|e|90|100
+Trailblaze|grass|f|50|100
+Tri Attack|normal|e|80|100
+Triple Axel|ice|f|20|90
+U Turn|bug|f|70|100
+Upper Hand|fighting|f|65|100
+Uproar|normal|e|90|100
+Vacuum Wave|fighting|e|40|100
+Venoshock|poison|e|65|100
+Volt Switch|electric|e|70|100
+Water Gun|water|e|40|100
+Water Pledge|water|e|80|100
+Water Pulse|water|e|60|100
+Waterfall|water|f|80|100
+Weather Ball|normal|e|50|100
+Whirlpool|water|e|35|85
+Wild Charge|electric|f|90|100
+X Scissor|bug|f|80|100
+Zap Cannon|electric|e|120|50
+Zen Headbutt|psychic|f|80|90`;
+
+const TMS_DISPONIVEIS = TMS_RAW.split('\n').map(l => {
+    const p = l.split('|');
+    return {
+        nome: p[0],
+        tipo: p[1],
+        categoria: p[2] === 'f' ? 'Físico' : 'Especial',
+        poder: p[3] ? parseInt(p[3]) : null,
+        precisao: p[4] ? parseInt(p[4]) : null
+    };
+});
+
+function getTMsRelevantes(tiposPokemon) {
+    const tipos = (tiposPokemon || []).map(t => t.toLowerCase());
+    const stab = TMS_DISPONIVEIS.filter(tm => tipos.includes(tm.tipo));
+    const coberturaPop = ['fire','ice','electric','fighting','ground','dark','psychic','ghost','fairy','steel','rock','grass','water'];
+    const cob = TMS_DISPONIVEIS.filter(tm => !tipos.includes(tm.tipo) && coberturaPop.includes(tm.tipo));
+    return [...stab, ...cob];
+}
+
+function getTMsTextoPrompt(tiposPokemon) {
+    const tms = getTMsRelevantes(tiposPokemon);
+    return tms.map(tm => `${tm.nome}(${typeNames[tm.tipo]||tm.tipo}/${tm.categoria}/${tm.poder||'—'})`).join(', ');
+}
+
 // ============================================================
 // DICIONÁRIO PT -> EN DE MOVES
 // ============================================================
@@ -1164,15 +1432,6 @@ const baseStatsTabela = {
     'aggron':{hp:70,atk:110,def:180,spa:60,spd:60,spe:50},'suicune':{hp:100,atk:75,def:115,spa:90,spd:115,spe:85},
     'darkrai':{hp:70,atk:90,def:90,spa:135,spd:90,spe:125},'mew':{hp:100,atk:100,def:100,spa:100,spd:100,spe:100},
     'gyarados':{hp:95,atk:125,def:79,spa:60,spd:100,spe:81}
-};
-const pokemonTypes = {
-    'flygon':['ground','dragon'],'garchomp':['dragon','ground'],'dragonite':['dragon','flying'],
-    'salamence':['dragon','flying'],'tyranitar':['rock','dark'],'metagross':['steel','psychic'],
-    'pikachu':['electric'],'charizard':['fire','flying'],'blaziken':['fire','fighting'],
-    'swampert':['water','ground'],'gardevoir':['psychic','fairy'],'gengar':['ghost','poison'],
-    'mewtwo':['psychic'],'slowbro':['water','psychic'],'rhyperior':['ground','rock'],
-    'mr-mime':['psychic','fairy'],'aggron':['steel','rock'],'suicune':['water'],'darkrai':['dark'],
-    'mew':['psychic'],'gyarados':['water','flying']
 };
 const typeEffectiveness = {
     'normal':{'rock':0.5,'ghost':0,'steel':0.5},'fire':{'fire':0.5,'water':0.5,'grass':2,'ice':2,'bug':2,'rock':0.5,'dragon':0.5,'steel':2},
@@ -1281,34 +1540,12 @@ function avaliarIV(ivs) {
     const totalIV = calcularTotalIV(ivs);
     const maxIV = 31 * 6;
     const percentual = (totalIV / maxIV) * 100;
-
     let classificacao, cor, icone, recomendacao;
-    if (totalIV >= 160) {
-        classificacao = 'Excelente';
-        cor = '#22c55e';
-        icone = 'fa-crown';
-        recomendacao = 'Vale MUITO a pena upar!';
-    } else if (totalIV >= 130) {
-        classificacao = 'Muito Bom';
-        cor = '#84cc16';
-        icone = 'fa-star';
-        recomendacao = 'Vale a pena upar.';
-    } else if (totalIV >= 100) {
-        classificacao = 'Bom';
-        cor = '#f59e0b';
-        icone = 'fa-thumbs-up';
-        recomendacao = 'Já começa a ficar bom — vale upar!';
-    } else if (totalIV >= 60) {
-        classificacao = 'Equilibrando';
-        cor = '#f97316';
-        icone = 'fa-balance-scale';
-        recomendacao = 'Abaixo de 100 — ainda está se equilibrando, não recomendado.';
-    } else {
-        classificacao = 'Ruim';
-        cor = '#ef4444';
-        icone = 'fa-times-circle';
-        recomendacao = 'NÃO vale a pena upar. Procure outro.';
-    }
+    if (totalIV >= 160) { classificacao = 'Excelente'; cor = '#22c55e'; icone = 'fa-crown'; recomendacao = 'Vale MUITO a pena upar!'; }
+    else if (totalIV >= 130) { classificacao = 'Muito Bom'; cor = '#84cc16'; icone = 'fa-star'; recomendacao = 'Vale a pena upar.'; }
+    else if (totalIV >= 100) { classificacao = 'Bom'; cor = '#f59e0b'; icone = 'fa-thumbs-up'; recomendacao = 'Já começa a ficar bom — vale upar!'; }
+    else if (totalIV >= 60) { classificacao = 'Equilibrando'; cor = '#f97316'; icone = 'fa-balance-scale'; recomendacao = 'Abaixo de 100 — ainda está se equilibrando, não recomendado.'; }
+    else { classificacao = 'Ruim'; cor = '#ef4444'; icone = 'fa-times-circle'; recomendacao = 'NÃO vale a pena upar. Procure outro.'; }
     return { totalIV, maxIV, percentual, classificacao, cor, icone, recomendacao };
 }
 
@@ -1333,16 +1570,10 @@ function natureEstaRecomendada(naturezaAtual, listaRecomendadas) {
 function renderAvaliacaoIV(prefixo, dados, naturezasRecomendadas, contexto) {
     const container = document.getElementById('ivEvaluation' + prefixo);
     if (!container) return;
-
     const totalIV = calcularTotalIV(dados.ivs);
-    if (totalIV === 0) {
-        container.classList.remove('visivel');
-        return;
-    }
-
+    if (totalIV === 0) { container.classList.remove('visivel'); return; }
     const av = avaliarIV(dados.ivs);
     const labels = {hp:'HP', atk:'ATK', def:'DEF', spa:'SpA', spd:'SpD', spe:'SPE'};
-
     let gridHtml = '';
     for (const k of ['hp','atk','def','spa','spd','spe']) {
         const v = parseInt(dados.ivs[k]) || 0;
@@ -1353,50 +1584,35 @@ function renderAvaliacaoIV(prefixo, dados, naturezasRecomendadas, contexto) {
             <span class="iv-eval-item-status" style="background:${ind.cor}22; color:${ind.cor};">${ind.status}</span>
         </div>`;
     }
-
     const naturezaOk = natureEstaRecomendada(dados.natureza, naturezasRecomendadas);
-
     let vereditoTxt, vereditoCor, vereditoIcone;
     if (av.totalIV < 100) {
         vereditoTxt = `<div><strong>⚖️ EQUILIBRANDO (${av.totalIV}/186)</strong> — IV abaixo de 100, ainda não está bom. <br><span class="iv-eval-sub-info">Não recomendado upar. Procure outro ${dados.nome || 'Pokémon'} ou continue refinando.</span></div>`;
-        vereditoCor = '#f97316';
-        vereditoIcone = 'fa-balance-scale';
+        vereditoCor = '#f97316'; vereditoIcone = 'fa-balance-scale';
     } else if (naturezaOk === false) {
         vereditoTxt = `<div><strong>⚠️ IV BOM, MAS NATUREZA INCORRETA!</strong> — IV total: <strong>${av.totalIV}/186</strong> (${av.classificacao}), mas a natureza <strong>${dados.natureza || '?'}</strong> não é ideal. <br><span class="iv-eval-sub-info">Não vale upar assim. Considere trocar a natureza ou procurar outro.</span></div>`;
-        vereditoCor = '#f97316';
-        vereditoIcone = 'fa-exclamation-triangle';
+        vereditoCor = '#f97316'; vereditoIcone = 'fa-exclamation-triangle';
     } else if (naturezaOk === true) {
         vereditoTxt = `<div><strong>✅ VALE A PENA UPAR!</strong> — IV ${av.classificacao} (<strong>${av.totalIV}/186</strong>) já começou a ficar bom e natureza <strong>${dados.natureza}</strong> correta. <br><span class="iv-eval-sub-info">Pode investir sem medo!</span></div>`;
-        vereditoCor = '#22c55e';
-        vereditoIcone = 'fa-check-circle';
+        vereditoCor = '#22c55e'; vereditoIcone = 'fa-check-circle';
     } else {
         vereditoTxt = `<div><strong>👍 IV ${av.classificacao} (${av.totalIV}/186)</strong> — Já começou a ficar bom! Natureza <strong>${dados.natureza || 'atual'}</strong> a confirmar.<br><span class="iv-eval-sub-info">Aguardando recomendação da IA para verificar a natureza ideal.</span></div>`;
-        vereditoCor = '#f59e0b';
-        vereditoIcone = 'fa-thumbs-up';
+        vereditoCor = '#f59e0b'; vereditoIcone = 'fa-thumbs-up';
     }
-
     const iconEl = document.getElementById('ivEvalIcon' + prefixo);
     if (iconEl) iconEl.innerHTML = `<i class="fas ${av.icone}"></i>`;
     if (iconEl) iconEl.style.background = `linear-gradient(135deg, ${av.cor}, ${av.cor}cc)`;
-
     const subtitleEl = document.getElementById('ivEvalSubtitle' + prefixo);
     if (subtitleEl) {
         const ctx = contexto === 'pvp' ? 'PvP' : 'PvE';
         subtitleEl.textContent = `${av.classificacao} · Análise ${ctx} · ${av.percentual.toFixed(0)}% do máximo (${av.maxIV})`;
     }
-
     const totalEl = document.getElementById('ivEvalTotal' + prefixo);
     if (totalEl) totalEl.innerHTML = `${av.totalIV}<small>/${av.maxIV}</small>`;
-
     const fillEl = document.getElementById('ivEvalPercentFill' + prefixo);
-    if (fillEl) {
-        fillEl.style.width = av.percentual + '%';
-        fillEl.style.background = `linear-gradient(90deg, ${av.cor}, ${av.cor}aa)`;
-    }
-
+    if (fillEl) { fillEl.style.width = av.percentual + '%'; fillEl.style.background = `linear-gradient(90deg, ${av.cor}, ${av.cor}aa)`; }
     const gridEl = document.getElementById('ivEvalGrid' + prefixo);
     if (gridEl) gridEl.innerHTML = gridHtml;
-
     const vereditoEl = document.getElementById('ivEvalVeredito' + prefixo);
     if (vereditoEl) {
         vereditoEl.innerHTML = `<i class="fas ${vereditoIcone}" style="color:${vereditoCor};"></i> ${vereditoTxt}`;
@@ -1404,7 +1620,6 @@ function renderAvaliacaoIV(prefixo, dados, naturezasRecomendadas, contexto) {
         vereditoEl.style.border = `2px solid ${vereditoCor}66`;
         vereditoEl.style.color = '#0f172a';
     }
-
     container.classList.add('visivel');
 }
 
@@ -1416,7 +1631,6 @@ const apiKeyInputTimes=document.getElementById('apiKeyInputTimes'),btnSalvarApiT
 const apiKeyInputTier=document.getElementById('apiKeyInputTier'),btnSalvarApiTier=document.getElementById('btnSalvarApiTier'),apiStatusTier=document.getElementById('apiStatusTier');
 const apiKeyInputPve=document.getElementById('apiKeyInputPve'),btnSalvarApiPve=document.getElementById('btnSalvarApiPve'),apiStatusPve=document.getElementById('apiStatusPve');
 const apiKeyInputDuel=document.getElementById('apiKeyInputDuel'),btnSalvarApiDuel=document.getElementById('btnSalvarApiDuel'),apiStatusDuel=document.getElementById('apiStatusDuel');
-
 const modelSelect=document.getElementById('modelSelect'),modelSelectTimes=document.getElementById('modelSelectTimes'),modelSelectTier=document.getElementById('modelSelectTier'),modelSelectPve=document.getElementById('modelSelectPve'),modelSelectDuel=document.getElementById('modelSelectDuel');
 
 let apiKey = '';
@@ -1447,7 +1661,6 @@ async function testarChave(chave) {
         else { const d=await r.json(); const m=`❌ ${d.error?.message||'Chave inválida'}`; [apiStatus,apiStatusTimes,apiStatusTier,apiStatusPve,apiStatusDuel].forEach(el=>{el.textContent=m;el.className='api-status erro';}); }
     } catch(e) {}
 }
-
 function sincronizarModelos(valor) {
     modelSelect.value=valor; modelSelectTimes.value=valor; modelSelectTier.value=valor; modelSelectPve.value=valor; modelSelectDuel.value=valor;
 }
@@ -1530,8 +1743,7 @@ function renderNaturezasPvp(texto) {
         if (match) {
             const natNome = normalizarNaturezaIngles(match[1].trim());
             const evsTexto = match[2].trim();
-            idx++;
-            natsEncontradas.push(natNome);
+            idx++; natsEncontradas.push(natNome);
             cardsHtml += `<div class="pve-natureza-card" data-evs="${evsTexto.replace(/"/g,'&quot;')}" data-nat="${natNome}"><div class="pve-nat-header"><div class="pve-nat-icon">${idx}</div><div class="pve-nat-name">${natNome}</div></div><div class="pve-nat-evs-label"><i class="fas fa-dumbbell"></i> EVs Recomendadas</div><div class="pve-nat-evs">${evsTexto}</div><button class="pve-nat-apply-btn"><i class="fas fa-check"></i> Aplicar estes EVs</button></div>`;
         }
     }
@@ -1548,8 +1760,7 @@ function renderNaturezasPvp(texto) {
                 if (nat) { naturezaEl.textContent = nat; dadosPokemon.natureza = nat; if (fichaNatureza) fichaNatureza.textContent = nat; }
                 aplicarEVsFichaPvp(evs);
                 if (dadosCarregados) renderAvaliacaoIV('Pvp', dadosPokemon, naturezasRecomendadasPvp, 'pvp');
-                this.innerHTML = '<i class="fas fa-check-circle"></i> Aplicado!';
-                this.style.background = '#f59e0b';
+                this.innerHTML = '<i class="fas fa-check-circle"></i> Aplicado!'; this.style.background = '#f59e0b';
                 setTimeout(() => { this.innerHTML = '<i class="fas fa-check"></i> Aplicar estes EVs'; this.style.background = ''; }, 1500);
             });
         });
@@ -1607,8 +1818,14 @@ async function chamarIA(prompt, loadingEl, resultadoEl, tipo='texto', modeloEl=m
 }
 function gerarAnalisesIA() {
     if (!dadosCarregados) return;
-    const pvpPrompt = `Você é especialista em Pokémon competitivo PvP.
-NATUREZAS em INGLÊS. MOVES em INGLÊS ORIGINAL.
+    const tipos = getTiposSync(dadosPokemon.nome);
+    const tmsTexto = getTMsTextoPrompt(tipos);
+    const pvpPrompt = `Você é especialista em Pokémon competitivo PvP. NATUREZAS em INGLÊS. MOVES em INGLÊS ORIGINAL.
+
+REGRA CRÍTICA: Só recomende TMs/moves que estejam NA LISTA ABAIXO. NÃO invente outros.
+LISTA DE TMs DISPONÍVEIS NO JOGO:
+${tmsTexto}
+
 Formato:
 **NATUREZAS E EVs:**
 - Natureza 1: [Inglês] | EVs: [Distribuição]
@@ -1623,7 +1840,13 @@ Formato:
 **Score (0-10):** [nota]
 Dados: Nome: ${dadosPokemon.nome}, Nível: ${dadosPokemon.nivel}, Natureza: ${dadosPokemon.natureza||'Não especificada'}, IVs: ${JSON.stringify(dadosPokemon.ivs)} (Total: ${calcularTotalIV(dadosPokemon.ivs)}/186), Status: ${dadosPokemon.stats.hp}/${dadosPokemon.stats.atk}/${dadosPokemon.stats.def}/${dadosPokemon.stats.spa}/${dadosPokemon.stats.spd}/${dadosPokemon.stats.spe}`;
     chamarIA(pvpPrompt, pvpLoading, pvpResultado, 'pvp');
-    const movesPrompt = `Liste os 4 melhores moves para ${dadosPokemon.nome} em PvP. Use nomes em INGLÊS ORIGINAL. Apenas a lista, um por linha, sem numeração.`;
+
+    const movesPrompt = `Liste as 4 melhores TMs para ${dadosPokemon.nome} em PvP.
+
+REGRA CRÍTICA: Use APENAS TMs desta lista (todas disponíveis no jogo):
+${tmsTexto}
+
+Formato: Apenas a lista, um move por linha, sem numeração. Use nome em INGLÊS ORIGINAL.`;
     chamarIA(movesPrompt, movesLoading, movesResultado, 'moves');
 }
 uploadArea.addEventListener('click', ()=>fileInput.click());
@@ -1661,15 +1884,7 @@ async function analisarImagem() {
 
 IMPORTANTE: A imagem geralmente mostra uma tabela com colunas "IV" e "EV". Você DEVE ler os valores da coluna IV (0 a 31) para cada status. NÃO calcule IVs, LEIA diretamente.
 
-Extraia EXATAMENTE:
-- NOME do Pokémon (em inglês, minúsculo como mostrado, ex: "swampert")
-- NÍVEL (número após "Lv")
-- NATUREZA (em inglês: Adamant, Jolly, Modest, Timid, Bold, etc.)
-- IVs: os valores da COLUNA "IV" (0 a 31) para cada stat
-- EVs: os valores da COLUNA "EV" para cada stat
-- STATS REAIS: os valores TOTAIS mostrados à direita (HP, Atk, Def, SpA, SpD, Spe)
-
-RESPONDA APENAS COM JSON VÁLIDO (sem markdown, sem texto extra):
+RESPONDA APENAS COM JSON VÁLIDO (sem markdown):
 
 {
   "nome": "swampert",
@@ -1681,10 +1896,8 @@ RESPONDA APENAS COM JSON VÁLIDO (sem markdown, sem texto extra):
 }
 
 REGRAS CRÍTICAS:
-- Os IVs são a COLUNA "IV" (valores de 0 a 31)
-- NÃO calcule IVs — LEIA diretamente da imagem
-- Se um IV não estiver visível, use 0
-- O JSON deve ser válido e começar com { e terminar com }`;
+- IVs são LIDOS da coluna "IV" (0-31), NÃO calculados
+- Se um IV não estiver visível, use 0`;
 
         const payload = {contents:[{parts:[
             {text: prompt},
@@ -1694,7 +1907,6 @@ REGRAS CRÍTICAS:
         if (!r.ok) { const ed = await r.json(); throw new Error(ed.error?.message||'Erro.'); }
         const data = await r.json();
         let texto = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-        console.log('🤖 Resposta bruta da IA:', texto);
         texto = texto.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
         resultadoBox.innerHTML = texto.replace(/\n/g,'<br>'); resultadoBox.classList.add('ativo');
         await processarDadosImportados(extrairStatus(texto));
@@ -1713,7 +1925,6 @@ async function processarDadosImportados(dados) {
 
     const baseTabela = baseStatsTabela[nome.toLowerCase()]||null;
     const bases = {};
-
     if (baseTabela) {
         for (const k of ['hp','atk','def','spa','spd','spe']) bases[k] = baseTabela[k]||0;
     } else {
@@ -1729,7 +1940,6 @@ async function processarDadosImportados(dados) {
             for (const k of ['hp','atk','def','spa','spd','spe']) bases[k] = 50;
         }
     }
-
     Object.assign(dadosPokemon,{nome,stats,evsOriginais:evs,evsAtuais:{...evs},baseStats:bases,ivs,natureza,nivel});
     dadosCarregados = true;
     statusCarregadoBadge.classList.add('visivel'); naturezaEl.textContent = natureza;
@@ -1891,12 +2101,19 @@ function renderSkillsCard(pokeNome, oppNome) {
 async function chamarIAVeredito(allyP, enemyP) {
     iaAnalysis.style.display='block'; iaLoading.style.display='block'; iaResultado.innerHTML='';
     const info = arr => arr.map(p => { const b = baseStatsTabela[p.toLowerCase()]; return b?`${p} (HP:${b.hp}, ATK:${b.atk}, DEF:${b.def}, SPA:${b.spa}, SPD:${b.spd}, SPE:${b.spe})`:p; }).join(', ');
+    const todosTipos = [...new Set([...allyP, ...enemyP].flatMap(p => getTiposSync(p)))];
+    const tmsTexto = getTMsTextoPrompt(todosTipos);
     const prompt = `Você é especialista em Pokémon competitivo. Analise os times PvP. MOVES em INGLÊS ORIGINAL.
+
+REGRA CRÍTICA: Só recomende TMs que estejam NESTA LISTA (disponíveis no jogo):
+${tmsTexto}
+
 Time Aliado: ${allyP.join(', ')} (stats: ${info(allyP)})
 Time Rival: ${enemyP.join(', ')} (stats: ${info(enemyP)})
 Responda:
 **Vencedor:** [Aliado/Rival/Empate]
 **Análise:** [explicação]
+**TMs Recomendadas (da lista):** [2-3 TMs da lista acima com motivo]
 **Conselho:** [estratégia]`;
     try {
         const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelSelectTimes.value}:generateContent?key=${apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
@@ -2016,11 +2233,7 @@ const duelIAResult = document.getElementById('duelIAResult');
 const STAT_LABELS = {hp:'HP',atk:'ATK',def:'DEF',spa:'SPA',spd:'SPD',spe:'SPE'};
 
 function renderStatsGrid(containerEl, stats, noteEl, noteText) {
-    if (!stats || !Object.values(stats).some(v => v > 0)) {
-        containerEl.innerHTML = '';
-        if (noteEl) noteEl.textContent = '';
-        return;
-    }
+    if (!stats || !Object.values(stats).some(v => v > 0)) { containerEl.innerHTML = ''; if (noteEl) noteEl.textContent = ''; return; }
     let html = '';
     for (const k of ['hp','atk','def','spa','spd','spe']) {
         html += `<div class="duel-stat-line"><span class="lbl">${STAT_LABELS[k]}</span><span class="vl">${stats[k]||0}</span></div>`;
@@ -2037,31 +2250,22 @@ document.querySelectorAll('.duel-mode-toggle .mode-btn').forEach(btn => {
         const toggle = this.parentElement;
         toggle.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
-
         if (side === 'ally') {
             duelAllyMode = mode;
-            if (mode === 'foto') {
-                duelAllyNomeZone.classList.add('oculto');
-                duelAllyFotoZone.classList.add('ativo');
-            } else {
-                duelAllyNomeZone.classList.remove('oculto');
-                duelAllyFotoZone.classList.remove('ativo');
-                duelAllyPhoto = null;
-                duelAllyPhotoPreview.classList.remove('visivel');
+            if (mode === 'foto') { duelAllyNomeZone.classList.add('oculto'); duelAllyFotoZone.classList.add('ativo'); }
+            else {
+                duelAllyNomeZone.classList.remove('oculto'); duelAllyFotoZone.classList.remove('ativo');
+                duelAllyPhoto = null; duelAllyPhotoPreview.classList.remove('visivel');
                 duelAllyData = { nome:'', stats:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, ivs:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, evs:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, types:[], sprite:null, nivel:null, natureza:null, fonte:'nome', moves:[] };
                 duelAllySprite.innerHTML = '<div class="placeholder"><i class="fas fa-question"></i></div>';
                 duelAllyName.textContent = '—'; duelAllyTypes.innerHTML = ''; duelAllyStats.innerHTML = ''; duelAllyStatsNote.textContent = '';
             }
         } else {
             duelEnemyMode = mode;
-            if (mode === 'foto') {
-                duelEnemyNomeZone.classList.add('oculto');
-                duelEnemyFotoZone.classList.add('ativo');
-            } else {
-                duelEnemyNomeZone.classList.remove('oculto');
-                duelEnemyFotoZone.classList.remove('ativo');
-                duelEnemyPhoto = null;
-                duelEnemyPhotoPreview.classList.remove('visivel');
+            if (mode === 'foto') { duelEnemyNomeZone.classList.add('oculto'); duelEnemyFotoZone.classList.add('ativo'); }
+            else {
+                duelEnemyNomeZone.classList.remove('oculto'); duelEnemyFotoZone.classList.remove('ativo');
+                duelEnemyPhoto = null; duelEnemyPhotoPreview.classList.remove('visivel');
                 duelEnemyData = { nome:'', stats:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, ivs:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, evs:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}, types:[], sprite:null, nivel:null, natureza:null, fonte:'nome', moves:[] };
                 duelEnemySprite.innerHTML = '<div class="placeholder"><i class="fas fa-question"></i></div>';
                 duelEnemyName.textContent = '—'; duelEnemyTypes.innerHTML = ''; duelEnemyStats.innerHTML = ''; duelEnemyStatsNote.textContent = '';
@@ -2088,18 +2292,12 @@ async function carregarDueloPorNome(nome, side) {
     const typesEl = side === 'ally' ? duelAllyTypes : duelEnemyTypes;
     const statsEl = side === 'ally' ? duelAllyStats : duelEnemyStats;
     const noteEl = side === 'ally' ? duelAllyStatsNote : duelEnemyStatsNote;
-
     const dataObj = side === 'ally' ? duelAllyData : duelEnemyData;
     dataObj.nome = nome.charAt(0).toUpperCase() + nome.slice(1);
-    dataObj.types = d.types;
-    dataObj.sprite = d.sprite;
-    dataObj.moves = d.moves;
-    dataObj.fonte = 'nome';
-    dataObj.nivel = null;
-    dataObj.natureza = null;
+    dataObj.types = d.types; dataObj.sprite = d.sprite; dataObj.moves = d.moves;
+    dataObj.fonte = 'nome'; dataObj.nivel = null; dataObj.natureza = null;
     dataObj.ivs = {hp:0,atk:0,def:0,spa:0,spd:0,spe:0};
     dataObj.evs = {hp:0,atk:0,def:0,spa:0,spd:0,spe:0};
-
     const raw = d.raw;
     if (raw) {
         dataObj.stats = {
@@ -2111,7 +2309,6 @@ async function carregarDueloPorNome(nome, side) {
             spe: raw.stats.find(s => s.stat.name === 'speed')?.base_stat || 0,
         };
     }
-
     if (d.sprite) spriteBox.innerHTML = `<img src="${d.sprite}" alt="${nome}">`;
     else spriteBox.innerHTML = '<div class="placeholder"><i class="fas fa-question"></i></div>';
     nameEl.textContent = dataObj.nome;
@@ -2120,26 +2317,11 @@ async function carregarDueloPorNome(nome, side) {
 }
 
 let duelAllyTimer = null, duelEnemyTimer = null;
-duelAllyInput.addEventListener('input', () => {
-    clearTimeout(duelAllyTimer);
-    if (duelAllyMode !== 'nome') return;
-    duelAllyTimer = setTimeout(() => { carregarDueloPorNome(duelAllyInput.value.trim(), 'ally'); verificarDueloPronto(); }, 500);
-});
-duelEnemyInput.addEventListener('input', () => {
-    clearTimeout(duelEnemyTimer);
-    if (duelEnemyMode !== 'nome') return;
-    duelEnemyTimer = setTimeout(() => { carregarDueloPorNome(duelEnemyInput.value.trim(), 'enemy'); verificarDueloPronto(); }, 500);
-});
+duelAllyInput.addEventListener('input', () => { clearTimeout(duelAllyTimer); if (duelAllyMode !== 'nome') return; duelAllyTimer = setTimeout(() => { carregarDueloPorNome(duelAllyInput.value.trim(), 'ally'); verificarDueloPronto(); }, 500); });
+duelEnemyInput.addEventListener('input', () => { clearTimeout(duelEnemyTimer); if (duelEnemyMode !== 'nome') return; duelEnemyTimer = setTimeout(() => { carregarDueloPorNome(duelEnemyInput.value.trim(), 'enemy'); verificarDueloPronto(); }, 500); });
 
-duelAllyPhotoDrop.addEventListener('click', (e) => {
-    e.stopPropagation();
-    duelAllyPhotoInput.click();
-});
-duelEnemyPhotoDrop.addEventListener('click', (e) => {
-    e.stopPropagation();
-    duelEnemyPhotoInput.click();
-});
-
+duelAllyPhotoDrop.addEventListener('click', (e) => { e.stopPropagation(); duelAllyPhotoInput.click(); });
+duelEnemyPhotoDrop.addEventListener('click', (e) => { e.stopPropagation(); duelEnemyPhotoInput.click(); });
 duelAllyPhotoInput.addEventListener('click', (e) => e.stopPropagation());
 duelEnemyPhotoInput.addEventListener('click', (e) => e.stopPropagation());
 
@@ -2167,14 +2349,6 @@ async function analisarFotoDuelo(file, lado) {
 
 IMPORTANTE: A imagem geralmente mostra uma tabela com colunas "IV" e "EV". Você DEVE ler os valores da coluna IV (0 a 31) diretamente. NÃO calcule IVs.
 
-Extraia:
-- NOME (inglês, minúsculo)
-- NÍVEL (após "Lv")
-- NATUREZA (inglês: Adamant, Jolly, Modest, Timid, etc.)
-- IVs: os valores da COLUNA "IV" (0-31) de cada stat
-- EVs: os valores da COLUNA "EV"
-- STATS REAIS: os valores totais mostrados à direita
-
 RESPONDA APENAS COM JSON VÁLIDO (sem markdown):
 
 {
@@ -2200,12 +2374,10 @@ REGRAS:
     if (!r.ok) { const ed = await r.json(); throw new Error(ed.error?.message||'Erro ao analisar foto.'); }
     const data = await r.json();
     let texto = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
-    console.log('🤖 Resposta bruta (duelo):', texto);
     texto = texto.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
     const match = texto.match(/\{[\s\S]*\}/);
-    if (!match) { console.warn('❌ JSON não encontrado'); return null; }
-    try { const obj = JSON.parse(match[0]); console.log('✅ JSON parseado:', obj); return obj; }
-    catch(e) { console.error('❌ Erro parse:', e); return null; }
+    if (!match) return null;
+    try { return JSON.parse(match[0]); } catch(e) { return null; }
 }
 
 async function processarFotoParaDuelo(file, side) {
@@ -2215,55 +2387,21 @@ async function processarFotoParaDuelo(file, side) {
     const statsEl = side === 'ally' ? duelAllyStats : duelEnemyStats;
     const noteEl = side === 'ally' ? duelAllyStatsNote : duelEnemyStatsNote;
     const dataObj = side === 'ally' ? duelAllyData : duelEnemyData;
-
     const json = await analisarFotoDuelo(file, side);
-    if (!json || !json.nome || json.nome.toLowerCase().includes('nenhum') || json.nome.toLowerCase().includes('unknown')) {
-        alert('❌ Não foi possível identificar o Pokémon na foto.\n\nDicas:\n• Use uma imagem nítida\n• Certifique-se que o nome e os status estão legíveis');
+    if (!json || !json.nome || json.nome.toLowerCase().includes('nenhum')) {
+        alert('❌ Não foi possível identificar o Pokémon na foto.');
         return false;
     }
-
     const nome = json.nome.trim();
     const nivel = parseInt(json.nivel) || 50;
     const natureza = normalizarNaturezaIngles(json.natureza || '');
-    const stats = {
-        hp: parseInt(json.stats?.hp) || 0,
-        atk: parseInt(json.stats?.atk) || 0,
-        def: parseInt(json.stats?.def) || 0,
-        spa: parseInt(json.stats?.spa) || 0,
-        spd: parseInt(json.stats?.spd) || 0,
-        spe: parseInt(json.stats?.spe) || 0,
-    };
-    const ivs = {
-        hp: parseInt(json.ivs?.hp) || 0,
-        atk: parseInt(json.ivs?.atk) || 0,
-        def: parseInt(json.ivs?.def) || 0,
-        spa: parseInt(json.ivs?.spa) || 0,
-        spd: parseInt(json.ivs?.spd) || 0,
-        spe: parseInt(json.ivs?.spe) || 0,
-    };
-    const evs = {
-        hp: parseInt(json.evs?.hp) || 0,
-        atk: parseInt(json.evs?.atk) || 0,
-        def: parseInt(json.evs?.def) || 0,
-        spa: parseInt(json.evs?.spa) || 0,
-        spd: parseInt(json.evs?.spd) || 0,
-        spe: parseInt(json.evs?.spe) || 0,
-    };
-
+    const stats = { hp: parseInt(json.stats?.hp)||0, atk: parseInt(json.stats?.atk)||0, def: parseInt(json.stats?.def)||0, spa: parseInt(json.stats?.spa)||0, spd: parseInt(json.stats?.spd)||0, spe: parseInt(json.stats?.spe)||0 };
+    const ivs = { hp: parseInt(json.ivs?.hp)||0, atk: parseInt(json.ivs?.atk)||0, def: parseInt(json.ivs?.def)||0, spa: parseInt(json.ivs?.spa)||0, spd: parseInt(json.ivs?.spd)||0, spe: parseInt(json.ivs?.spe)||0 };
+    const evs = { hp: parseInt(json.evs?.hp)||0, atk: parseInt(json.evs?.atk)||0, def: parseInt(json.evs?.def)||0, spa: parseInt(json.evs?.spa)||0, spd: parseInt(json.evs?.spd)||0, spe: parseInt(json.evs?.spe)||0 };
     const d = await buscarDadosPokemon(nome);
     const nomeOficial = d.raw?.name ? (d.raw.name.charAt(0).toUpperCase() + d.raw.name.slice(1).replace(/-/g,' ')) : nome;
-
-    dataObj.nome = nomeOficial;
-    dataObj.types = d.types;
-    dataObj.sprite = d.sprite;
-    dataObj.moves = d.moves;
-    dataObj.stats = stats;
-    dataObj.ivs = ivs;
-    dataObj.evs = evs;
-    dataObj.nivel = nivel;
-    dataObj.natureza = natureza;
-    dataObj.fonte = 'foto';
-
+    dataObj.nome = nomeOficial; dataObj.types = d.types; dataObj.sprite = d.sprite; dataObj.moves = d.moves;
+    dataObj.stats = stats; dataObj.ivs = ivs; dataObj.evs = evs; dataObj.nivel = nivel; dataObj.natureza = natureza; dataObj.fonte = 'foto';
     if (d.sprite) spriteBox.innerHTML = `<img src="${d.sprite}" alt="${nome}">`;
     else spriteBox.innerHTML = '<div class="placeholder"><i class="fas fa-question"></i></div>';
     nameEl.textContent = `${nomeOficial} · Nv ${nivel} · ${natureza||'—'}`;
@@ -2274,45 +2412,38 @@ async function processarFotoParaDuelo(file, side) {
 
 btnAnalisarDuelo.addEventListener('click', async function() {
     if (!apiKey) { alert('⚠️ Configure sua chave API.'); return; }
-
     loadingDuelo.style.display = 'block';
     duelIAResult.style.display = 'none';
-
     try {
         if (duelAllyMode === 'foto' && duelAllyPhoto) {
-            loadingDuelo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisando foto do seu Pokémon com IA...';
+            loadingDuelo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisando foto do seu Pokémon...';
             const ok = await processarFotoParaDuelo(duelAllyPhoto, 'ally');
             if (!ok) { loadingDuelo.style.display='none'; return; }
         } else if (duelAllyMode === 'nome') {
             await carregarDueloPorNome(duelAllyInput.value.trim(), 'ally');
         }
-
         if (duelEnemyMode === 'foto' && duelEnemyPhoto) {
-            loadingDuelo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisando foto do oponente com IA...';
+            loadingDuelo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisando foto do oponente...';
             const ok = await processarFotoParaDuelo(duelEnemyPhoto, 'enemy');
             if (!ok) { loadingDuelo.style.display='none'; return; }
         } else if (duelEnemyMode === 'nome') {
             await carregarDueloPorNome(duelEnemyInput.value.trim(), 'enemy');
         }
-
         if (!duelAllyData.nome || !duelEnemyData.nome) {
-            alert('❌ Dados incompletos. Verifique os dois Pokémon.');
+            alert('❌ Dados incompletos.');
             loadingDuelo.style.display='none'; return;
         }
-
         loadingDuelo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A IA está analisando o confronto...';
-
-        const allyInfoStr = `Nome: ${duelAllyData.nome}${duelAllyData.fonte==='foto' ? ` (Nível ${duelAllyData.nivel||'?'}, Natureza ${duelAllyData.natureza||'?'}, IVs Total: ${calcularTotalIV(duelAllyData.ivs)}/186, STATS REAIS)` : ' (Stats Base PokéAPI)'}
+        const allyInfoStr = `Nome: ${duelAllyData.nome}${duelAllyData.fonte==='foto' ? ` (Nv ${duelAllyData.nivel||'?'}, Natureza ${duelAllyData.natureza||'?'}, IVs ${calcularTotalIV(duelAllyData.ivs)}/186, STATS REAIS)` : ' (Stats Base)'}
 Tipos: ${duelAllyData.types.map(t=>typeNames[t]||t).join('/')}
 Stats: HP ${duelAllyData.stats.hp} / ATK ${duelAllyData.stats.atk} / DEF ${duelAllyData.stats.def} / SpA ${duelAllyData.stats.spa} / SpD ${duelAllyData.stats.spd} / SPE ${duelAllyData.stats.spe}`;
-
-        const enemyInfoStr = `Nome: ${duelEnemyData.nome}${duelEnemyData.fonte==='foto' ? ` (Nível ${duelEnemyData.nivel||'?'}, Natureza ${duelEnemyData.natureza||'?'}, IVs Total: ${calcularTotalIV(duelEnemyData.ivs)}/186, STATS REAIS)` : ' (Stats Base PokéAPI)'}
+        const enemyInfoStr = `Nome: ${duelEnemyData.nome}${duelEnemyData.fonte==='foto' ? ` (Nv ${duelEnemyData.nivel||'?'}, Natureza ${duelEnemyData.natureza||'?'}, IVs ${calcularTotalIV(duelEnemyData.ivs)}/186, STATS REAIS)` : ' (Stats Base)'}
 Tipos: ${duelEnemyData.types.map(t=>typeNames[t]||t).join('/')}
 Stats: HP ${duelEnemyData.stats.hp} / ATK ${duelEnemyData.stats.atk} / DEF ${duelEnemyData.stats.def} / SpA ${duelEnemyData.stats.spa} / SpD ${duelEnemyData.stats.spd} / SPE ${duelEnemyData.stats.spe}`;
-
         const allyMovesList = duelAllyData.moves.map(m => `- ${formatMoveName(m.name)} (${typeNames[m.type]||m.type}, PWR ${m.power}${duelAllyData.types.includes(m.type)?', STAB':''})`).join('\n');
         const enemyMovesList = duelEnemyData.moves.map(m => `- ${formatMoveName(m.name)} (${typeNames[m.type]||m.type}, PWR ${m.power}${duelEnemyData.types.includes(m.type)?', STAB':''})`).join('\n');
-
+        const tiposTodos = [...new Set([...duelAllyData.types, ...duelEnemyData.types])];
+        const tmsTexto = getTMsTextoPrompt(tiposTodos);
         const prompt = `Você é um especialista em Pokémon competitivo PvP. Analise o duelo 1x1 abaixo.
 
 ═══════════════════════════════
@@ -2323,23 +2454,28 @@ OPONENTE:
 ${enemyInfoStr}
 ═══════════════════════════════
 
-MOVES DISPONÍVEIS DO SEU POKÉMON:
+MOVES DISPONÍVEIS:
 ${allyMovesList}
 
 MOVES CONHECIDOS DO OPONENTE:
 ${enemyMovesList}
 
+═══════════════════════════════
+TMs DISPONÍVEIS NO JOGO (use APENAS estas!):
+${tmsTexto}
+═══════════════════════════════
+
 Responda EXATAMENTE neste formato:
 
 **MELHORES MOVES PARA ${duelAllyData.nome.toUpperCase()}:**
-1. [Nome do move em INGLÊS] | Tipo: [tipo] | PWR: [poder] | Por que: [razão curta]
-2. [Nome do move em INGLÊS] | Tipo: [tipo] | PWR: [poder] | Por que: [razão curta]
-3. [Nome do move em INGLÊS] | Tipo: [tipo] | PWR: [poder] | Por que: [razão curta]
-4. [Nome do move em INGLÊS] | Tipo: [tipo] | PWR: [poder] | Por que: [razão curta]
+1. [Nome em INGLÊS] | Tipo: [tipo] | PWR: [poder] | Por que: [razão]
+2. [Nome em INGLÊS] | Tipo: [tipo] | PWR: [poder] | Por que: [razão]
+3. [Nome em INGLÊS] | Tipo: [tipo] | PWR: [poder] | Por que: [razão]
+4. [Nome em INGLÊS] | Tipo: [tipo] | PWR: [poder] | Por que: [razão]
 
-**TMs RECOMENDADAS:**
-- TM [nome do move em INGLÊS] | Substitui: [move fraco] | Motivo: [razão]
-- TM [nome do move em INGLÊS] | Substitui: [move fraco] | Motivo: [razão]
+**TMs RECOMENDADAS (da lista acima):**
+- TM [nome EM INGLÊS da lista] | Substitui: [move fraco] | Motivo: [razão]
+- TM [nome EM INGLÊS da lista] | Substitui: [move fraco] | Motivo: [razão]
 
 **ESTRATÉGIA DO DUELO:**
 [Como jogar para vencer. Máximo 4 linhas.]
@@ -2347,10 +2483,10 @@ Responda EXATAMENTE neste formato:
 **PREVISÃO:**
 [Vitória de ${duelAllyData.nome} / Vitória de ${duelEnemyData.nome} / Muito equilibrado] — [razão em 1 linha]
 
-REGRAS:
-- Moves em INGLÊS ORIGINAL (Earthquake, Flamethrower, Ice Beam, etc)
-- Seja curto e direto`;
-
+REGRAS CRÍTICAS:
+- Recomende APENAS moves/TMs que estejam na lista de TMs disponíveis
+- Se um move bom NÃO estiver na lista, avise: "⚠️ [move] não é TM disponível"
+- Moves em INGLÊS ORIGINAL`;
         const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelSelectDuel.value}:generateContent?key=${apiKey}`, {
             method:'POST', headers:{'Content-Type':'application/json'},
             body: JSON.stringify({contents:[{parts:[{text:prompt}]}]})
@@ -2358,15 +2494,11 @@ REGRAS:
         if (!r.ok) { const ed = await r.json(); throw new Error(ed.error?.message||'Erro.'); }
         const data = await r.json();
         const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
-
         renderDueloResult(texto, duelAllyData, duelEnemyData);
-
     } catch(e) {
         duelIAResult.innerHTML = `<div class="duel-section-block"><h3 style="color:#991b1b;"><i class="fas fa-times-circle"></i> Erro</h3><p>${e.message}</p></div>`;
         duelIAResult.style.display = 'block';
-    } finally {
-        loadingDuelo.style.display = 'none';
-    }
+    } finally { loadingDuelo.style.display = 'none'; }
 });
 
 function parseMoveList(bloco) {
@@ -2410,15 +2542,11 @@ function renderDueloResult(texto, allyData, enemyData) {
     const tmsBlock = (texto.match(/\*\*TMs[^*]*\*\*\s*([\s\S]+?)(?=\*\*ESTRATÉGIA|\*\*PREVISÃO|$)/i)||[])[1] || '';
     const estratBlock = (texto.match(/\*\*ESTRATÉGIA[^*]*\*\*\s*([\s\S]+?)(?=\*\*PREVISÃO|$)/i)||[])[1] || '';
     const previsaoBlock = (texto.match(/\*\*PREVISÃO:\*\*\s*([\s\S]+?)$/i)||[])[1] || '';
-
     const moves = parseMoveList(movesBlock);
     const tms = parseTMList(tmsBlock);
-
     const allySprite = allyData.sprite || '';
     const enemySprite = enemyData.sprite || '';
-
     let html = '';
-
     html += `<div class="duel-section-block" style="background:linear-gradient(135deg,#fef3c7,#fed7aa); border-color:#fbbf24;">
         <div style="display:flex; align-items:center; justify-content:center; gap:1.5rem; flex-wrap:wrap;">
             <div style="text-align:center; min-width:180px;">
@@ -2446,10 +2574,9 @@ function renderDueloResult(texto, allyData, enemyData) {
             </div>
         </div>
     </div>`;
-
     if (moves.length > 0) {
         html += `<div class="duel-section-block recommended">
-            <h3><i class="fas fa-bolt"></i> Melhores Moves para ${allyData.nome}</h3>
+            <h3><i class="fas fa-compact-disc"></i> Melhores TMs para ${allyData.nome}</h3>
             <div class="duel-moves-grid">
                 ${moves.map((mv, i) => `
                     <div class="duel-move-card">
@@ -2465,10 +2592,9 @@ function renderDueloResult(texto, allyData, enemyData) {
             </div>
         </div>`;
     }
-
     if (tms.length > 0) {
         html += `<div class="duel-section-block counter">
-            <h3><i class="fas fa-compact-disc"></i> TMs Recomendadas</h3>
+            <h3><i class="fas fa-exchange-alt"></i> TMs para Substituir</h3>
             <div class="duel-moves-grid">
                 ${tms.map(tm => `
                     <div class="duel-move-card">
@@ -2483,14 +2609,12 @@ function renderDueloResult(texto, allyData, enemyData) {
             </div>
         </div>`;
     }
-
     if (estratBlock.trim()) {
         html += `<div class="duel-strategy">
             <div style="font-weight:900; font-size:0.85rem; margin-bottom:0.4rem; display:flex; align-items:center; gap:0.4rem;"><i class="fas fa-chess"></i> Estratégia do Duelo</div>
             ${estratBlock.replace(/\*\*/g,'').trim().replace(/\n/g,'<br>')}
         </div>`;
     }
-
     if (previsaoBlock.trim()) {
         const prev = previsaoBlock.replace(/\*\*/g,'').trim();
         const isAllyWin = prev.toLowerCase().includes(allyData.nome.toLowerCase()) && (prev.toLowerCase().includes('vitória') || prev.toLowerCase().includes('vitoria'));
@@ -2501,11 +2625,7 @@ function renderDueloResult(texto, allyData, enemyData) {
             <p style="font-size:0.95rem; font-weight:800; color:#0f172a; line-height:1.6;">${prev.replace(/\n/g,'<br>')}</p>
         </div>`;
     }
-
-    if (!html) {
-        html = `<div class="duel-section-block"><h3><i class="fas fa-robot"></i> Análise da IA</h3><div style="white-space:pre-wrap; line-height:1.8; font-size:0.85rem;">${texto.replace(/\*\*/g,'').replace(/\n/g,'<br>')}</div></div>`;
-    }
-
+    if (!html) html = `<div class="duel-section-block"><h3><i class="fas fa-robot"></i> Análise da IA</h3><div style="white-space:pre-wrap; line-height:1.8; font-size:0.85rem;">${texto.replace(/\*\*/g,'').replace(/\n/g,'<br>')}</div></div>`;
     duelIAResult.innerHTML = html;
     duelIAResult.style.display = 'block';
 }
@@ -2562,7 +2682,7 @@ function verificarNaturezaAtual(naturezaAtual, naturezasRecomendadas, naturezaEl
     if (match) {
         naturezaEl.innerHTML = `<div class="nature-alert" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0); border-color:#22c55e;"><div class="nature-alert-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);"><i class="fas fa-check"></i></div><div><div class="nature-alert-title" style="color:#166534;">Natureza Ideal para PvE!</div><div class="nature-alert-text" style="color:#166534;">A natureza <strong>${naturezaAtual}</strong> está entre as recomendadas. 🎉</div></div></div>`;
     } else {
-        naturezaEl.innerHTML = `<div class="nature-alert"><div class="nature-alert-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="nature-alert-title">⚠️ Natureza não recomendada — considere trocar!</div><div class="nature-alert-text">A natureza atual <strong>${naturezaAtual}</strong> não é ideal. Recomendamos:</div><div class="nature-alert-list">${naturezasRecomendadas.map(n => `<span class="nat-badge-ok"><i class="fas fa-leaf"></i> ${n}</span>`).join('')}</div></div></div>`;
+        naturezaEl.innerHTML = `<div class="nature-alert"><div class="nature-alert-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="nature-alert-title">⚠️ Natureza não recomendada!</div><div class="nature-alert-text">Recomendamos:</div><div class="nature-alert-list">${naturezasRecomendadas.map(n => `<span class="nat-badge-ok"><i class="fas fa-leaf"></i> ${n}</span>`).join('')}</div></div></div>`;
     }
 }
 
@@ -2574,8 +2694,6 @@ async function analisarImagemPve() {
     try {
         const base64 = await toBase64(pveImagemSelecionada);
         const prompt = `Analise esta imagem de Pokémon e retorne JSON com IVs LIDOS da coluna "IV".
-
-A imagem geralmente mostra uma tabela com colunas "IV" e "EV". Leia os valores diretamente.
 
 {
   "nome": "swampert",
@@ -2590,7 +2708,6 @@ REGRAS:
 - IVs (0-31) LIDOS da coluna "IV" da imagem, NÃO calculados
 - Natureza em INGLÊS
 - Responda APENAS o JSON`;
-
         const payload = { contents: [{ parts: [
             { text: prompt },
             { inline_data: { mime_type: pveImagemSelecionada.type, data: base64.split(',')[1] } }
@@ -2599,11 +2716,10 @@ REGRAS:
         if (!r.ok) { const ed = await r.json(); throw new Error(ed.error?.message||'Erro.'); }
         const data = await r.json();
         let texto = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
-        console.log('🤖 Resposta bruta (PvE):', texto);
         texto = texto.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
         let jsonData = null;
         const match = texto.match(/\{[\s\S]*\}/);
-        if (match) { try { jsonData = JSON.parse(match[0]); } catch(e) { console.error('Erro parse:', e); } }
+        if (match) { try { jsonData = JSON.parse(match[0]); } catch(e) {} }
         if (!jsonData || !jsonData.nome || jsonData.nome.toLowerCase().includes('nenhum')) {
             alert('❌ A IA não conseguiu identificar o Pokémon.');
             loadingPveImg.style.display='none'; btnAnalisarPveImg.disabled = false; return;
@@ -2697,26 +2813,12 @@ async function gerarBuildPve(statsReais = null, nivelReal = null, naturezaReal =
 
         const temIVs = ivsReais && Object.values(ivsReais).some(v => parseInt(v) > 0);
         if (temIVs && nivelReal) {
-            pveDadosAtuais = {
-                nome: nomeCap,
-                stats: statsReais || {},
-                ivs: ivsReais,
-                evs: evsReais || {},
-                natureza: naturezaReal,
-                nivel: nivelReal
-            };
+            pveDadosAtuais = { nome: nomeCap, stats: statsReais || {}, ivs: ivsReais, evs: evsReais || {}, natureza: naturezaReal, nivel: nivelReal };
             naturezasRecomendadasPve = [];
             renderAvaliacaoIV('Pve', pveDadosAtuais, naturezasRecomendadasPve, 'pve');
         } else if (usarReais && nivelReal) {
             const calcIV = calcularIVsDeStats(nomeCap, statsReais, nivelReal, naturezaReal, evsReais || {hp:0,atk:0,def:0,spa:0,spd:0,spe:0});
-            pveDadosAtuais = {
-                nome: nomeCap,
-                stats: statsReais,
-                ivs: calcIV.ivs,
-                evs: evsReais || {},
-                natureza: naturezaReal,
-                nivel: nivelReal
-            };
+            pveDadosAtuais = { nome: nomeCap, stats: statsReais, ivs: calcIV.ivs, evs: evsReais || {}, natureza: naturezaReal, nivel: nivelReal };
             naturezasRecomendadasPve = [];
             renderAvaliacaoIV('Pve', pveDadosAtuais, naturezasRecomendadasPve, 'pve');
         } else {
@@ -2731,13 +2833,20 @@ async function gerarBuildPve(statsReais = null, nivelReal = null, naturezaReal =
         if (usarReais) statsInfo += `\nStatus Reais (nível ${nivelReal||'?'}): HP:${statsReais.hp||'?'} ATK:${statsReais.atk||'?'} DEF:${statsReais.def||'?'} SpA:${statsReais.spa||'?'} SpD:${statsReais.spd||'?'} SPE:${statsReais.spe||'?'}`;
         if (temIVs) statsInfo += `\nIVs: ${JSON.stringify(ivsReais)} (Total: ${calcularTotalIV(ivsReais)}/186)`;
         if (naturezaReal) statsInfo += `\nNatureza Atual: ${naturezaReal}`;
+        const tmsTexto = getTMsTextoPrompt(tipos);
         const prompt = `Você é especialista em Pokémon PvE. NATUREZAS em INGLÊS. MOVES em INGLÊS ORIGINAL.
+
+REGRA CRÍTICA: Só recomende TMs/moves que estejam NA LISTA ABAIXO.
+
+LISTA DE TMs DISPONÍVEIS NO JOGO:
+${tmsTexto}
+
 Formato:
 **NATUREZAS E EVs:**
 - Natureza 1: [Inglês] | EVs: [Distribuição]
 - Natureza 2: [Inglês] | EVs: [Distribuição]
 - Natureza 3: [Inglês] | EVs: [Distribuição]
-**MELHORES MOVES:** [4 moves em inglês separados por vírgula]
+**MELHORES MOVES:** [4 moves em inglês da lista de TMs acima, separados por vírgula]
 **ESTRATÉGIA PvE:** [explicação]
 Dados:
 - Nome: ${nomeCap}
@@ -2764,25 +2873,21 @@ Dados:
                 if (match) {
                     const natNome = normalizarNaturezaIngles(match[1].trim());
                     const evsTexto = match[2].trim();
-                    idx++;
-                    naturezasExtraidas.push(natNome);
+                    idx++; naturezasExtraidas.push(natNome);
                     const natNorm = natNome.toLowerCase();
                     const isAtual = naturezaReal && (natNorm === naturezaReal.toLowerCase().trim());
                     cardsHtml += `<div class="pve-natureza-card${isAtual?' atual':''}"><div class="pve-nat-header"><div class="pve-nat-icon">${idx}</div><div class="pve-nat-name">${natNome}</div>${isAtual?'<span class="pve-nat-badge-atual">Atual</span>':''}</div><div class="pve-nat-evs-label"><i class="fas fa-dumbbell"></i> EVs Recomendadas (PvE)</div><div class="pve-nat-evs">${evsTexto}</div></div>`;
                 }
             }
-            if (cardsHtml) pveNaturezas.innerHTML = cardsHtml;
-            else pveNaturezas.innerHTML = '<div style="color:#94a3b8; padding:0.5rem;">Não foi possível extrair.</div>';
+            pveNaturezas.innerHTML = cardsHtml || '<div style="color:#94a3b8; padding:0.5rem;">Não foi possível extrair.</div>';
         } else {
             pveNaturezas.innerHTML = '<div style="color:#94a3b8; padding:0.5rem;">Não foi possível extrair.</div>';
         }
         if (naturezaReal && naturezasExtraidas.length > 0) verificarNaturezaAtual(naturezaReal, naturezasExtraidas, pveNatureAlert);
-
         naturezasRecomendadasPve = naturezasExtraidas;
         if (pveDadosAtuais.ivs && calcularTotalIV(pveDadosAtuais.ivs) > 0) {
             renderAvaliacaoIV('Pve', pveDadosAtuais, naturezasRecomendadasPve, 'pve');
         }
-
         if (movM) {
             const listaMoves = await traduzirListaMoves(movM[1]);
             pveMoves.innerHTML = listaMoves.map(x => `<span class="move-tag">${x}</span>`).join('');
