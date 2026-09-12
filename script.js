@@ -94,8 +94,8 @@ function getTMsRelevantes(tiposPokemon) {
     return [...stab, ...cob];
 }
 
-function getTMsTextoPrompt(tiposPokemon) {
-    const tms = getTMsRelevantes(tiposPokemon);
+function getTMsTextoPrompt(tiposPokemon, nomePokemon = '') {
+    const tms = nomePokemon ? getTMsReaisDoPokemon(nomePokemon) : getTMsRelevantes(tiposPokemon);
     return tms.map(tm => `${tm.nome}(${typeNames[tm.tipo]||tm.tipo}/${tm.categoria}/${tm.poder||'—'})`).join(', ');
 }
 
@@ -210,6 +210,45 @@ async function traduzirMoveParaIngles(move) {
     if (nomeOficial) return nomeOficial;
     return original;
 }
+function efeitoTMEmPortugues(texto){
+    const t=String(texto||'').trim();if(!t)return '';
+    const mapa=[
+      [/has a chance to lower the target's special defense by one stage\.?/i,'Tem chance de reduzir a Defesa Especial do alvo em um estágio.'],
+      [/has a chance to lower the target's defense by one stage\.?/i,'Tem chance de reduzir a Defesa do alvo em um estágio.'],
+      [/has a chance to lower the target's attack by one stage\.?/i,'Tem chance de reduzir o Ataque do alvo em um estágio.'],
+      [/has a chance to burn the target\.?/i,'Tem chance de causar queimadura no alvo.'],
+      [/has a chance to freeze the target\.?/i,'Tem chance de congelar o alvo.'],
+      [/has a chance to paralyze the target\.?/i,'Tem chance de paralisar o alvo.'],
+      [/inflicts regular damage and can hit dive users\.?/i,'Causa dano normal e também acerta usuários de Dive.'],
+      [/inflicts regular damage/i,'Causa dano normal.'],
+      [/can hit pokemon during their semi-invulnerable turn/i,'Pode atingir Pokémon durante o turno de semi-invulnerabilidade.'],
+      [/the user takes recoil damage/i,'O usuário recebe dano de recuo.'],
+      [/may cause the target to flinch/i,'Pode fazer o alvo recuar.'],
+      [/may lower the target's/i,'Pode reduzir o atributo do alvo.']
+    ];for(const [re,out] of mapa)if(re.test(t))return out;return t;
+}
+
+async function traduzirEfeitosTMsIA(tms){
+    const pendentes=tms.filter(tm=>tm&&!tm.efeitoPt&&tm.efeito).slice(0,40);if(!pendentes.length)return tms;
+    const chave=localStorage.getItem('geminiApiKey')||localStorage.getItem('apiKey')||document.getElementById('apiKeyInput')?.value?.trim()||document.getElementById('apiKeyInputPve')?.value?.trim();if(!chave)return tms;
+    try{const modelo=localStorage.getItem('selectedModel')||localStorage.getItem('geminiModel')||document.getElementById('modelSelect')?.value||'gemini-3.5-flash-lite';const prompt=`Traduza para português do Brasil os efeitos oficiais das TMs abaixo. Mantenha os nomes das TMs exatamente em inglês. Retorne somente JSON em formato [{"nome":"TM em inglês","efeito":"tradução em português"}]. Não explique nada. Dados: ${JSON.stringify(pendentes.map(x=>({nome:x.nome,efeito:x.efeito})))}`;const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(chave)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0,maxOutputTokens:3000}})});if(!r.ok)return tms;let txt=(await r.json())?.candidates?.[0]?.content?.parts?.map(x=>x.text).join('')||'';txt=txt.replace(/^```json\s*/i,'').replace(/```$/,'').trim();const lista=JSON.parse(txt.match(/\[[\s\S]*\]/)?.[0]||txt);lista.forEach(x=>{const tm=tms.find(t=>t.nome.toLowerCase()===String(x.nome).toLowerCase());if(tm&&x.efeito)tm.efeitoPt=efeitoTMEmPortugues(x.efeito)});}catch(_){}return tms;
+}
+
+const TM_TYPE_LABELS_PT={water:'Água',poison:'Veneno',flying:'Voador',dark:'Sombrio',fighting:'Lutador',ice:'Gelo',fire:'Fogo',fairy:'Fada',normal:'Normal',bug:'Inseto',electric:'Elétrico',ground:'Terrestre',grass:'Grama',psychic:'Psíquico',dragon:'Dragão',ghost:'Fantasma',rock:'Pedra',steel:'Aço'};
+const TM_CATEGORY_LABELS_PT={physical:'Físico',special:'Especial',status:'Status'};
+async function renderTMCardsOficiais(container, nomes, titulo='TMs oficiais') {
+    if (!container || !Array.isArray(nomes) || !nomes.length) return;
+    const unicos=[...new Set(nomes.map(x=>String(x).trim().replace(/^TM\s+/i,'')).filter(nome=>TMS_DISPONIVEIS.some(tm=>tm.nome.toLowerCase()===nome.toLowerCase())))];
+    const dados=await Promise.all(unicos.map(async nome=>{try{const slug=nome.toLowerCase().replace(/['’]/g,'').replace(/\s+/g,'-');const r=await fetch('https://pokeapi.co/api/v2/move/'+encodeURIComponent(slug));if(!r.ok)return null;const d=await r.json();const tm=TMS_DISPONIVEIS.find(x=>x.nome.toLowerCase()===nome.toLowerCase());if(!tm)return null;return {...tm,tipo:d.type?.name||tm.tipo,poder:d.power||tm.poder,precisao:d.accuracy||tm.precisao,efeito:(d.flavor_text_entries?.find(x=>x.language?.name==='pt-BR')?.flavor_text||d.flavor_text_entries?.find(x=>x.language?.name==='pt')?.flavor_text||d.effect_entries?.find(x=>x.language?.name==='en')?.short_effect||'').replace(/\s+/g,' ')};}catch(_){return null;}}));
+    const validos=dados.filter(Boolean);if(!validos.length)return;validos.forEach(tm=>tm.efeito=efeitoTMEmPortugues(tm.efeito));await traduzirEfeitosTMsIA(validos);validos.forEach(tm=>{if(!tm.efeitoPt)tm.efeitoPt=efeitoTMEmPortugues(tm.efeito)});
+    const box=document.createElement('section');box.className='tm-official-panel';box.innerHTML=`<h4><i class="fas fa-compact-disc"></i> ${titulo}</h4><div class="tm-grid">${validos.map(tm=>{const tipo=tm.tipo||'normal';const tipoPt=TM_TYPE_LABELS_PT[tipo]||tipo;const categoriaPt=TM_CATEGORY_LABELS_PT[tm.categoria]||tm.categoria||'TM';return `<div class="tm-card"><div class="tm-card-head"><img class="tm-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-${tipo}.png" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png'" alt=""><div class="tm-card-top"><span class="tm-type tm-${tipo}">${tipoPt}</span><span class="tm-category">${categoriaPt}</span></div></div><div class="tm-name">${tm.nome}</div><div class="tm-meta"><span><b>${tm.poder||'—'}</b> poder</span><span><b>${tm.precisao||'—'}</b> precisão</span></div>${(tm.efeitoPt||tm.efeito)?`<small class="tm-effect"><b>Efeito oficial:</b> ${tm.efeitoPt||tm.efeito}</small>`:''}</div>`}).join('')}</div>`;container.appendChild(box);
+}
+async function renderTMsDosPokemons(container, nomesPokemons, titulo='TMs oficiais por Pokémon') {
+    const nomes=[...new Set((nomesPokemons||[]).map(x=>String(x).trim()).filter(Boolean))];const moves=new Set();
+    for(const nome of nomes){try{const r=await fetch('https://pokeapi.co/api/v2/pokemon/'+encodeURIComponent(nome.toLowerCase().replace(/\s+/g,'-')));if(!r.ok)continue;const d=await r.json();(d.moves||[]).filter(x=>(x.version_group_details||[]).some(v=>v.move_learn_method?.name==='machine')).forEach(x=>moves.add(x.move.name.replace(/-/g,' ')));}catch(_){} }
+    await renderTMCardsOficiais(container,[...moves],titulo);
+}
+
 async function traduzirListaMoves(texto) {
     const linhas = texto.split('\n').filter(l => l.trim());
     const traduzidos = [];
@@ -1001,10 +1040,13 @@ async function chamarIA(prompt, loadingEl, resultadoEl, tipo='texto', modeloEl=m
             html += '</div>';
             resultadoEl.innerHTML = html || texto.replace(/\n/g,'<br>');
             resultadoEl.style.display = 'block';
+            renderTMCardsOficiais(resultadoEl, listaMoves, 'TMs oficiais recomendadas');
         } else if (tipo === 'pvp') {
             renderNaturezasPvp(texto);
             resultadoEl.innerHTML = formatarTextoIA(texto) || texto.replace(/\n/g,'<br>');
             resultadoEl.style.display = 'block';
+            const tmsPvp=TMS_DISPONIVEIS.filter(tm=>texto.toLowerCase().includes(tm.nome.toLowerCase())).map(tm=>tm.nome);
+            renderTMCardsOficiais(resultadoEl,tmsPvp,'TMs recomendadas para PvP');
         } else {
             resultadoEl.innerHTML = texto.replace(/\n/g,'<br>');
             resultadoEl.style.display='block';
@@ -1015,7 +1057,7 @@ async function chamarIA(prompt, loadingEl, resultadoEl, tipo='texto', modeloEl=m
 function gerarAnalisesIA() {
     if (!dadosCarregados) return;
     const tipos = getTiposSync(dadosPokemon.nome);
-    const tmsTexto = getTMsTextoPrompt(tipos);
+    const tmsTexto = getTMsTextoPrompt(tipos, dadosPokemon.nome);
     const pvpPrompt = `Você é especialista em Pokémon competitivo PvP. NATUREZAS em INGLÊS. MOVES em INGLÊS ORIGINAL.
 
 REGRA CRÍTICA: Só recomende TMs/moves que estejam NA LISTA ABAIXO. NÃO invente outros.
@@ -1433,7 +1475,9 @@ function renderSkillsCard(pokeNome, oppNome) {
         const lbl = effLabel(eff);
         const isStab = tipos.includes(m.type);
         const stabTag = isStab ? '<span class="skill-stab">STAB</span>' : '';
-        return `<div class="skill-item"><span class="skill-name">${formatMoveName(m.name)}</span><span class="skill-type ${tipoClass(m.type)}">${typeNames[m.type]||m.type}</span><span class="skill-power">PWR ${m.power}</span>${stabTag}<span class="skill-eff ${lbl.cls}">${lbl.text}</span></div>`;
+        const tmInfo=TMS_DISPONIVEIS.find(tm=>tm.nome.toLowerCase()===String(m.name).replace(/-/g,' ').toLowerCase());
+        const tmImg=tmInfo?`<img class="skill-tm-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-${tmInfo.tipo}.png" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png'" alt="Sprite de ${tmInfo.nome}">`:'';
+        return `<div class="skill-item">${tmImg}<span class="skill-name">${formatMoveName(m.name)}</span><span class="skill-type ${tipoClass(m.type)}">${typeNames[m.type]||m.type}</span><span class="skill-power">PWR ${m.power}</span>${stabTag}<span class="skill-eff ${lbl.cls}">${lbl.text}</span></div>`;
     }).join('');
     return `<div class="skills-card"><div class="skills-card-header">${img}<span class="skills-poke-name">${pokeNome}</span><div class="skills-poke-types">${tipoTags}</div></div>${mh}</div>`;
 }
@@ -1563,6 +1607,7 @@ btnAnalisarTimes.addEventListener('click', async function() {
         </div>`;
     teamResultContent.innerHTML = html;
     teamResult.style.display = 'block';
+    renderTMsDosPokemons(teamResultContent, allyP.concat(enemyP), 'TMs oficiais dos Pokémon do time');
     loadingTimes.style.display = 'none';
     iaAnalysis.style.display = 'none';
     await chamarIAVeredito(allyP, enemyP);
@@ -1834,10 +1879,10 @@ function renderDueloResult(texto, allyData, enemyData) {
         </div>
     </div>`;
     if (moves.length > 0) {
-        html += `<div class="duel-section-block recommended"><h3><i class="fas fa-compact-disc"></i> Melhores TMs para ${allyData.nome}</h3><div class="duel-moves-grid">${moves.map((mv, i) => `<div class="duel-move-card"><div class="dm-name">${i+1}. ${mv.name}</div><div class="dm-meta"><span class="dm-type ${getTypeClassByName(mv.type)}">${mv.type}</span><span class="dm-power">${mv.power}</span>${i===0?'<span class="dm-tag best">★ TOP</span>':''}</div>${mv.why?`<div style="font-size:0.68rem; color:#475569; margin-top:0.4rem;">${mv.why}</div>`:''}</div>`).join('')}</div></div>`;
+        html += `<div class="duel-section-block recommended"><h3><i class="fas fa-compact-disc"></i> Melhores TMs para ${allyData.nome}</h3><div class="duel-moves-grid">${moves.map((mv, i) => { const tmInfo=TMS_DISPONIVEIS.find(tm=>tm.nome.toLowerCase()===String(mv.name).replace(/^TM\s+/i,'').toLowerCase()); const tmImg=tmInfo?`<img class="duel-tm-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-${tmInfo.tipo}.png" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png'" alt="Sprite de ${tmInfo.nome}">`:''; return `<div class="duel-move-card">${tmImg}<div class="dm-name">${i+1}. ${mv.name}</div><div class="dm-meta"><span class="dm-type ${getTypeClassByName(mv.type)}">${mv.type}</span><span class="dm-power">${mv.power}</span>${i===0?'<span class="dm-tag best">★ TOP</span>':''}</div>${mv.why?`<div style="font-size:0.68rem; color:#475569; margin-top:0.4rem;">${mv.why}</div>`:''}</div>`; }).join('')}</div></div>`;
     }
     if (tms.length > 0) {
-        html += `<div class="duel-section-block counter"><h3><i class="fas fa-exchange-alt"></i> TMs para Substituir</h3><div class="duel-moves-grid">${tms.map(tm => `<div class="duel-move-card"><div class="dm-name">TM: ${tm.move}</div><div class="dm-meta"><span class="dm-tag tm">TM</span>${tm.sub?`<span style="font-size:0.62rem; color:#64748b; font-weight:700;">Substitui: ${tm.sub}</span>`:''}</div>${tm.why?`<div style="font-size:0.68rem; color:#475569; margin-top:0.4rem;">${tm.why}</div>`:''}</div>`).join('')}</div></div>`;
+        html += `<div class="duel-section-block counter"><h3><i class="fas fa-exchange-alt"></i> TMs para Substituir</h3><div class="duel-moves-grid">${tms.map(tm => `<div class="duel-move-card"><img class="duel-tm-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png" alt="Sprite da TM" loading="lazy"><div class="dm-name">TM: ${tm.move}</div><div class="dm-meta"><span class="dm-tag tm">TM</span>${tm.sub?`<span style="font-size:0.62rem; color:#64748b; font-weight:700;">Substitui: ${tm.sub}</span>`:''}</div>${tm.why?`<div style="font-size:0.68rem; color:#475569; margin-top:0.4rem;">${tm.why}</div>`:''}</div>`).join('')}</div></div>`;
     }
     if (estratBlock.trim()) {
         html += `<div class="duel-strategy"><div style="font-weight:900; font-size:0.85rem; margin-bottom:0.4rem;"><i class="fas fa-chess"></i> Estratégia do Duelo</div>${estratBlock.replace(/\*\*/g,'').trim().replace(/\n/g,'<br>')}</div>`;
@@ -1852,6 +1897,7 @@ function renderDueloResult(texto, allyData, enemyData) {
     if (!html) html = `<div class="duel-section-block"><h3>Análise da IA</h3><div style="white-space:pre-wrap; line-height:1.8;">${texto.replace(/\*\*/g,'').replace(/\n/g,'<br>')}</div></div>`;
     duelIAResult.innerHTML = html;
     duelIAResult.style.display = 'block';
+    renderTMsDosPokemons(duelIAResult, [duelAllyData.nome, duelEnemyData.nome], 'TMs oficiais do duelo');
 }
 
 // ============================================================
@@ -2068,7 +2114,7 @@ async function gerarBuildPve(statsReais = null, nivelReal = null, naturezaReal =
         if (usarReais) statsInfo += `\nStatus Reais (Nv ${nivelReal||'?'}): HP:${statsReais.hp||'?'} ATK:${statsReais.atk||'?'} DEF:${statsReais.def||'?'} SpA:${statsReais.spa||'?'} SpD:${statsReais.spd||'?'} SPE:${statsReais.spe||'?'}`;
         if (temIVs) statsInfo += `\nIVs: ${JSON.stringify(ivsReais)} (Total: ${calcularTotalIV(ivsReais)}/186)`;
         if (naturezaReal) statsInfo += `\nNatureza: ${naturezaReal}`;
-        const tmsTexto = getTMsTextoPrompt(tipos);
+        const tmsTexto = getTMsTextoPrompt(tipos, nome);
         const prompt = `Você é especialista em Pokémon PvE. NATUREZAS em INGLÊS. MOVES em INGLÊS.
 
 REGRA: Só recomende TMs da lista:
@@ -2119,7 +2165,8 @@ Dados:
         }
         if (movM) {
             const listaMoves = await traduzirListaMoves(movM[1]);
-            pveMoves.innerHTML = '<div class="moves-flex">' + listaMoves.map(x => `<span class="move-tag">${x}</span>`).join('') + '</div>';
+            pveMoves.innerHTML = '<div class="moves-flex">' + listaMoves.map(x => {const nome=String(x).replace(/^TM\s+/i,'').trim();const tm=TMS_DISPONIVEIS.find(y=>y.nome.toLowerCase()===nome.toLowerCase());return `<span class="move-tag move-tag-tm">${tm?`<img class="move-tm-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-${tm.tipo}.png" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png'" alt="">`:''}${x}</span>`}).join('') + '</div>';
+            renderTMCardsOficiais(pveMoves, listaMoves, 'TMs recomendadas para PvE');
         } else pveMoves.innerHTML = '<div class="moves-flex"><span class="move-tag">Não disponível</span></div>';
         pveStrategyText.innerHTML = estM ? estM[1].replace(/\n/g,'<br>') : texto.replace(/\n/g,'<br>');
         if (usarReais) await gerarNotaIAPveStatusReais(pveDadosAtuais);
@@ -2141,3 +2188,5 @@ document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', f
     document.getElementById(this.dataset.tab).classList.add('active');
     if (this.dataset.tab === 'tab-tier') carregarSpritesTierList();
 }));
+
+// ============================================================

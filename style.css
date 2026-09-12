@@ -523,3 +523,25 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
     .status-grid { grid-template-columns:1fr 1fr; }
 }
 @media (max-width:400px) { .status-grid { grid-template-columns:1fr; } }
+
+
+
+
+
+
+
+
+.tm-card-head{display:flex;align-items:center;gap:.5rem}.tm-sprite{width:34px;height:34px;object-fit:contain;image-rendering:pixelated}.tm-card-head .tm-card-top{flex:1}
+
+.tm-effect{display:block;color:#334155;font-size:.62rem;line-height:1.35;margin-top:.45rem;border-top:1px dashed #cbd5e1;padding-top:.4rem}.tm-effect b{color:#1d4ed8}
+
+.tm-official-panel{margin-top:1rem;padding:1rem;background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:2px solid #c4b5fd;border-radius:16px}.tm-official-panel h4{color:#3730a3;margin-bottom:.7rem}
+
+
+
+
+.duel-move-card{position:relative}.duel-tm-sprite{width:30px;height:30px;object-fit:contain;image-rendering:pixelated;float:right;margin-left:.4rem}
+
+.skill-item{display:flex;align-items:center;gap:.35rem}.skill-tm-sprite{width:26px;height:26px;object-fit:contain;image-rendering:pixelated;flex:0 0 26px}
+
+.move-tag-tm{display:inline-flex;align-items:center;gap:.25rem}.move-tm-sprite{width:24px;height:24px;object-fit:contain;image-rendering:pixelated}
