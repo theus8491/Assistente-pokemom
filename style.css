@@ -545,3 +545,9 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
 .skill-item{display:flex;align-items:center;gap:.35rem}.skill-tm-sprite{width:26px;height:26px;object-fit:contain;image-rendering:pixelated;flex:0 0 26px}
 
 .move-tag-tm{display:inline-flex;align-items:center;gap:.25rem}.move-tm-sprite{width:24px;height:24px;object-fit:contain;image-rendering:pixelated}
+
+.btn-download-ficha{display:inline-flex;align-items:center;gap:.45rem;margin:1rem 0;padding:.7rem 1rem;border:0;border-radius:10px;background:#4f46e5;color:#fff;font-weight:800;cursor:pointer;box-shadow:0 5px 12px #4f46e544}.btn-download-ficha:hover{filter:brightness(1.08);transform:translateY(-1px)}
+
+/* PDF v2: layout colorido e sem fundo escuro aplicado no documento de impressão. */
+
+/* PDF v3 */

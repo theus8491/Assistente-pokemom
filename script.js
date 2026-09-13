@@ -105,7 +105,7 @@ function getTMsReaisDoPokemon(nome) {
     const maquinas = new Set(rawMoves
         .filter(m => (m.version_group_details || []).some(v => v.move_learn_method?.name === 'machine'))
         .map(m => normalizarNome(m.move?.name || '')));
-    if (maquinas.size === 0) return getTMsRelevantes(getTiposSync(nome));
+    if (maquinas.size === 0) return [];
     return TMS_DISPONIVEIS.filter(tm => maquinas.has(normalizarNome(tm.nome)));
 }
 
@@ -231,7 +231,7 @@ function efeitoTMEmPortugues(texto){
 async function traduzirEfeitosTMsIA(tms){
     const pendentes=tms.filter(tm=>tm&&!tm.efeitoPt&&tm.efeito).slice(0,40);if(!pendentes.length)return tms;
     const chave=localStorage.getItem('geminiApiKey')||localStorage.getItem('apiKey')||document.getElementById('apiKeyInput')?.value?.trim()||document.getElementById('apiKeyInputPve')?.value?.trim();if(!chave)return tms;
-    try{const modelo=localStorage.getItem('selectedModel')||localStorage.getItem('geminiModel')||document.getElementById('modelSelect')?.value||'gemini-3.5-flash-lite';const prompt=`Traduza para português do Brasil os efeitos oficiais das TMs abaixo. Mantenha os nomes das TMs exatamente em inglês. Retorne somente JSON em formato [{"nome":"TM em inglês","efeito":"tradução em português"}]. Não explique nada. Dados: ${JSON.stringify(pendentes.map(x=>({nome:x.nome,efeito:x.efeito})))}`;const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(chave)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0,maxOutputTokens:3000}})});if(!r.ok)return tms;let txt=(await r.json())?.candidates?.[0]?.content?.parts?.map(x=>x.text).join('')||'';txt=txt.replace(/^```json\s*/i,'').replace(/```$/,'').trim();const lista=JSON.parse(txt.match(/\[[\s\S]*\]/)?.[0]||txt);lista.forEach(x=>{const tm=tms.find(t=>t.nome.toLowerCase()===String(x.nome).toLowerCase());if(tm&&x.efeito)tm.efeitoPt=efeitoTMEmPortugues(x.efeito)});}catch(_){}return tms;
+    try{const modelo=localStorage.getItem('selectedModel')||localStorage.getItem('geminiModel')||document.getElementById('modelSelect')?.value||'gemini-3.5-flash-lite';const prompt=`Traduza para português do Brasil os efeitos oficiais das TMs abaixo. Mantenha os nomes das TMs exatamente em inglês. Retorne somente JSON em formato [{"nome":"TM em inglês","efeito":"tradução em português"}]. Não explique nada. Dados: ${JSON.stringify(pendentes.map(x=>({nome:x.nome,efeito:x.efeito})))}`;const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),8000);const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(chave)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0,maxOutputTokens:3000}}),signal:ctrl.signal});clearTimeout(timer);if(!r.ok)return tms;let txt=(await r.json())?.candidates?.[0]?.content?.parts?.map(x=>x.text).join('')||'';txt=txt.replace(/^```json\s*/i,'').replace(/```$/,'').trim();const lista=JSON.parse(txt.match(/\[[\s\S]*\]/)?.[0]||txt);lista.forEach(x=>{const tm=tms.find(t=>t.nome.toLowerCase()===String(x.nome).toLowerCase());if(tm&&x.efeito)tm.efeitoPt=efeitoTMEmPortugues(x.efeito)});}catch(_){}return tms;
 }
 
 const TM_TYPE_LABELS_PT={water:'Água',poison:'Veneno',flying:'Voador',dark:'Sombrio',fighting:'Lutador',ice:'Gelo',fire:'Fogo',fairy:'Fada',normal:'Normal',bug:'Inseto',electric:'Elétrico',ground:'Terrestre',grass:'Grama',psychic:'Psíquico',dragon:'Dragão',ghost:'Fantasma',rock:'Pedra',steel:'Aço'};
@@ -911,7 +911,6 @@ const fileInput=document.getElementById('fileInput'),uploadArea=document.getElem
 const fileBadge=document.getElementById('fileBadge'),fileName=document.getElementById('fileName'),analisarBtn=document.getElementById('analisarBtn');
 const loading=document.getElementById('loading'),resultadoBox=document.getElementById('resultadoBox'),btnExemplo=document.getElementById('btnCarregarExemplo');
 const statusGrid=document.getElementById('statusGrid'),naturezaEl=document.getElementById('natureza'),statusCarregadoBadge=document.getElementById('statusCarregadoBadge');
-const pvpLoading=document.getElementById('pvpLoading'),pvpResultado=document.getElementById('pvpResultado');
 const movesLoading=document.getElementById('movesLoading'),movesResultado=document.getElementById('movesResultado');
 const btnAplicarEVs=document.getElementById('btnAplicarEVs'),btnSugerirEVs=document.getElementById('btnSugerirEVs'),btnResetarEVs=document.getElementById('btnResetarEVs');
 const fichaHeader=document.getElementById('fichaHeader'),fichaSpriteBox=document.getElementById('fichaSpriteBox'),fichaNome=document.getElementById('fichaNome');
@@ -928,6 +927,7 @@ function calcularStatus(base, iv, ev, level, nature=1.0, isHp=false) {
 }
 async function atualizarFichaHeader(nome, nivel, natureza) {
     fichaHeader.style.display='flex';
+    const btnPdfPvp=document.getElementById('btnPdfPvp'); if(btnPdfPvp) btnPdfPvp.style.display='inline-flex';
     fichaNome.textContent=nome; fichaNivel.textContent=nivel; fichaNatureza.textContent=natureza;
     const d = await buscarDadosPokemon(nome);
     fichaSpriteBox.innerHTML = d.sprite ? `<img src="${d.sprite}" alt="${nome}">` : `<div class="placeholder"><i class="fas fa-question"></i></div>`;
@@ -1045,7 +1045,7 @@ async function chamarIA(prompt, loadingEl, resultadoEl, tipo='texto', modeloEl=m
             renderNaturezasPvp(texto);
             resultadoEl.innerHTML = formatarTextoIA(texto) || texto.replace(/\n/g,'<br>');
             resultadoEl.style.display = 'block';
-            const tmsPvp=TMS_DISPONIVEIS.filter(tm=>texto.toLowerCase().includes(tm.nome.toLowerCase())).map(tm=>tm.nome);
+            const tmsPermitidasPvp=new Set(getTMsReaisDoPokemon(dadosPokemon?.nome||'').map(tm=>normalizarNome(tm.nome))); const tmsPvp=TMS_DISPONIVEIS.filter(tm=>tmsPermitidasPvp.has(normalizarNome(tm.nome))&&texto.toLowerCase().includes(tm.nome.toLowerCase())).map(tm=>tm.nome);
             renderTMCardsOficiais(resultadoEl,tmsPvp,'TMs recomendadas para PvP');
         } else {
             resultadoEl.innerHTML = texto.replace(/\n/g,'<br>');
@@ -1054,31 +1054,23 @@ async function chamarIA(prompt, loadingEl, resultadoEl, tipo='texto', modeloEl=m
     } catch(e) { resultadoEl.innerHTML = `❌ Erro: ${e.message}`; resultadoEl.style.display='block'; }
     finally { loadingEl.style.display = 'none'; }
 }
+async function gerarNaturezasRecomendadasPvp(){
+    if(!dadosCarregados||!apiKey)return;
+    const tipos=getTiposSync(dadosPokemon.nome);const tms=getTMsTextoPrompt(tipos,dadosPokemon.nome);
+    const prompt=`Escolha exatamente 3 naturezas recomendadas para ${dadosPokemon.nome} em PvP. Retorne somente neste formato, sem markdown adicional:
+**NATUREZAS E EVs:**
+- Natureza 1: [nome em inglês] | EVs: [distribuição]
+- Natureza 2: [nome em inglês] | EVs: [distribuição]
+- Natureza 3: [nome em inglês] | EVs: [distribuição]
+Use os status e a natureza lidos da foto. Não faça análise geral. TMs disponíveis apenas como contexto: ${tms}`;
+    try{const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelSelect.value}:generateContent?key=${apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:500}})});if(!r.ok)return;const d=await r.json();const texto=d.candidates?.[0]?.content?.parts?.[0]?.text||'';renderNaturezasPvp(texto);}catch(_){}
+}
+
 function gerarAnalisesIA() {
     if (!dadosCarregados) return;
     const tipos = getTiposSync(dadosPokemon.nome);
     const tmsTexto = getTMsTextoPrompt(tipos, dadosPokemon.nome);
-    const pvpPrompt = `Você é especialista em Pokémon competitivo PvP. NATUREZAS em INGLÊS. MOVES em INGLÊS ORIGINAL.
-
-REGRA CRÍTICA: Só recomende TMs/moves que estejam NA LISTA ABAIXO. NÃO invente outros.
-LISTA DE TMs DISPONÍVEIS NO JOGO:
-${tmsTexto}
-
-Formato:
-**NATUREZAS E EVs:**
-- Natureza 1: [Inglês] | EVs: [Distribuição]
-- Natureza 2: [Inglês] | EVs: [Distribuição]
-- Natureza 3: [Inglês] | EVs: [Distribuição]
-**Avaliação geral:** [texto]
-**Vantagens ofensivas:** [texto]
-**Desvantagens ofensivas:** [texto]
-**Fraquezas defensivas:** [texto]
-**Resistências defensivas:** [texto]
-**Imunidades:** [texto]
-**Score (0-10):** [nota]
-Dados: Nome: ${dadosPokemon.nome}, Nível: ${dadosPokemon.nivel}, Natureza: ${dadosPokemon.natureza||'Não especificada'}, IVs: ${JSON.stringify(dadosPokemon.ivs)} (Total: ${calcularTotalIV(dadosPokemon.ivs)}/186), Status: ${dadosPokemon.stats.hp}/${dadosPokemon.stats.atk}/${dadosPokemon.stats.def}/${dadosPokemon.stats.spa}/${dadosPokemon.stats.spd}/${dadosPokemon.stats.spe}`;
-    chamarIA(pvpPrompt, pvpLoading, pvpResultado, 'pvp');
-
+    gerarNaturezasRecomendadasPvp();
     const movesPrompt = `Liste as 4 melhores TMs para ${dadosPokemon.nome} em PvP.
 
 REGRA CRÍTICA: Use APENAS TMs desta lista (todas disponíveis no jogo):
@@ -1465,7 +1457,7 @@ function renderSpriteMatchup(nome) {
 }
 function renderSkillsCard(pokeNome, oppNome) {
     const sprite = getSpriteSync(pokeNome); const tipos = getTiposSync(pokeNome);
-    const moves = getMovesSync(pokeNome); const oppTipos = getTiposSync(oppNome);
+    let permitidas = new Set(); try { permitidas = new Set((getTMsReaisDoPokemon(pokeNome) || []).map(tm=>normalizarNome(tm.nome))); } catch (_) {} const moves = (getMovesSync(pokeNome) || []).filter(m=>permitidas.has(normalizarNome(String(m.name||'').replace(/-/g,' ')))); const oppTipos = getTiposSync(oppNome);
     const tipoTags = tipos.map(t=>`<span class="mini-type ${tipoClass(t)}">${typeNames[t]||t}</span>`).join('');
     const img = sprite ? `<img src="${sprite}" alt="${pokeNome}">` : '<div style="width:44px;height:44px;border-radius:50%;background:#f1f5f9;"></div>';
     let mh = '';
@@ -1566,7 +1558,7 @@ btnAnalisarTimes.addEventListener('click', async function() {
         teamResult.style.display='block'; loadingTimes.style.display='none'; return;
     }
     loadingTimes.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando sprites, tipos e habilidades na PokéAPI...';
-    await precarregarDados([...allyP, ...enemyP]);
+    try { await precarregarDados([...allyP, ...enemyP]); } catch (_) {}
     let matchups = [], wins = 0, losses = 0, draws = 0;
     for (const a of allyP) {
         for (const e of enemyP) {
@@ -1603,10 +1595,10 @@ btnAnalisarTimes.addEventListener('click', async function() {
         </div>
         <div class="skills-section">
             <div class="skills-title"><i class="fas fa-bolt"></i> Habilidades e Efetividade</div>
-            ${matchups.map(m=>`<div class="skills-matchup-title"><i class="fas fa-crosshairs"></i> ${m.ally} vs ${m.enemy}</div><div class="skills-grid">${renderSkillsCard(m.ally,m.enemy)}${renderSkillsCard(m.enemy,m.ally)}</div>`).join('')}
+            ${matchups.map(m=>{ let a='<div class="skills-card">Habilidades não disponíveis</div>',e=a; try{a=renderSkillsCard(m.ally,m.enemy)||a}catch(_){ } try{e=renderSkillsCard(m.enemy,m.ally)||e}catch(_){ } return `<div class="skills-matchup-title"><i class="fas fa-crosshairs"></i> ${m.ally} vs ${m.enemy}</div><div class="skills-grid">${a}${e}</div>`}).join('')}
         </div>`;
     teamResultContent.innerHTML = html;
-    teamResult.style.display = 'block';
+    teamResult.style.display = 'block'; mostrarBotaoPdf('btnPdfTimes');
     renderTMsDosPokemons(teamResultContent, allyP.concat(enemyP), 'TMs oficiais dos Pokémon do time');
     loadingTimes.style.display = 'none';
     iaAnalysis.style.display = 'none';
@@ -1687,8 +1679,8 @@ async function carregarDueloPorNome(nome, side) {
     renderStatsGrid(statsEl, dataObj.stats, noteEl, 'Stats Base (PokéAPI)');
 }
 let duelAllyTimer = null, duelEnemyTimer = null;
-duelAllyInput.addEventListener('input', () => { clearTimeout(duelAllyTimer); if (duelAllyMode !== 'nome') return; duelAllyTimer = setTimeout(() => { carregarDueloPorNome(duelAllyInput.value.trim(), 'ally'); verificarDueloPronto(); }, 500); });
-duelEnemyInput.addEventListener('input', () => { clearTimeout(duelEnemyTimer); if (duelEnemyMode !== 'nome') return; duelEnemyTimer = setTimeout(() => { carregarDueloPorNome(duelEnemyInput.value.trim(), 'enemy'); verificarDueloPronto(); }, 500); });
+duelAllyInput.addEventListener('input', () => { clearTimeout(duelAllyTimer); if (duelAllyMode !== 'nome') return; duelAllyTimer = setTimeout(() => { carregarDueloPorNome(duelAllyInput.value.trim(), 'ally').catch(()=>{}); verificarDueloPronto(); }, 500); });
+duelEnemyInput.addEventListener('input', () => { clearTimeout(duelEnemyTimer); if (duelEnemyMode !== 'nome') return; duelEnemyTimer = setTimeout(() => { carregarDueloPorNome(duelEnemyInput.value.trim(), 'enemy').catch(()=>{}); verificarDueloPronto(); }, 500); });
 duelAllyPhotoDrop.addEventListener('click', (e) => { e.stopPropagation(); duelAllyPhotoInput.click(); });
 duelEnemyPhotoDrop.addEventListener('click', (e) => { e.stopPropagation(); duelEnemyPhotoInput.click(); });
 duelAllyPhotoInput.addEventListener('click', (e) => e.stopPropagation());
@@ -1785,7 +1777,7 @@ Responda:
         let texto = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
         const nomesTMsValidos = [...new Set([...getTMsReaisDoPokemon(duelAllyData.nome), ...getTMsReaisDoPokemon(duelEnemyData.nome)].map(tm => tm.nome))];
         texto = validarTMsDuelo(texto, nomesTMsValidos);
-        renderDueloResult(texto, duelAllyData, duelEnemyData);
+        renderDueloResult(texto, duelAllyData, duelEnemyData); mostrarBotaoPdf('btnPdfDuelo');
     } catch(e) {
         duelIAResult.innerHTML = `<div class="duel-section-block"><h3 style="color:#991b1b;">Erro</h3><p>${e.message}</p></div>`;
         duelIAResult.style.display = 'block';
@@ -1897,6 +1889,7 @@ function renderDueloResult(texto, allyData, enemyData) {
     if (!html) html = `<div class="duel-section-block"><h3>Análise da IA</h3><div style="white-space:pre-wrap; line-height:1.8;">${texto.replace(/\*\*/g,'').replace(/\n/g,'<br>')}</div></div>`;
     duelIAResult.innerHTML = html;
     duelIAResult.style.display = 'block';
+    mostrarBotaoPdf('btnPdfDuelo');
     renderTMsDosPokemons(duelIAResult, [duelAllyData.nome, duelEnemyData.nome], 'TMs oficiais do duelo');
 }
 
@@ -2092,6 +2085,7 @@ async function gerarBuildPve(statsReais = null, nivelReal = null, naturezaReal =
         if (usarReais) { pveStatusTitle.innerHTML = '<i class="fas fa-camera"></i> Status Reais'; pveRealStatsBadge.style.display = 'inline-flex'; }
         else { pveStatusTitle.innerHTML = '<i class="fas fa-chart-bar"></i> Atributos Base'; pveRealStatsBadge.style.display = 'none'; }
         pveResult.style.display = 'block';
+        const btnPdfPve=document.getElementById('btnPdfPve'); if(btnPdfPve) btnPdfPve.style.display='inline-flex';
         const temIVs = ivsReais && Object.values(ivsReais).some(v => parseInt(v) > 0);
         if (temIVs && nivelReal) {
             pveDadosAtuais = { nome: nomeCap, stats: statsReais || {}, ivs: ivsReais, evs: evsReais || {}, natureza: naturezaReal, nivel: nivelReal, baseStats: statsBase };
@@ -2164,7 +2158,7 @@ Dados:
             renderAvaliacaoIV('Pve', pveDadosAtuais, naturezasRecomendadasPve, 'pve');
         }
         if (movM) {
-            const listaMoves = await traduzirListaMoves(movM[1]);
+            const listaMovesBruta = await traduzirListaMoves(movM[1]); const permitidasPve = new Set(getTMsReaisDoPokemon(nome).map(tm=>normalizarNome(tm.nome))); const listaMoves = listaMovesBruta.filter(m=>permitidasPve.has(normalizarNome(String(m).replace(/^TM\s+/i,'').trim())));
             pveMoves.innerHTML = '<div class="moves-flex">' + listaMoves.map(x => {const nome=String(x).replace(/^TM\s+/i,'').trim();const tm=TMS_DISPONIVEIS.find(y=>y.nome.toLowerCase()===nome.toLowerCase());return `<span class="move-tag move-tag-tm">${tm?`<img class="move-tm-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-${tm.tipo}.png" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png'" alt="">`:''}${x}</span>`}).join('') + '</div>';
             renderTMCardsOficiais(pveMoves, listaMoves, 'TMs recomendadas para PvE');
         } else pveMoves.innerHTML = '<div class="moves-flex"><span class="move-tag">Não disponível</span></div>';
@@ -2190,3 +2184,80 @@ document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', f
 }));
 
 // ============================================================
+
+// Exportação das fichas: o navegador permite escolher "Salvar como PDF".
+function baixarFichaPDF(tipo){
+  // PDF compacto: resumo único + análises relevantes. Não copia o bloco inferior da tela.
+  const pvp = tipo === 'pvp';
+  const selectors = pvp
+    ? ['naturezaRecomendadaContainer','ivEvaluationPvp','evEfetivaPvp','movesResultado']
+    : ['ivEvaluationPve','evEfetivaPve','aiRatingContainerPve','pveNatureAlert','pveNaturezasContainer','pveResult .moves-container','pveStrategy'];
+  const source = id => document.getElementById(id) || document.querySelector(id);
+  const sections = selectors.map(id => source(id)).filter(el => el && el.innerHTML.trim());
+  if (!sections.length) { alert('Gere a ficha antes de exportar.'); return; }
+
+  const d = pvp ? (dadosPokemon || {}) : (pveDadosAtuais || {});
+  const textOf = selector => (document.querySelector(selector)?.textContent || '').replace(/\s+/g, ' ').trim();
+  const displayName = textOf(pvp ? '#fichaNome' : '#pveNome') || d.nome || pvePokemonInput?.value || 'Pokémon';
+  const level = textOf(pvp ? '#fichaNivel' : '#pveNivel') || d.nivel || '—';
+  const nature = textOf(pvp ? '#fichaNatureza' : '#pveNaturezaFicha') || d.natureza || 'Não especificada';
+  const types = textOf(pvp ? '#fichaTipos' : '#pveTipos') || (d.types || []).map(t => typeNames[t] || t).join(' / ') || '—';
+  const sprite = document.querySelector(pvp ? '#fichaSpriteBox img' : '#pveSpriteBox img')?.src || '';
+  const safe = value => String(value ?? '—').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+  const cleanName = String(displayName).replace(/[^a-z0-9_-]+/gi, '_');
+  const st = d.stats || {}, iv = d.ivs || {}, ev = d.evsAtuais || d.evs || {};
+  const statRows = [['HP',st.hp],['ATK',st.atk],['DEF',st.def],['SpA',st.spa],['SpD',st.spd],['SPE',st.spe]];
+  const ivRows = [['HP',iv.hp,ev.hp],['ATK',iv.atk,ev.atk],['DEF',iv.def,ev.def],['SpA',iv.spa,ev.spa],['SpD',iv.spd,ev.spd],['SPE',iv.spe,ev.spe]];
+
+  const resumo = `<section class="pdf-hero avoid-break">
+    <div class="pdf-topline"><span class="pdf-brand"><span class="pdf-ball">◉</span> Assistente do Treinador</span><span class="pdf-mode">Ficha ${pvp ? 'PvP' : 'PvE'}</span></div>
+    <div class="pdf-identity">${sprite ? `<img class="pdf-sprite" src="${safe(sprite)}" alt="${safe(displayName)}">` : ''}<div><div class="pdf-eyebrow">Análise competitiva</div><h1>${safe(displayName)}</h1><div class="pdf-meta">${safe(types)} <b>·</b> Nv. ${safe(level)} <b>·</b> Natureza: ${safe(nature)}</div></div></div>
+    <div class="pdf-info-row"><div><small>Pokémon</small><strong>${safe(displayName)}</strong></div><div><small>Tipos</small><strong>${safe(types)}</strong></div><div><small>Nível</small><strong>${safe(level)}</strong></div><div><small>Natureza atual</small><strong>${safe(nature)}</strong></div></div>
+  </section>
+  <section class="pdf-card pdf-stats avoid-break"><h2><span class="section-dot blue"></span>Status atuais</h2><div class="pdf-stat-grid">${statRows.map(([k,v]) => `<div class="stat-${k.toLowerCase()}"><span>${k}</span><strong>${safe(v || 0)}</strong></div>`).join('')}</div><div class="pdf-subtitle">IVs e EVs</div><div class="pdf-iv-grid">${ivRows.map(([k,a,b]) => `<div><b>${k}</b><span>IV <strong>${safe(a || 0)}</strong></span><span>EV <strong>${safe(b || 0)}</strong></span></div>`).join('')}</div></section>`;
+
+  const content = sections.map((el, index) => {
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll('button,input,select,textarea,.btn-download-ficha,.btn-iv-efetivo,.btn-ev-efetiva,.ev-controls,.loading,.api-key-container,.model-selector,.upload-area').forEach(n => n.remove());
+    clone.querySelectorAll('[style*="display:none"],[hidden]').forEach(n => n.remove());
+    clone.querySelectorAll('.ficha-header,.status-container').forEach(n => n.remove());
+    clone.classList.add('pdf-source');
+    const heading = index === 0 ? '' : '';
+    return `<section class="pdf-card pdf-source-card">${heading}${clone.outerHTML}</section>`;
+  }).join('');
+
+  const w = window.open('', '_blank', 'width=900,height=900');
+  if (!w) { alert('Permita pop-ups para gerar o PDF.'); return; }
+  w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${safe(displayName)} - Ficha ${pvp ? 'PvP' : 'PvE'}</title><style>
+    @page{size:A4;margin:12mm 13mm 14mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:Inter,Arial,sans-serif;background:linear-gradient(135deg,#312e81 0%,#7c3aed 38%,#db2777 72%,#f97316 100%);color:#172033;font-size:10pt;line-height:1.42;-webkit-print-color-adjust:exact;print-color-adjust:exact}.pdf-page{width:100%;max-width:184mm;margin:0 auto;padding:10px 0}.pdf-hero{border:2px solid #7c3aed;border-radius:18px;padding:15px 17px;margin-bottom:11px;background:linear-gradient(135deg,#fff7ed 0%,#fef3c7 35%,#ede9fe 72%,#dbeafe 100%);box-shadow:0 5px 14px #64748b22}.pdf-topline{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #ffffffaa;padding-bottom:8px;color:#4338ca}.pdf-brand{font-size:8px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}.pdf-ball{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border:2px solid #4338ca;border-radius:50%;font-size:9px;margin-right:4px}.pdf-mode{font-size:8px;font-weight:900;text-transform:uppercase;color:#fff;background:linear-gradient(90deg,#7c3aed,#2563eb);padding:4px 10px;border-radius:20px}.pdf-identity{display:flex;align-items:center;gap:15px;padding:12px 0}.pdf-sprite{width:83px;height:83px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 6px 4px #4338ca44)}.pdf-eyebrow{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#7c3aed;font-weight:900}.pdf-hero h1{font-size:25px;line-height:1.05;margin:3px 0 5px;color:#312e81;text-transform:capitalize}.pdf-meta{font-size:10px;color:#334155;font-weight:700}.pdf-meta b{color:#a855f7;padding:0 2px}.pdf-info-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.pdf-info-row div{border:1px solid #c4b5fd;border-radius:9px;padding:7px;background:#ffffffb8}.pdf-info-row small{display:block;font-size:7px;text-transform:uppercase;color:#64748b;font-weight:900}.pdf-info-row strong{display:block;font-size:9px;color:#312e81;margin-top:2px;overflow-wrap:anywhere}.pdf-card{border:2px solid #a855f7;border-radius:14px;padding:12px;margin-bottom:10px;background:linear-gradient(135deg,#fef3c7 0%,#fce7f3 48%,#dbeafe 100%);box-shadow:0 3px 10px #64748b14;break-inside:avoid;page-break-inside:avoid}.pdf-card h2{display:flex;align-items:center;gap:6px;font-size:13px;color:#312e81;margin:0 0 8px;padding-bottom:5px;border-bottom:2px solid #e0e7ff}.section-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#2563eb}.section-dot.blue{background:linear-gradient(135deg,#06b6d4,#2563eb)}.pdf-stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.pdf-stat-grid div{border-radius:9px;padding:7px 4px;text-align:center;border:1px solid}.pdf-stat-grid span{display:block;font-size:8px;font-weight:900;color:#475569}.pdf-stat-grid strong{display:block;font-size:17px;color:#172033}.stat-hp{background:#fee2e2;border-color:#fca5a5!important}.stat-atk{background:#ffedd5;border-color:#fdba74!important}.stat-def{background:#fef3c7;border-color:#fcd34d!important}.stat-spa{background:#dbeafe;border-color:#93c5fd!important}.stat-spd{background:#cffafe;border-color:#67e8f9!important}.stat-spe{background:#f3e8ff;border-color:#d8b4fe!important}.pdf-subtitle{font-size:11px;font-weight:900;color:#4338ca;margin:12px 0 6px}.pdf-iv-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.pdf-iv-grid div{border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;padding:6px;text-align:center}.pdf-iv-grid b{display:block;font-size:8px;color:#4338ca}.pdf-iv-grid span{display:block;font-size:8px;color:#64748b}.pdf-iv-grid strong{color:#172033}.pdf-source-card{background:linear-gradient(135deg,#cffafe 0%,#e0e7ff 50%,#fce7f3 100%);border-color:#6366f1}.pdf-source{margin:0!important}.pdf-source h3,.pdf-source h4{color:#312e81}.pdf-source .pve-naturezas-grid,.pdf-source .natureza-recomendada-container{background:linear-gradient(135deg,#fdf4ff,#eff6ff)!important;border-color:#c4b5fd!important}.pdf-source .pve-natureza-card,.pdf-source .move-tag,.pdf-source .tm-card,.pdf-source .iv-eval-stat,.pdf-source .status-card{break-inside:avoid;box-shadow:none}.pdf-source .pve-natureza-card{background:linear-gradient(135deg,#fef3c7,#fce7f3)!important;border-color:#f9a8d4!important}.pdf-source .move-tag,.pdf-source .tm-card{background:linear-gradient(135deg,#dbeafe,#e0e7ff)!important;border-color:#93c5fd!important}.pdf-source img{max-width:100%;break-inside:avoid}.pdf-footer{color:#64748b;text-align:center;font-size:7.5px;border-top:1px solid #cbd5e1;padding-top:6px;margin-top:12px}@media(max-width:700px){.pdf-info-row,.pdf-stat-grid,.pdf-iv-grid{grid-template-columns:repeat(2,1fr)}}@media print{body{background:linear-gradient(135deg,#312e81 0%,#7c3aed 38%,#db2777 72%,#f97316 100%).pdf-hero,.pdf-card{box-shadow:0 5px 16px #11182755}}
+  </style></head><body><main class="pdf-page">${resumo}${content}<div class="pdf-footer">Assistente do Treinador · Ficha ${pvp ? 'PvP' : 'PvE'} · ${new Date().toLocaleDateString('pt-BR')}</div></main><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),450))<\/script></body></html>`);
+  w.document.close();
+}
+document.getElementById('btnPdfPvp')?.addEventListener('click',()=>baixarFichaPDF('pvp'));
+document.getElementById('btnPdfPve')?.addEventListener('click',()=>baixarFichaPDF('pve'));
+
+
+
+/* PDF v3: fundo integralmente colorido, cards vibrantes e sem área branca dominante. */
+
+
+function mostrarBotaoPdf(id) {
+    const botao = document.getElementById(id);
+    if (botao) { botao.hidden = false; botao.style.display = 'inline-flex'; botao.removeAttribute('aria-hidden'); }
+}
+
+// Exportação em PDF para Duelo 1x1 e Análise de Times.
+function abrirPdfAnalise(titulo, tipo, elementos) {
+    const blocos = elementos.map(el => typeof el === 'string' ? document.querySelector(el) : el).filter(el => el && el.innerHTML?.trim());
+    if (!blocos.length) { alert('Gere a análise antes de exportar.'); return; }
+    const nome = titulo.replace(/[^a-z0-9_-]+/gi, '_');
+    const conteudo = blocos.map(el => { const c = el.cloneNode(true); c.querySelectorAll('button,input,select,textarea,.loading,.ia-loading').forEach(n=>n.remove()); return `<section>${c.outerHTML}</section>`; }).join('');
+    const w = window.open('', '_blank', 'width=900,height=900');
+    if (!w) { alert('Permita pop-ups para gerar o PDF.'); return; }
+    w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${titulo}</title><style>
+    @page{size:A4;margin:12mm}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;color:#172033;background:linear-gradient(135deg,#312e81,#7c3aed 40%,#db2777 72%,#f97316);font-size:10pt;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{max-width:184mm;margin:auto}.hero{color:#fff;border-radius:18px;padding:18px 20px;margin-bottom:12px;background:linear-gradient(135deg,#4f46e5,#a855f7,#ec4899);border:2px solid #f0abfc;box-shadow:0 6px 18px #11182766}.hero small{opacity:.8;text-transform:uppercase;letter-spacing:.12em}.hero h1{margin:4px 0;font-size:24px}.card{background:linear-gradient(135deg,#fef3c7,#fce7f3 50%,#dbeafe);border:2px solid #a855f7;border-radius:14px;padding:14px;margin-bottom:11px;box-shadow:0 4px 14px #11182744;break-inside:avoid}.card h2,.card h3,.card h4{color:#312e81}.card img{max-width:100%}.duel-section-block,.skills-card,.team-result,.ia-analysis{break-inside:avoid}.pdf-foot{text-align:center;color:#fff;font-size:8px;margin-top:12px}@media print{body{background:linear-gradient(135deg,#312e81,#7c3aed 40%,#db2777 72%,#f97316)}.hero,.card{box-shadow:none}}
+    </style></head><body><main class="page"><header class="hero"><small>Assistente do Treinador</small><h1>${titulo}</h1><div>${tipo}</div></header>${conteudo}<div class="pdf-foot">Gerado em ${new Date().toLocaleDateString('pt-BR')}</div></main><script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`);
+    w.document.close();
+}
+document.getElementById('btnPdfDuelo')?.addEventListener('click',()=>abrirPdfAnalise('Duelo 1x1 PvP','TMs da lista oficial e análise do confronto',['#duelIAResult']));
+document.getElementById('btnPdfTimes')?.addEventListener('click',()=>abrirPdfAnalise('Análise de Times PvP','TMs da lista oficial e veredito da IA',['#teamResultContent','#iaAnalysis']));
