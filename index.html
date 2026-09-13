@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Treinador Pokémon" />
 <link rel="manifest" href="manifest.webmanifest" />
-<link rel="icon" type="image/svg+xml" href="icons/icon-192.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
 <link rel="apple-touch-icon" href="icons/icon-192.png" />
 <title>Assistente do Treinador Pokémon</title>
 
@@ -836,7 +836,7 @@ document.getElementById('btnFecharPwa')?.addEventListener('click', ()=>document.
 document.getElementById('pwaModal')?.addEventListener('click', e=>{if(e.target.id==='pwaModal')e.currentTarget.classList.remove('aberto')});
 document.getElementById('btnInstalarAgora')?.addEventListener('click', async ()=>{ if(!eventoInstalacaoPwa)return; eventoInstalacaoPwa.prompt(); await eventoInstalacaoPwa.userChoice; eventoInstalacaoPwa=null; document.getElementById('pwaModal')?.classList.remove('aberto'); });
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.warn));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {scope: './'}).catch(console.warn));
 }
 </script>
 </body>
