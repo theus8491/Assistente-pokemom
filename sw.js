@@ -1,4 +1,4 @@
-const CACHE_NAME = 'treinador-pokemon-v4';
+const CACHE_NAME = 'treinador-pokemon-v6';
 const APP_SHELL = [
   './', './index.html', './manifest.webmanifest', './style.css', './script.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'
