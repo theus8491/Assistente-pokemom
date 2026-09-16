@@ -1,1711 +1,848 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#8b5cf6" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" href="./icons/icon-192.png" type="image/png" />
-  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  <title>Guilda Anomalia - Meta 750</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#4f46e5" />
+<meta name="background-color" content="#312e81" />
+<meta name="description" content="Assistente do Treinador Pokémon para análises PvP, PvE, duelos e times." />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Treinador Pokémon" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<title>Assistente do Treinador Pokémon</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<link rel="stylesheet" href="style.css" />
 
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f2f4f8;
-      min-height: 100vh;
-      padding: 2rem 1.5rem;
-      color: #1e293b;
-    }
-    .container { max-width: 1100px; margin: 0 auto; }
 
-    .header-pokemon { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.3rem; flex-wrap: wrap; }
-    .pokeball-icon {
-      display: inline-block; width: 48px; height: 48px;
-      background: radial-gradient(circle at 30% 30%, #fff, #e2e8f0);
-      border-radius: 50%; border: 3px solid #1e293b; position: relative; flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .pokeball-icon::before {
-      content: ''; position: absolute; width: 100%; height: 50%;
-      background: #ef4444; border-radius: 50% 50% 0 0; top: 0; left: 0;
-    }
-    .pokeball-icon::after {
-      content: ''; position: absolute; width: 16px; height: 16px; background: #fff;
-      border-radius: 50%; border: 3px solid #1e293b; top: 50%; left: 50%;
-      transform: translate(-50%, -50%); box-shadow: inset 0 0 0 4px #ef4444;
-    }
-    h1 { font-size: 2.4rem; font-weight: 800; color: #0f172a; flex: 1; }
-    h1 .subtitle { font-weight: 400; font-size: 1rem; color: #475569; display: block; margin-top: 0.1rem; }
-    .header-actions { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
-    .btn-nova-rodada {
-      background: #8b5cf6; color: #fff; border: none; padding: 0.6rem 1.4rem;
-      border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer;
-      transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      display: inline-flex; align-items: center; gap: 0.5rem; font-family: inherit;
-    }
-    .btn-nova-rodada:hover { background: #7c3aed; transform: scale(1.02); }
-    .btn-apagar-lista { background:#991b1b; color:#fff; border:none; padding:.6rem 1.1rem; border-radius:30px; font-weight:700; font-size:.9rem; cursor:pointer; transition:.2s; box-shadow:0 2px 8px rgba(0,0,0,.1); display:inline-flex; align-items:center; gap:.5rem; font-family:inherit; }
-    .btn-apagar-lista:hover { background:#7f1d1d; transform:scale(1.02); }
+<style>
+.pwa-actions{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}.btn-instalar-pwa{border:2px solid #7c3aed;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border-radius:30px;padding:.45rem .9rem;font:800 .7rem Inter,sans-serif;cursor:pointer;box-shadow:0 4px 12px #7c3aed44}.btn-instalar-pwa:hover{filter:brightness(1.08);transform:translateY(-1px)}.pwa-modal{position:fixed;inset:0;background:#111827aa;display:none;align-items:center;justify-content:center;padding:1rem;z-index:9999}.pwa-modal.aberto{display:flex}.pwa-modal-card{max-width:470px;width:100%;background:linear-gradient(135deg,#fef3c7,#fce7f3,#dbeafe);border:3px solid #7c3aed;border-radius:22px;padding:1.4rem;box-shadow:0 18px 50px #11182766;color:#172033}.pwa-modal-card h2{color:#312e81;margin-bottom:.5rem}.pwa-modal-card p,.pwa-modal-card li{font-size:.84rem;line-height:1.6}.pwa-modal-card ol{padding-left:1.2rem}.pwa-modal-close{float:right;border:0;background:#fee2e2;color:#991b1b;border-radius:50%;width:30px;height:30px;font-weight:900;cursor:pointer}.pwa-install-now{border:0;border-radius:30px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;padding:.7rem 1rem;font-weight:900;cursor:pointer;margin-top:.6rem}.pwa-install-now[hidden]{display:none}</style>
 
-    .sub { color: #475569; margin-bottom: 2rem; font-size: 1.1rem; padding-left: 4px; }
-    .sub strong { background: #facc15; color: #0f172a; padding: 0.1rem 0.8rem; border-radius: 30px; font-weight: 700; }
-
-    .resumo { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 2rem; }
-    .resumo-card {
-      border-radius: 24px; padding: 1.4rem 1.8rem; flex: 1; min-width: 150px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.08); text-align: center; color: #fff;
-      transition: transform 0.15s; position: relative; overflow: hidden;
-    }
-    .resumo-card:hover { transform: translateY(-4px); }
-    .resumo-card .num { font-size: 2.6rem; font-weight: 800; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .resumo-card .label { font-size: 0.8rem; font-weight: 600; opacity: 0.95; text-transform: uppercase; letter-spacing: 0.04em; }
-    .resumo-card .mini-pokeball { position: absolute; right: -10px; bottom: -10px; font-size: 5rem; opacity: 0.12; color: #fff; }
-    .card-vermelho { background: linear-gradient(135deg, #ef4444, #dc2626); }
-    .card-azul    { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-    .card-verde   { background: linear-gradient(135deg, #22c55e, #16a34a); }
-    .card-amarelo { background: linear-gradient(135deg, #facc15, #eab308); color: #0f172a; }
-    .card-amarelo .num { text-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .card-amarelo .mini-pokeball { color: #0f172a; }
-
-    .form-card, .gemini-card {
-      background: #ffffff; border-radius: 28px; padding: 1.8rem 2rem; margin-bottom: 2rem;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 2px solid #e9edf2;
-    }
-    .form-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
-    .form-group { flex: 1; min-width: 150px; }
-    .form-group label {
-      display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.04em; color: #475569; margin-bottom: 4px;
-    }
-    .form-group label i { color: #ef4444; margin-right: 4px; }
-    .form-group input, .form-group select {
-      width: 100%; padding: 0.7rem 1rem; border-radius: 16px; border: 2px solid #e2e8f0;
-      background: #f8fafc; color: #0f172a; font-size: 1rem; font-family: inherit; transition: border 0.2s;
-    }
-    .form-group input:focus, .form-group select:focus { outline: none; border-color: #3b82f6; background: #fff; }
-    .form-group input[readonly] { background: #e9edf2; color: #475569; cursor: not-allowed; }
-
-    .btn {
-      padding: 0.7rem 1.8rem; border: none; border-radius: 16px; font-weight: 700;
-      font-size: 1rem; cursor: pointer; transition: all 0.2s; font-family: inherit;
-      display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    .btn-primary { background: #ef4444; color: #fff; }
-    .btn-primary:hover { background: #dc2626; transform: scale(1.02); }
-    .btn-azul { background: #3b82f6; color: #fff; }
-    .btn-azul:hover { background: #2563eb; }
-    .btn-verde { background: #22c55e; color: #fff; }
-    .btn-verde:hover { background: #16a34a; }
-    .btn-ghost { background: #f1f5f9; color: #475569; }
-    .btn-ghost:hover { background: #e2e8f0; }
-    .btn-edit {
-      background: #facc15; color: #0f172a; padding: 0.35rem 0.9rem; font-size: 0.8rem;
-      border-radius: 12px; border: none; cursor: pointer; transition: 0.15s; font-weight: 700;
-    }
-    .btn-edit:hover { background: #eab308; }
-    .btn-excluir {
-      background: #ef4444; color: #fff; padding: 0.35rem 0.9rem; font-size: 0.8rem;
-      border-radius: 12px; border: none; cursor: pointer; transition: 0.15s;
-    }
-    .btn-excluir:hover { background: #dc2626; }
-
-    .gemini-card {
-      background: linear-gradient(160deg, #ffffff 0%, #f7f9ff 100%);
-      border: 2px solid #dbeafe;
-    }
-    .gemini-head { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
-    .gemini-head h3 {
-      font-size: 1.15rem; font-weight: 800; color: #0f172a;
-      display: flex; align-items: center; gap: 0.55rem;
-    }
-    .gemini-head h3 i { color: #3b82f6; }
-    .gemini-badge {
-      background: #dbeafe; color: #1d4ed8; font-size: 0.65rem; font-weight: 800;
-      padding: 0.2rem 0.65rem; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em;
-    }
-    .gemini-config { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-bottom: 1.2rem; }
-    .key-status { font-size: 0.78rem; font-weight: 700; padding: 0.35rem 0.8rem; border-radius: 20px; white-space: nowrap; }
-    .key-status.ok { background: #dcfce7; color: #16a34a; }
-    .key-status.no { background: #fee2e2; color: #dc2626; }
-
-    .btn-ler-gigante {
-      display: flex; align-items: center; justify-content: center; gap: 0.9rem;
-      width: 100%; padding: 1.6rem 2rem;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: #fff; border: none; border-radius: 24px;
-      font-family: inherit; font-size: 1.35rem; font-weight: 800; letter-spacing: 0.02em;
-      cursor: pointer; transition: all 0.2s;
-      box-shadow: 0 8px 24px rgba(34,197,94,0.4);
-      animation: pulseVerde 2s ease-in-out infinite;
-      text-transform: uppercase;
-    }
-    .btn-ler-gigante:hover {
-      background: linear-gradient(135deg, #16a34a, #15803d);
-      transform: translateY(-2px) scale(1.01);
-      box-shadow: 0 12px 30px rgba(22,163,74,0.55);
-    }
-    .btn-ler-gigante:active { transform: translateY(0) scale(0.99); }
-    .btn-ler-gigante i { font-size: 1.8rem; }
-    .btn-ler-gigante small {
-      display: block; font-size: 0.7rem; font-weight: 600; opacity: 0.9;
-      text-transform: none; letter-spacing: 0; margin-top: 0.15rem;
-    }
-    @keyframes pulseVerde {
-      0%, 100% { box-shadow: 0 8px 24px rgba(34,197,94,0.4); }
-      50%      { box-shadow: 0 8px 34px rgba(34,197,94,0.75); }
-    }
-
-    .progresso { margin-top: 1.2rem; }
-    .prog-item {
-      display: flex; align-items: center; gap: 0.8rem; padding: 0.7rem 0.9rem;
-      background: #f8fafc; border-radius: 14px; margin-bottom: 0.5rem; font-size: 0.88rem;
-      border: 1px solid #e9edf2;
-    }
-    .prog-item .thumb {
-      width: 48px; height: 48px; border-radius: 10px; object-fit: cover;
-      border: 2px solid #e2e8f0; flex-shrink: 0;
-    }
-    .prog-item .txt { flex: 1; color: #334155; }
-    .prog-item .txt b { color: #0f172a; }
-    .spin {
-      width: 20px; height: 20px; border: 3px solid #dbeafe; border-top-color: #3b82f6;
-      border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .ok-ico { color: #22c55e; font-size: 1.3rem; }
-    .err-ico { color: #ef4444; font-size: 1.3rem; }
-
-    .resultado-panel {
-      margin-top: 1.4rem; background: #fff;
-      border: 2px solid #e9edf2; border-radius: 20px; padding: 1.2rem;
-    }
-    .resultado-panel h4 {
-      font-size: 1rem; font-weight: 800; color: #0f172a;
-      margin-bottom: 1rem; display: flex; align-items: center; gap: 0.55rem;
-    }
-    .resultado-panel h4 i { color: #f59e0b; }
-
-    .res-item {
-      background: #f8fafc; border: 2px solid #e9edf2; border-radius: 14px;
-      padding: 0.85rem 0.95rem; margin-bottom: 0.6rem; transition: 0.15s;
-    }
-    .res-item:hover { border-color: #bfdbfe; }
-    .res-item-top {
-      display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 0.6rem;
-    }
-    .res-item .res-thumb {
-      width: 52px; height: 52px; border-radius: 12px; object-fit: cover;
-      border: 2px solid #e2e8f0; flex-shrink: 0;
-    }
-    .res-item input[type="text"], .res-item input[type="number"] {
-      padding: 0.55rem 0.8rem; border-radius: 12px; border: 2px solid #e2e8f0;
-      background: #fff; font-family: inherit; font-size: 0.95rem; color: #0f172a;
-      font-weight: 600;
-    }
-    .res-item input[type="text"] { flex: 1; min-width: 130px; }
-    .res-item input[type="number"] { width: 140px; }
-    .res-item input:focus { outline: none; border-color: #3b82f6; }
-    .res-info {
-      font-size: 0.75rem; font-weight: 800; padding: 0.35rem 0.75rem;
-      border-radius: 20px; white-space: nowrap; text-transform: uppercase;
-    }
-    .res-info.ok   { background: #dcfce7; color: #16a34a; }
-    .res-info.no   { background: #fee2e2; color: #dc2626; }
-    .res-info.novo { background: #dbeafe; color: #1d4ed8; }
-    .res-calc {
-      display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center;
-      padding-top: 0.5rem; border-top: 1px dashed #e2e8f0;
-      font-size: 0.82rem; font-weight: 700; color: #475569;
-    }
-    .res-calc .chip {
-      padding: 0.25rem 0.7rem; border-radius: 20px;
-      background: #f1f5f9; color: #334155;
-    }
-    .res-calc .chip.ant { background: #e0e7ff; color: #3730a3; }
-    .res-calc .chip.novo2 { background: #fef3c7; color: #92400e; }
-    .res-calc .chip.diff { background: #dcfce7; color: #166534; }
-    .res-calc .chip.diff.neg { background: #fee2e2; color: #991b1b; }
-    .res-calc .chip.total-hoje { background: #dbeafe; color: #1e40af; }
-
-    .res-actions { display: flex; gap: 0.7rem; margin-top: 1.2rem; flex-wrap: wrap; }
-    .res-actions .btn-verde { flex: 1; justify-content: center; min-width: 200px; padding: 1rem 2rem; font-size: 1.05rem; }
-
-    .table-wrapper {
-      background: #ffffff; border-radius: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-      border: 2px solid #e9edf2; overflow-x: auto; padding: 0 0.5rem 0.5rem 0.5rem;
-    }
-    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-    th {
-      text-align: left; padding: 1rem 0.8rem 0.6rem; font-weight: 700; color: #475569;
-      text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.7rem; border-bottom: 2px solid #e9edf2;
-    }
-    td { padding: 0.8rem 0.8rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-    tr:hover td { background: #f8fafc; }
-
-    tr.nao-bateu td { background: #fff7ed; }
-    tr.nao-bateu:hover td { background: #ffedd5; }
-    tr.nao-bateu td:first-child { box-shadow: inset 4px 0 0 #f97316; }
-
-    .nick-cell { display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; }
-    .contrib-inline {
-      font-size: 0.72rem; font-weight: 800; padding: 0.18rem 0.6rem; border-radius: 20px;
-      white-space: nowrap;
-    }
-    .contrib-inline.ok { background: #dcfce7; color: #16a34a; }
-    .contrib-inline.no { background: #fee2e2; color: #dc2626; }
-
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 8px; padding: 0.3rem 1rem;
-      border-radius: 40px; font-weight: 700; font-size: 0.8rem; box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    }
-    .status-badge.aprovado { background: #dcfce7; color: #16a34a; }
-    .status-badge.reprovado { background: #fee2e2; color: #dc2626; }
-    .acoes { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; }
-    .empty-msg { text-align: center; padding: 2rem; color: #94a3b8; }
-    .search-card { background:#fff; border-radius:28px; padding:1.2rem 1.5rem; margin:0 0 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,.04); border:2px solid #e9edf2; }
-    .search-box { display:flex; align-items:center; gap:.7rem; }
-    .search-box i { color:#3b82f6; font-size:1.1rem; }
-    .search-box input { flex:1; padding:.75rem 1rem; border:2px solid #e2e8f0; border-radius:16px; font:inherit; color:#0f172a; background:#f8fafc; }
-    .search-box input:focus { outline:none; border-color:#3b82f6; background:#fff; }
-    .search-hint { margin-top:.45rem; font-size:.75rem; color:#64748b; }
-    .total-destaque { font-weight: 800; color: #0f172a; background: #f1f5f9; padding: 0.1rem 0.6rem; border-radius: 20px; }
-    .historico-dia { font-size:.72rem; color:#64748b; margin-top:.25rem; line-height:1.45; }
-    .historico-dia b { color:#334155; }
-    .historico-lista { margin-top:.35rem; padding-left:1rem; font-size:.72rem; color:#64748b; }
-
-    .dashboard-interativo {
-      margin-top: 2.5rem; display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;
-    }
-    .chart-card {
-      background: #ffffff; border-radius: 28px; padding: 1.5rem 1.2rem 1.2rem;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 2px solid #e9edf2; transition: 0.15s;
-    }
-    .chart-card:hover { border-color: #facc15; }
-    .chart-card h3 {
-      font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.8rem;
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    .chart-card h3 i { color: #ef4444; }
-    .chart-wrapper { position: relative; height: 200px; }
-    .chart-wrapper canvas { width: 100% !important; height: 100% !important; }
-
-    .pdf-actions-card {
-      background: #fff; border-radius: 28px; padding: 1.5rem 2rem; margin-top: 2rem;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 2px solid #e9edf2;
-    }
-    .pdf-actions-card h3 {
-      font-size: 1.1rem; font-weight: 800; color: #0f172a;
-      margin-bottom: 1rem; display: flex; align-items: center; gap: 0.55rem;
-    }
-    .pdf-actions-card h3 i { color: #f59e0b; }
-    .pdf-actions-row {
-      display: flex; gap: 0.8rem; flex-wrap: wrap;
-    }
-    .pdf-actions-row .btn { padding: 0.9rem 1.6rem; font-size: 0.95rem; }
-
-    .btn-pdf-vermelho { background: #ef4444; color: #fff; }
-    .btn-pdf-vermelho:hover { background: #dc2626; }
-    .btn-pdf-verde { background: #22c55e; color: #fff; }
-    .btn-pdf-verde:hover { background: #16a34a; }
-    .btn-pdf-amarelo { background: #f59e0b; color: #fff; }
-    .btn-pdf-amarelo:hover { background: #d97706; }
-    .equilibrio-box { display:flex; align-items:flex-end; gap:.7rem; flex-wrap:wrap; width:100%; margin-top:.8rem; padding:1rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; }
-    .equilibrio-box label { display:block; width:100%; font-size:.78rem; font-weight:800; color:#475569; text-transform:uppercase; }
-    .equilibrio-box label i { color:#8b5cf6; margin-right:.35rem; }
-    .equilibrio-box input { width:180px; padding:.7rem 1rem; border:2px solid #e2e8f0; border-radius:14px; font:inherit; font-weight:700; }
-    .guildas-card{background:#fff;border:2px solid #e9edf2;border-radius:28px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.04)}
-    .guildas-row{display:flex;gap:.7rem;align-items:flex-end;flex-wrap:wrap}.guildas-row label{display:block;width:100%;font-size:.75rem;font-weight:800;text-transform:uppercase;color:#475569}.guildas-row select,.guildas-row input{padding:.7rem 1rem;border:2px solid #e2e8f0;border-radius:14px;font:inherit;font-weight:700;background:#f8fafc}.guildas-row select{min-width:220px}.btn-backup{background:#0f766e;color:#fff}.btn-restaurar{background:#64748b;color:#fff}.comparacao-card{background:#fff;border:2px solid #dbeafe;border-radius:28px;padding:1.3rem 1.5rem;margin-top:2rem}.correcao-box{margin-top:.8rem;padding:.7rem .9rem;border-radius:14px;background:#fff7ed;color:#9a3412;font-size:.82rem}
-    .btn-instalar-app { background:#7c3aed !important; color:#fff !important; display:inline-flex; align-items:center; gap:.5rem; text-decoration:none; font-weight:800; }
-    .btn-instalar-app.visivel { display:inline-flex; }
-    .btn-instalar-app:hover { background:#6d28d9 !important; }
-    .tutorial-overlay { display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,.62); padding:1rem; align-items:center; justify-content:center; }
-    .tutorial-overlay.aberto { display:flex; }
-    .tutorial-card { max-width:560px; width:100%; max-height:92vh; overflow:auto; background:#fff; border-radius:24px; padding:1.5rem; box-shadow:0 20px 60px rgba(0,0,0,.3); color:#1e293b; }
-    .tutorial-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
-    .tutorial-head h2 { font-size:1.25rem; color:#0f172a; }
-    .tutorial-close { border:0; background:#f1f5f9; color:#475569; border-radius:12px; padding:.5rem .75rem; cursor:pointer; font-size:1.1rem; }
-    .tutorial-section { border:1px solid #e2e8f0; border-radius:16px; padding:1rem; margin:.8rem 0; }
-    .tutorial-section h3 { font-size:1rem; color:#7c3aed; margin-bottom:.55rem; }
-    .tutorial-section ol { padding-left:1.35rem; line-height:1.65; }
-    .tutorial-note { background:#fef3c7; color:#92400e; border-radius:12px; padding:.8rem; font-size:.86rem; line-height:1.45; margin-top:1rem; }
-    .equilibrio-box input:focus { outline:none; border-color:#8b5cf6; }
-
-    .footer {
-      margin-top: 2.5rem; padding: 1.5rem 0 0.5rem; text-align: center;
-      font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e9edf2; line-height: 1.6;
-    }
-
-    @media (max-width: 700px) {
-      .form-row { flex-direction: column; align-items: stretch; }
-      .resumo { flex-direction: column; gap: 0.8rem; }
-      .resumo-card { min-width: unset; }
-      table { font-size: 0.8rem; }
-      td, th { padding: 0.5rem 0.4rem; }
-      .header-pokemon h1 { font-size: 1.8rem; }
-      .pokeball-icon { width: 40px; height: 40px; }
-      .dashboard-interativo { grid-template-columns: 1fr; }
-      .chart-wrapper { height: 180px; }
-      .res-item input[type="text"] { flex: 1 1 100%; }
-      .res-item input[type="number"] { width: 100%; }
-      .btn-ler-gigante { font-size: 1.05rem; padding: 1.3rem 1rem; }
-      .btn-ler-gigante i { font-size: 1.4rem; }
-      .pdf-actions-row .btn { width: 100%; justify-content: center; }
-    }
-  </style>
+<style>
+.site-character-icon{display:inline-block;width:58px;height:58px;border-radius:16px;object-fit:cover;object-position:center;box-shadow:0 5px 14px rgba(79,70,229,.35);border:3px solid #fff;image-rendering:auto}
+@media(max-width:480px){.site-character-icon{width:48px;height:48px;border-radius:13px}.title-container h1{font-size:1.35rem}}
+</style>
 </head>
 <body>
-
+<div class="bg-pokeball">⚪</div>
 <div class="container">
 
-  <div class="header-pokemon">
-    <div class="pokeball-icon"></div>
-    <h1>
-      Gerenciador da Guilda
-      <span class="subtitle"><i class="fas fa-bolt" style="color:#facc15;"></i> Meta diária: <strong style="background:#facc15; padding:0 8px; border-radius:20px;">750 pontos</strong></span>
-    </h1>
-    <div class="header-actions">
-      <button class="btn-nova-rodada" id="btnNovaRodada" title="Zera as contribuições do dia mantendo os totais">
-        <i class="fas fa-rotate"></i> Nova Rodada
-      </button>
-      <button class="btn-apagar-lista" id="btnApagarLista" title="Apaga todos os membros e dados salvos">
-        <i class="fas fa-trash-can"></i> Apagar lista
-      </button>
-      <button type="button" class="btn btn-instalar-app" id="btnInstalarApp" title="Ver como instalar este sistema">
-        <i class="fas fa-circle-question"></i> Como instalar o app
-      </button>
-
+<div class="title-container">
+    <div class="title-left">
+        <img class="site-character-icon" src="icons/trainer-pikachu.png" alt="Ash e Pikachu">
+        <h1>Assistente <span>do Treinador</span></h1>
     </div>
-  </div>
-  <p class="sub">
-    <i class="fas fa-flag-checkered" style="color:#ef4444;"></i> Cada foto enviada <b>ACUMULA</b> os pontos: a diferença entre o total novo e o antigo é somada à contribuição do dia.
-  </p>
-
-  <div class="guildas-card"><div class="guildas-row"><label for="guildaSelect"><i class="fas fa-users"></i> Guilda atual</label><select id="guildaSelect"></select><input id="novaGuildaNome" placeholder="Nome da nova guilda" /><button type="button" class="btn btn-azul" id="btnNovaGuilda"><i class="fas fa-plus"></i> Nova guilda</button><button type="button" class="btn btn-excluir" id="btnExcluirGuilda"><i class="fas fa-trash"></i> Apagar guilda</button><button type="button" class="btn btn-backup" id="btnBackup"><i class="fas fa-download"></i> Fazer backup</button><button type="button" class="btn btn-restaurar" id="btnRestaurar"><i class="fas fa-upload"></i> Importar backup</button><button type="button" class="btn btn-restaurar" id="btnRestaurarAnterior"><i class="fas fa-clock-rotate-left"></i> Restaurar última versão</button><input type="file" id="backupInput" accept="application/json" hidden /></div><div style="margin-top:.55rem;font-size:.78rem;color:#64748b">Sua guilda principal fica selecionada por padrão. Cada guilda possui jogadores e históricos separados.</div></div>
-
-  <div class="resumo">
-    <div class="resumo-card card-vermelho">
-      <div class="mini-pokeball">⚪</div>
-      <div class="num" id="totalPlayers">0</div>
-      <div class="label">Total de Treinadores (máx. 100)</div>
+    <div class="pwa-actions">
+        <button class="btn-instalar-pwa" id="btnInstalarPwa" type="button" onclick="return false;"><i class="fas fa-mobile-alt"></i> Instalar app</button>
+        <div class="badge-ativo"><span class="dot"></span> Ativo</div>
     </div>
-    <div class="resumo-card card-verde">
-      <div class="mini-pokeball">⚪</div>
-      <div class="num" id="bateramHoje">0</div>
-      <div class="label">Bateram hoje 🏆</div>
-    </div>
-    <div class="resumo-card card-amarelo">
-      <div class="mini-pokeball">⚪</div>
-      <div class="num" id="naoBateramHoje">0</div>
-      <div class="label">Não bateram hoje 😢</div>
-    </div>
-    <div class="resumo-card card-azul">
-      <div class="mini-pokeball">⚪</div>
-      <div class="num" id="totalPontos">0</div>
-      <div class="label">Total acumulado</div>
-      <button type="button" class="btn btn-ghost" id="btnEditarTotalGuilda" style="margin-top:.7rem;font-size:.72rem;padding:.35rem .7rem;position:relative;z-index:2;"><i class="fas fa-pen"></i> Editar valor real</button>
-    </div>
-  </div>
-
-  <!-- LEITURA POR IA -->
-  <div class="gemini-card">
-    <div class="gemini-head">
-      <h3><i class="fas fa-robot"></i> Leitura automática dos prints (IA Gemini)</h3>
-      <span class="gemini-badge">Beta</span>
-    </div>
-
-    <div class="gemini-config">
-      <div class="form-group" style="flex: 2; min-width: 220px;">
-        <label><i class="fas fa-key"></i> API Key do Gemini</label>
-        <input type="password" id="geminiKey" placeholder="Cole aqui sua chave AIza..." autocomplete="off" />
-      </div>
-      <div class="form-group" style="flex: 1; min-width: 170px;">
-        <label><i class="fas fa-microchip"></i> Modelo</label>
-        <select id="geminiModel">
-          <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (principal)</option>
-          <option value="gemini-2.0-flash">gemini-2.0-flash</option>
-          <option value="gemini-2.5-flash">gemini-2.5-flash</option>
-          <option value="gemini-1.5-flash">gemini-1.5-flash</option>
-        </select>
-      </div>
-      <button type="button" class="btn btn-primary" id="salvarKey">
-        <i class="fas fa-floppy-disk"></i> Salvar
-      </button>
-      <span class="key-status no" id="keyStatus">Chave não configurada</span>
-    </div>
-
-    <button type="button" class="btn-ler-gigante" id="btnLerFoto">
-      <i class="fas fa-camera"></i>
-      <div>
-        CLIQUE AQUI PARA LER A FOTO
-        <small>Escolha a imagem → a IA lê → você confere → clica em Adicionar</small>
-      </div>
-    </button>
-
-    <input type="file" id="fileInput" accept="image/*" multiple hidden />
-
-    <div class="progresso" id="progresso"></div>
-    <div class="resultado-panel" id="resultadoPanel" style="display:none;"></div>
-  </div>
-
-  <!-- Formulário manual -->
-  <div class="form-card">
-    <form id="playerForm">
-      <div class="form-row">
-        <div class="form-group">
-          <label><i class="fas fa-user"></i> Nick do Treinador</label>
-          <input type="text" id="nick" placeholder="Ex: Ash" required />
-        </div>
-        <div class="form-group">
-          <label><i class="fas fa-database"></i> Total anterior</label>
-          <input type="number" id="totalAnterior" readonly />
-        </div>
-        <div class="form-group">
-          <label><i class="fas fa-arrow-up"></i> Novo total acumulado real</label>
-          <input type="number" id="totalAtual" placeholder="Ex: 10820" required min="0" step="1" />
-        </div>
-        <div class="form-group" style="flex: 0 0 auto; min-width: 130px;">
-          <button type="submit" class="btn btn-primary" id="submitBtn">
-            <i class="fas fa-plus"></i> Adicionar
-          </button>
-        </div>
-      </div>
-      <div id="contribDisplay" style="margin-top: 10px; font-weight: 600; color: #2563eb; display: none;">
-        Contribuição deste upload: <span id="contribCalculada">0</span> pontos
-      </div>
-      <div class="correcao-box"><label><input type="checkbox" id="corrigirSaldoReal" /> Corrigir saldo real sem contar a alteração como pontos do dia</label></div>
-      <input type="hidden" id="editIndex" value="-1" />
-    </form>
-  </div>
-
-  <div class="search-card">
-    <div class="search-box">
-      <i class="fas fa-magnifying-glass"></i>
-      <input type="search" id="nickSearch" placeholder="Buscar treinador pelo nick..." autocomplete="off" />
-      <button type="button" class="btn btn-ghost" id="limparBusca" style="display:none;padding:.55rem .9rem;">Limpar</button>
-    </div>
-    <div class="search-hint" id="searchHint">Digite parte do nick para filtrar a lista.</div>
-  </div>
-
-  <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th>Treinador</th>
-          <th>Total acumulado</th>
-          <th>Pontos feitos hoje</th>
-          <th>Histórico anterior</th>
-          <th>Status Hoje</th>
-          <th style="text-align: center;">Ações</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody">
-        <tr><td colspan="6" class="empty-msg">Nenhum treinador cadastrado ainda. Adicione o primeiro!</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- PAINEL DE PDFs (3 BOTÕES) -->
-  <div class="pdf-actions-card">
-    <h3><i class="fas fa-file-pdf"></i> Relatórios em PDF</h3>
-    <div class="pdf-actions-row">
-      <button type="button" class="btn btn-pdf-verde" id="btnPDFBateram">
-        <i class="fas fa-trophy"></i> PDF — Todos que Bateram a Meta
-      </button>
-      <button type="button" class="btn btn-pdf-amarelo" id="btnPDFTop10">
-        <i class="fas fa-medal"></i> PDF — TOP 10 do Dia
-      </button>
-      <button type="button" class="btn btn-pdf-vermelho" id="btnPDFNaoBateram">
-        <i class="fas fa-triangle-exclamation"></i> PDF — Quem NÃO Bateu
-      </button>
-      <div class="equilibrio-box">
-        <label for="metaEquilibrio"><i class="fas fa-scale-balanced"></i> Meta de equilíbrio (total acumulado)</label>
-        <input type="number" id="metaEquilibrio" min="0" step="1" placeholder="Ex.: 15000" />
-        <button type="button" class="btn btn-pdf-verde" id="btnPDFEquilibrio">
-          <i class="fas fa-file-pdf"></i> PDF — Quem precisa atingir
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="dashboard-interativo">
-    <div class="chart-card">
-      <h3><i class="fas fa-chart-pie"></i> Desempenho hoje</h3>
-      <div class="chart-wrapper"><canvas id="pieChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3><i class="fas fa-chart-bar"></i> Contribuição hoje (por membro)</h3>
-      <div class="chart-wrapper"><canvas id="barChartContrib"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3><i class="fas fa-chart-bar"></i> Total acumulado (por membro)</h3>
-      <div class="chart-wrapper"><canvas id="barChartTotal"></canvas></div>
-    </div>
-  </div>
-
-  <div class="comparacao-card"><h3><i class="fas fa-ranking-star"></i> Comparação entre guildas</h3><div id="comparacaoGuildas">Crie outra guilda para comparar o desempenho.</div><div class="chart-wrapper" style="height:280px;margin-top:1.2rem;"><canvas id="chartComparacaoGuildas"></canvas></div><div id="sugestaoGuilda" style="margin-top:1rem;padding:1rem;border-radius:16px;background:#eef2ff;color:#3730a3;font-weight:700;line-height:1.5;">A sugestão aparecerá quando houver pelo menos duas guildas.</div><button type="button" class="btn btn-azul" id="btnAnalisarMetaIA" style="margin-top:.8rem;"><i class="fas fa-wand-magic-sparkles"></i> Analisar gráfico e sugerir meta com IA</button><button type="button" class="btn btn-pdf-amarelo" id="btnPDFComparacao" style="margin-top:.8rem;"><i class="fas fa-file-pdf"></i> PDF — Estatísticas e diferenças</button><div id="resultadoMetaIA" style="display:none;margin-top:.8rem;padding:1rem;border-radius:16px;background:#ecfdf5;color:#166534;line-height:1.5;"></div></div>
-
-  <div class="footer">
-    <p>
-      <i class="fas fa-info-circle" style="margin-right: 6px;"></i>
-      Este site é um gerenciador de guildas não oficial e não possui nenhum vínculo de afiliação com a Nintendo, Pokémon, IdleDex ou qualquer outra marca relacionada. Todos os direitos pertencem aos seus respectivos proprietários.
-    </p>
-  </div>
-
 </div>
 
-<script>
-  // ============================================================
-  //  CONFIG / DADOS
-  // ============================================================
-  const META = 750;
-  const LIMITE_GUILDA = 100;
-  let players = []; let guildas = {}; let guildaAtiva = 'principal';   // dados da guilda atual
-  let chartComparacaoGuildas;
-  let chartPie, chartBarContrib, chartBarTotal;
-  let reviewItems = [];
-  let filtroNick = '';
-
-  function loadData() {
-    const raw=localStorage.getItem('guildasPokemon');
-    if(raw){try{const x=JSON.parse(raw);guildas=x.guildas||{};guildaAtiva=x.ativa||'principal';}catch(e){guildas={};}}
-    if(!Object.keys(guildas).length){let antigos=[];try{antigos=JSON.parse(localStorage.getItem('guildaPokemon')||'[]');}catch(e){};if(!antigos.length) antigos=[{nick:'Ash',total:10820,contrib:820},{nick:'Misty',total:9410,contrib:910},{nick:'Brock',total:12650,contrib:650}];guildas={principal:{nome:'Minha Guilda (principal)',players:normalizarPlayers(antigos),criadaEm:dataHoraAtual()}};guildaAtiva='principal';}
-    if(!guildas[guildaAtiva]) guildaAtiva=Object.keys(guildas)[0]; players=normalizarPlayers(guildas[guildaAtiva].players||[]); atualizarSeletorGuildas(); saveData();
-  }
-
-  function totalGuilda(g){const soma=(g.players||[]).reduce((a,p)=>a+(Number(p.total)||0),0);return Number.isFinite(Number(g.totalReal))?Number(g.totalReal):soma;}
-  function editarTotalGuilda(){const atual=totalGuilda(guildas[guildaAtiva]);const valor=prompt(`Informe o total acumulado real da guilda "${guildas[guildaAtiva].nome}":`,String(atual));if(valor===null)return;const n=Number(valor);if(!Number.isFinite(n)||n<0)return alert('Digite um valor válido.');guildas[guildaAtiva].totalReal=Math.round(n);saveData();render();atualizarComparacao();alert(`Total acumulado real ajustado para ${formatarNumero(n)}.`);}
-  function saveData(){const anterior=localStorage.getItem('guildasPokemon');if(anterior)localStorage.setItem('guildasPokemon_ultimoBackup',anterior);if(guildas[guildaAtiva])guildas[guildaAtiva].players=normalizarPlayers(players);localStorage.setItem('guildasPokemon',JSON.stringify({guildas,ativa:guildaAtiva}));localStorage.setItem('guildaPokemon',JSON.stringify(players));if(document.getElementById('comparacaoGuildas'))atualizarComparacao();}
-  function atualizarSeletorGuildas(){const e=document.getElementById('guildaSelect');if(e){e.innerHTML=Object.entries(guildas).map(([id,g])=>`<option value="${escapeHtml(id)}">${escapeHtml(g.nome)}</option>`).join('');e.value=guildaAtiva;}}
-  function inicializarComparacao(){const c=document.getElementById('chartComparacaoGuildas');if(c)chartComparacaoGuildas=new Chart(c.getContext('2d'),{type:'bar',data:{labels:[],datasets:[{label:'Pontos feitos no dia',data:[],backgroundColor:['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6'],borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'Pontos no dia'}}}}});}
-  function atualizarComparacao(){
-    const e=document.getElementById('comparacaoGuildas'); if(!e)return;
-    const a=Object.entries(guildas).map(([id,g])=>{const p=g.players||[];return {id,nome:g.nome,m:p.length,d:p.reduce((x,q)=>x+(+q.contrib||0),0),t:totalGuilda(g),b:p.filter(q=>q.contrib>=META).length};}).sort((x,y)=>y.d-x.d);
-    if(chartComparacaoGuildas){chartComparacaoGuildas.data.labels=a.map(x=>x.nome);chartComparacaoGuildas.data.datasets[0].data=a.map(x=>x.d);chartComparacaoGuildas.data.datasets[0].backgroundColor=a.map(x=>x.id==='principal'?'#ef4444':'#3b82f6');chartComparacaoGuildas.update();}
-    const minha=a.find(x=>x.id==='principal')||{d:0,t:0};
-    if(a.length<2){e.textContent='Crie outra guilda para comparar o desempenho.';const sug=document.getElementById('sugestaoGuilda');if(sug)sug.textContent='A sugestão aparecerá quando houver pelo menos duas guildas.';return;}
-    e.innerHTML='<div style="overflow:auto"><table><thead><tr><th>Guilda</th><th>Membros</th><th>Pontos hoje</th><th>Diferença hoje</th><th>Total acumulado</th><th>Diferença acumulada</th><th>Bateram meta</th></tr></thead><tbody>'+a.map(x=>{const dd=x.d-minha.d,dt=x.t-minha.t;return `<tr><td><b>${escapeHtml(x.nome)}</b></td><td>${x.m}</td><td><b>+${formatarNumero(x.d)}</b></td><td style="color:${dd>=0?'#16a34a':'#dc2626'};font-weight:700">${dd>=0?'+':''}${formatarNumero(dd)}</td><td>${formatarNumero(x.t)}</td><td style="color:${dt>=0?'#16a34a':'#dc2626'};font-weight:700">${dt>=0?'+':''}${formatarNumero(dt)}</td><td>${x.b}</td></tr>`;}).join('')+'</tbody></table></div>';
-    const sug=document.getElementById('sugestaoGuilda'); const rivais=a.filter(x=>x.id!=='principal'); const lider=rivais[0]; if(!lider){if(sug)sug.textContent='Não há outra guilda para ultrapassar.';return;}
-    const alvo=Math.min(2500,Math.max(META,lider.d+1)); const falta=Math.max(0,alvo-minha.d); if(sug)sug.innerHTML=falta>0?`<i class="fas fa-lightbulb"></i> <b>Sugestão:</b> para a guilda principal ultrapassar <b>${escapeHtml(lider.nome)}</b> hoje, faça pelo menos <b>${formatarNumero(alvo)} pontos</b>. Diferença hoje: <b>${formatarNumero(lider.d-minha.d)} pontos</b>. Diferença acumulada: <b>${formatarNumero(lider.t-minha.t)} pontos</b>.`:`<i class="fas fa-trophy"></i> A guilda principal já está na frente de <b>${escapeHtml(lider.nome)}</b> hoje.`;
-  }
-
-  function gerarPDFComparacao(){
-    const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}); const lista=Object.entries(guildas).map(([id,g])=>{const p=g.players||[];return {id,nome:g.nome,m:p.length,d:p.reduce((a,x)=>a+(+x.contrib||0),0),t:totalGuilda(g),b:p.filter(x=>x.contrib>=META).length};}).sort((a,b)=>b.d-a.d); const principal=lista.find(x=>x.id==='principal')||{d:0,t:0};
-    const {doc,pageW,margin}=criarPDFBase('Comparacao entre Guildas',[37,99,235],`Data: ${hoje}`,`Pontos do dia e totais acumulados | Guildas: ${lista.length}`); const pageH=doc.internal.pageSize.getHeight(); let y=50;
-    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(30,64,175);doc.text('Estatisticas e diferencas em relacao a guilda principal:',margin,y);y+=10;
-    lista.forEach((g,i)=>{if(y>pageH-35){doc.addPage();y=20;}const dd=g.d-principal.d,dt=g.t-principal.t;doc.setFillColor(i%2?255:239, i%2?255:246, i%2?255:255);doc.rect(margin-2,y-5,pageW-margin*2+4,18,'F');doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(15,23,42);doc.text(g.nome,margin,y+2);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(71,85,105);doc.text(`Membros: ${g.m} | Bateram meta: ${g.b}`,margin,y+8);doc.text(`Hoje: +${formatarNumero(g.d)} | Dif. hoje: ${dd>=0?'+':''}${formatarNumero(dd)} | Total: ${formatarNumero(g.t)} | Dif. acumulada: ${dt>=0?'+':''}${formatarNumero(dt)}`,margin,y+14);y+=22;});
-    rodapePDF(doc,pageW,pageH,margin);doc.save(`relatorio_comparacao_guildas_${hoje.replace(/\//g,'-')}.pdf`);
-  }
-  function trocarGuilda(id){saveData();guildaAtiva=id;players=normalizarPlayers(guildas[id].players||[]);atualizarSeletorGuildas();resetForm();render();atualizarComparacao();}
-  function criarGuilda(){const n=document.getElementById('novaGuildaNome').value.trim();if(!n)return alert('Digite o nome da guilda.');const id='guilda_'+Date.now();guildas[id]={nome:n,players:[],criadaEm:dataHoraAtual()};document.getElementById('novaGuildaNome').value='';trocarGuilda(id);}
-  function apagarGuilda(){if(guildaAtiva==='principal')return alert('A guilda principal não pode ser apagada.');if(!confirm('Apagar esta guilda? Faça um backup antes se quiser preservar os dados.'))return;delete guildas[guildaAtiva];guildaAtiva='principal';players=normalizarPlayers(guildas.principal.players||[]);atualizarSeletorGuildas();saveData();render();atualizarComparacao();}
-  function fazerBackup(){const b=new Blob([JSON.stringify({versao:2,exportadoEm:dataHoraAtual(),guildas,ativa:guildaAtiva},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='backup_guildas_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);}
-  function restaurarBackup(f){const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x.guildas)throw Error();if(!confirm('Restaurar substituirá os dados atuais. Continuar?'))return;guildas=x.guildas;guildaAtiva=x.ativa&&guildas[x.ativa]?x.ativa:Object.keys(guildas)[0];players=normalizarPlayers(guildas[guildaAtiva].players||[]);atualizarSeletorGuildas();saveData();render();atualizarComparacao();alert('Backup restaurado.');}catch(e){alert('Backup inválido.');}};r.readAsText(f);}
-  function restaurarUltimaVersao(){const raw=localStorage.getItem('guildasPokemon_ultimoBackup');if(!raw)return alert('Ainda não existe uma versão anterior salva.');if(!confirm('Restaurar a última versão salva? As alterações atuais serão substituídas.'))return;try{const x=JSON.parse(raw);guildas=x.guildas;guildaAtiva=x.ativa&&guildas[x.ativa]?x.ativa:Object.keys(guildas)[0];players=normalizarPlayers(guildas[guildaAtiva].players||[]);localStorage.setItem('guildasPokemon',raw);localStorage.setItem('guildaPokemon',JSON.stringify(players));atualizarSeletorGuildas();render();atualizarComparacao();alert('Última versão restaurada.');}catch(e){alert('Não foi possível restaurar a versão anterior.');}}
-  async function analisarMetaComIA(){
-    const saida=document.getElementById('resultadoMetaIA'); const key=getApiKey();
-    if(!key){saida.style.display='block';saida.innerHTML='<b>Configure a API Key do Gemini acima</b> antes de pedir a análise da IA.';return;}
-    const dados=Object.values(guildas).map(g=>{const p=g.players||[];return {guilda:g.nome,pontosHoje:p.reduce((a,x)=>a+(Number(x.contrib)||0),0),total:p.reduce((a,x)=>a+(Number(x.total)||0),0),membros:p.length};});
-    saida.style.display='block';saida.textContent='Analisando o gráfico e o desempenho das guildas...';
-    const prompt=`Você é um analista de desempenho de guildas. Avalie estes dados de pontos feitos hoje: ${JSON.stringify(dados)}. A guilda principal é "${guildas.principal?.nome||'Minha Guilda (principal)'}". Recomende UMA meta diária para a guilda principal ultrapassar a melhor guilda, mas o valor deve obrigatoriamente ficar entre 750 e 2500 pontos. Considere os pontos atuais, a diferença para a líder e uma meta desafiadora porém realista. Responda SOMENTE JSON válido: {"meta":numero,"motivo":"texto curto em português","faltaHoje":numero}.`;
-    try{
-      const model=getModel(); const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
-      const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:.2,maxOutputTokens:400}})});
-      if(!res.ok)throw Error(`Erro HTTP ${res.status}`); const data=await res.json(); let text=data?.candidates?.[0]?.content?.parts?.map(p=>p.text).join('')||''; text=text.replace(/^```(?:json)?\s*/i,'').replace(/```\s*$/,'').trim(); const r=JSON.parse(text); const meta=Math.min(2500,Math.max(750,Math.round(Number(r.meta)||750))); const falta=Math.max(0,Number(r.faltaHoje)||0); saida.innerHTML=`<b>Meta recomendada pela IA: ${formatarNumero(meta)} pontos</b><br>${escapeHtml(r.motivo||'Meta calculada com base no desempenho atual das guildas.')}<br><small>Para alcançar essa meta hoje, ainda faltariam ${formatarNumero(falta)} pontos.</small>`;
-    }catch(err){saida.innerHTML=`<b>Não foi possível analisar agora.</b><br><small>${escapeHtml(err.message)}</small>`;}
-  }
-
-  function chaveNick(nick) {
-    return String(nick || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLocaleLowerCase('pt-BR');
-  }
-
-  function normalizarPlayers(lista) {
-    const mapa = new Map();
-    (Array.isArray(lista) ? lista : []).forEach(raw => {
-      const nick = String(raw?.nick || '').trim();
-      if (!nick) return;
-      const total = Math.max(0, Number(raw?.total) || 0);
-      const contrib = Number.isFinite(Number(raw?.contrib)) ? Number(raw.contrib) : 0;
-      const historico = Array.isArray(raw?.historico) ? raw.historico.filter(h => h && h.data).map(h => ({ data: String(h.data), pontos: Number(h.pontos) || 0, total: Number(h.total) || 0 })).slice(-30) : [];
-      const key = chaveNick(nick);
-      if (!mapa.has(key)) mapa.set(key, { nick, total, contrib, historico });
-      else {
-        const atual = mapa.get(key);
-        // Mantém o registro mais atual e soma somente contribuições de registros legados duplicados.
-        atual.total = Math.max(atual.total, total);
-        atual.contrib = Math.max(atual.contrib, contrib);
-        atual.historico = [...(atual.historico || []), ...historico].slice(-30);
-      }
-    });
-    return [...mapa.values()];
-  }
-
-  function dataHoraAtual() { return new Date().toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
-  function registrarHistorico(p) { if (!Array.isArray(p.historico)) p.historico = []; p.historico.push({ data: dataHoraAtual(), pontos: Number(p.contrib) || 0, total: Number(p.total) || 0 }); p.historico = p.historico.slice(-30); }
-  function formatarNumero(num) { return Number(num).toLocaleString('pt-BR'); }
-  function escapeHtml(str) {
-    return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-
-  // ============================================================
-  //  RENDER
-  // ============================================================
-  function render() {
-    const tbody = document.getElementById('tableBody');
-    const total = players.length;
-    const bateu = players.filter(p => p.contrib >= META).length;
-    const visiveis = players.map((p, i) => ({ p, i })).filter(({p}) => !filtroNick || chaveNick(p.nick).includes(chaveNick(filtroNick)));
-    const naoBateu = total - bateu;
-    const totalPontos = totalGuilda(guildas[guildaAtiva] || { players });
-
-    document.getElementById('totalPlayers').textContent = `${total}/${LIMITE_GUILDA}`;
-    document.getElementById('bateramHoje').textContent = bateu;
-    document.getElementById('naoBateramHoje').textContent = naoBateu;
-    document.getElementById('totalPontos').textContent = formatarNumero(totalPontos);
-
-    if (total === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="empty-msg">Nenhum treinador cadastrado ainda. Adicione o primeiro!</td></tr>`;
-    } else {
-      const order = visiveis.sort((a, b) => chaveNick(a.p.nick).localeCompare(chaveNick(b.p.nick), 'pt-BR'));
-
-      let html = '';
-      order.forEach(({ p, i }) => {
-        const bateuHoje = p.contrib >= META;
-        const falta = Math.max(0, META - p.contrib);
-        html += `
-          <tr class="${bateuHoje ? '' : 'nao-bateu'}">
-            <td>
-              <div class="nick-cell">
-                <strong>${escapeHtml(p.nick)}</strong>
-                <span class="contrib-inline ${bateuHoje ? 'ok' : 'no'}">${p.contrib >= 0 ? '+' : ''}${formatarNumero(p.contrib)} pts</span>
-              </div>
-            </td>
-            <td><span class="total-destaque">${formatarNumero(p.total)}</span></td>
-            <td><strong style="color:${bateuHoje ? '#16a34a' : '#dc2626'}; font-size: 1.05rem;">+${formatarNumero(p.contrib)}</strong> pts
-              ${!bateuHoje ? `<div style="font-size:0.72rem;color:#f97316;font-weight:700;margin-top:2px;">faltam ${formatarNumero(falta)}</div>` : ''}
-            </td>
-            <td><div class="historico-dia"><b>${(p.historico || []).length}</b> registro(s) salvo(s)</div>
-              <details><summary style="cursor:pointer;font-size:.72rem;color:#2563eb;">ver registros</summary><div class="historico-lista">${(p.historico || []).slice().reverse().slice(0,5).map(h => `${escapeHtml(h.data)}: <b>+${formatarNumero(h.pontos)} pts</b> (total ${formatarNumero(h.total)})`).join('<br>') || 'Nenhum registro anterior'}</div></details>
-            </td>
-            <td>${renderStatus(bateuHoje)}</td>
-            <td style="text-align: center;">
-              <div class="acoes">
-                <button class="btn-edit" data-index="${i}"><i class="fas fa-pen"></i> Editar saldo</button>
-                <button class="btn-excluir" data-index="${i}"><i class="fas fa-trash"></i> Excluir</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
-      tbody.innerHTML = html || `<tr><td colspan="6" class="empty-msg">Nenhum treinador encontrado para "${escapeHtml(filtroNick)}".</td></tr>`;
-    }
-
-    const hint = document.getElementById('searchHint');
-    if (hint) hint.textContent = filtroNick ? `${visiveis.length} treinador(es) encontrado(s).` : 'Digite parte do nick para filtrar a lista.';
-    atualizarGraficos();
-    atualizarComparacao();
-
-    tbody.querySelectorAll('.btn-edit').forEach(btn => {
-      btn.addEventListener('click', function() { editarPlayer(parseInt(this.dataset.index, 10)); });
-    });
-    tbody.querySelectorAll('.btn-excluir').forEach(btn => {
-      btn.addEventListener('click', function() { excluirPlayer(parseInt(this.dataset.index, 10)); });
-    });
-  }
-
-  function renderStatus(bateu) {
-    return bateu
-      ? `<span class="status-badge aprovado">✔ Meta batida! 🏆</span>`
-      : `<span class="status-badge reprovado">✖ Não bateu 😢</span>`;
-  }
-
-  // ============================================================
-  //  GRÁFICOS
-  // ============================================================
-  function inicializarGraficos() {
-    chartPie = new Chart(document.getElementById('pieChart').getContext('2d'), {
-      type: 'pie',
-      data: {
-        labels: ['Bateram meta', 'Não bateram'],
-        datasets: [{ data: [0, 0], backgroundColor: ['#22c55e', '#facc15'], borderColor: '#fff', borderWidth: 2 }]
-      },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-    });
-
-    chartBarContrib = new Chart(document.getElementById('barChartContrib').getContext('2d'), {
-      type: 'bar',
-      data: { labels: [], datasets: [{ label: 'Contribuição hoje', data: [], backgroundColor: [], borderRadius: 6 }] },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
-
-    chartBarTotal = new Chart(document.getElementById('barChartTotal').getContext('2d'), {
-      type: 'bar',
-      data: { labels: [], datasets: [{ label: 'Total acumulado', data: [], backgroundColor: '#8b5cf6', borderRadius: 6 }] },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
-  }
-
-  function atualizarGraficos() {
-    if (!chartPie || !chartBarContrib || !chartBarTotal) return;
-    const bateu = players.filter(p => p.contrib >= META).length;
-    const naoBateu = players.length - bateu;
-
-    chartPie.data.datasets[0].data = [bateu, naoBateu];
-    chartPie.update();
-
-    const nomes = players.map(p => p.nick);
-    const contribs = players.map(p => p.contrib);
-    chartBarContrib.data.labels = nomes;
-    chartBarContrib.data.datasets[0].data = contribs;
-    chartBarContrib.data.datasets[0].backgroundColor = contribs.map(c => c >= META ? '#22c55e' : '#f97316');
-    chartBarContrib.update();
-
-    chartBarTotal.data.labels = nomes;
-    chartBarTotal.data.datasets[0].data = players.map(p => p.total);
-    chartBarTotal.update();
-  }
-
-  // ============================================================
-  //  CRUD
-  // ============================================================
-  function adicionarPlayer(nick, totalAtual) {
-    if (players.length >= LIMITE_GUILDA) {
-      alert(`A guilda já atingiu o limite de ${LIMITE_GUILDA} membros. Remova alguém antes de cadastrar um novo.`);
-      return false;
-    }
-    if (players.some(p => chaveNick(p.nick) === chaveNick(nick))) {
-      alert('Esse treinador já está na lista! Use "Editar".');
-      return false;
-    }
-    players.push({ nick: nick.trim(), total: totalAtual, contrib: 0, historico: [] });
-    saveData();
-    render();
-    return true;
-  }
-
-  function editarPlayer(index) {
-    const p = players[index];
-    document.getElementById('nick').value = p.nick;
-    document.getElementById('totalAnterior').value = p.total;
-    document.getElementById('totalAtual').value = p.total;
-    document.getElementById('editIndex').value = index;
-    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Salvar';
-    calcularContribuicao();
-    document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
-  }
-
-  function salvarEdicao(index, nick, totalAtual) {
-    const exists = players.some((p, i) => i !== index && chaveNick(p.nick) === chaveNick(nick));
-    if (exists) { alert('Esse nick já está em outro treinador.'); return false; }
-    const anterior = Number(players[index].total)||0;
-    const diff = totalAtual - anterior;
-    const corrigir = document.getElementById('corrigirSaldoReal')?.checked;
-    players[index] = { ...players[index], nick:nick.trim(), total:totalAtual, contrib:corrigir ? (Number(players[index].contrib)||0) : (Number(players[index].contrib)||0)+diff };
-    if(!corrigir) registrarHistorico(players[index]);
-    saveData();
-    render();
-    resetForm();
-    return true;
-  }
-
-  function excluirPlayer(index) {
-    if (confirm(`Remover "${players[index].nick}" da guilda?`)) {
-      players.splice(index, 1);
-      saveData();
-      render();
-      if (document.getElementById('editIndex').value !== '-1') resetForm();
-    }
-  }
-
-  function resetForm() {
-    document.getElementById('playerForm').reset();
-    document.getElementById('totalAnterior').value = '';
-    document.getElementById('editIndex').value = '-1';
-    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-plus"></i> Adicionar';
-    document.getElementById('contribDisplay').style.display = 'none';
-    const c=document.getElementById('corrigirSaldoReal'); if(c)c.checked=false;
-  }
-
-  function calcularContribuicao() {
-    const totalAnterior = parseFloat(document.getElementById('totalAnterior').value) || 0;
-    const totalAtual = parseFloat(document.getElementById('totalAtual').value);
-    if (!isNaN(totalAtual) && totalAtual >= 0) {
-      const contrib = totalAtual - totalAnterior;
-      const el = document.getElementById('contribCalculada');
-      el.textContent = contrib >= 0 ? formatarNumero(contrib) : 0;
-      el.style.color = contrib < 0 ? 'red' : '#2563eb';
-      document.getElementById('contribDisplay').style.display = 'block';
-    } else {
-      document.getElementById('contribDisplay').style.display = 'none';
-    }
-  }
-
-  // ============================================================
-  //  NOVA RODADA
-  // ============================================================
-  document.getElementById('btnNovaRodada').addEventListener('click', () => {
-    if (!confirm('🔄 Iniciar nova rodada?\n\nZera a contribuição do dia de TODOS os treinadores (mantém o total acumulado como referência).\n\nUse isso quando virar o dia.')) return;
-    players.forEach(p => { registrarHistorico(p); p.contrib = 0; });
-    saveData();
-    render();
-    alert('✅ Nova rodada iniciada! Contribuições zeradas.');
-  });
-
-  document.getElementById('btnApagarLista').addEventListener('click', () => {
-    if (!players.length) { alert('A lista já está vazia.'); return; }
-    if (!confirm(`⚠️ Apagar toda a lista?\n\nIsso removerá ${players.length} treinador(es), suas contribuições e totais salvos.\n\nEssa ação não pode ser desfeita.`)) return;
-    players = [];
-    localStorage.removeItem('guildaPokemon');
-    filtroNick = '';
-    const busca = document.getElementById('nickSearch');
-    if (busca) busca.value = '';
-    const limpar = document.getElementById('limparBusca');
-    if (limpar) limpar.style.display = 'none';
-    resetForm();
-    render();
-    alert('✅ Toda a lista foi apagada.');
-  });
-
-  // ============================================================
-  //  GEMINI
-  // ============================================================
-  const KEY_STORAGE = 'guildaGeminiKey';
-  const MODEL_STORAGE = 'guildaGeminiModel';
-  const MODELO_PADRAO = 'gemini-3.5-flash-lite';
-
-  const PROMPT_IA = `Analise esta imagem, que é um print de um jogo idle/incremental (IdleDex, Pokémon, etc).
-
-A imagem normalmente mostra uma LISTA/RANKING de jogadores, cada um com:
-- Um NICK (nome/apelido do jogador)
-- Um NÚMERO grande que é a pontuação TOTAL acumulada
-
-Extraia TODOS os treinadores visíveis.
-
-Retorne APENAS um JSON válido neste formato exato, sem markdown, sem explicações:
-
-{"jogadores":[{"nick":"Nome1","total":12345},{"nick":"Nome2","total":67890}]}
-
-REGRAS IMPORTANTES:
-1. "total" deve ser número inteiro SEM pontos, vírgulas ou letras.
-   - "10.820" → 10820
-   - "10,820" → 10820
-   - "10 820" → 10820
-   - "1.2K"   → 1200
-   - "1.2M"   → 1200000
-   - "15K"    → 15000
-2. "nick" é o nome exatamente como aparece (mantenha letras, números e símbolos).
-3. Extraia TODOS os jogadores visíveis, não só o primeiro.
-4. Ignore posições de ranking (1º, 2º...).
-5. NÃO invente dados. Se não conseguir ler um jogador, pule ele.
-6. Se não houver nenhum jogador legível, retorne {"jogadores":[]}.
-7. Retorne SOMENTE o JSON. Nada antes. Nada depois.`;
-
-  function getApiKey() { return (localStorage.getItem(KEY_STORAGE) || '').trim(); }
-  function getModel()  { return (localStorage.getItem(MODEL_STORAGE) || MODELO_PADRAO).trim(); }
-
-  function atualizarStatusKey() {
-    const el = document.getElementById('keyStatus');
-    if (getApiKey()) {
-      el.textContent = '✔ Chave salva';
-      el.className = 'key-status ok';
-    } else {
-      el.textContent = 'Chave não configurada';
-      el.className = 'key-status no';
-    }
-  }
-
-  function initGeminiConfig() {
-    const savedKey = getApiKey();
-    const savedModel = getModel();
-    if (savedKey) document.getElementById('geminiKey').value = savedKey;
-    document.getElementById('geminiModel').value = savedModel;
-    atualizarStatusKey();
-  }
-
-  document.getElementById('salvarKey').addEventListener('click', () => {
-    const k = document.getElementById('geminiKey').value.trim();
-    const m = document.getElementById('geminiModel').value;
-    localStorage.setItem(KEY_STORAGE, k);
-    localStorage.setItem(MODEL_STORAGE, m);
-    atualizarStatusKey();
-    alert(k ? '✔ Chave salva com sucesso!' : 'Chave removida.');
-  });
-
-  document.getElementById('geminiModel').addEventListener('change', (e) => {
-    localStorage.setItem(MODEL_STORAGE, e.target.value);
-  });
-
-  // ============================================================
-  //  BOTÃO LER FOTO
-  // ============================================================
-  const fileInput = document.getElementById('fileInput');
-
-  document.getElementById('btnLerFoto').addEventListener('click', () => {
-    if (!getApiKey()) {
-      alert('⚠️ Cole e salve primeiro a API Key do Gemini.');
-      document.getElementById('geminiKey').focus();
-      document.getElementById('geminiKey').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
-    fileInput.click();
-  });
-
-  fileInput.addEventListener('change', (e) => {
-    const files = [...e.target.files];
-    if (files.length) processarImagens(files);
-    e.target.value = '';
-  });
-
-  // ---------- Compressão ----------
-  function comprimirImagem(file, maxW = 1600, quality = 0.92) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = () => {
-        URL.revokeObjectURL(url);
-        let { width, height } = img;
-        if (width > maxW) { height = Math.round(height * maxW / width); width = maxW; }
-        const canvas = document.createElement('canvas');
-        canvas.width = width; canvas.height = height;
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        resolve({ dataUrl, base64: dataUrl.split(',')[1], mimeType: 'image/jpeg' });
-      };
-      img.onerror = reject;
-      img.src = url;
-    });
-  }
-
-  // ---------- Chamada API ----------
-  async function chamarGemini(base64, mimeType) {
-    const key = getApiKey();
-    const model = getModel();
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
-
-    const body = {
-      contents: [{
-        parts: [
-          { text: PROMPT_IA },
-          { inline_data: { mime_type: mimeType, data: base64 } }
-        ]
-      }],
-      generationConfig: { temperature: 0, maxOutputTokens: 2048 }
-    };
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-
-    if (!res.ok) {
-      let msg = `Erro HTTP ${res.status}`;
-      try { const err = await res.json(); msg = err?.error?.message || msg; } catch (_) {}
-      throw new Error(msg);
-    }
-
-    const data = await res.json();
-    const cand = data?.candidates?.[0];
-    if (!cand) throw new Error('IA não retornou resposta.');
-    const txt = cand?.content?.parts?.map(p => p.text).join('') || '';
-    if (!txt) throw new Error('Resposta vazia.');
-
-    let clean = txt.trim();
-    if (clean.startsWith('```')) {
-      clean = clean.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
-    }
-
-    let parsed;
-    try { parsed = JSON.parse(clean); }
-    catch (_) {
-      const m = clean.match(/\{[\s\S]*\}/);
-      if (!m) throw new Error('Resposta não é JSON.');
-      parsed = JSON.parse(m[0]);
-    }
-
-    const lista = Array.isArray(parsed?.jogadores) ? parsed.jogadores : [];
-
-    return lista
-      .filter(j => j && typeof j.nick === 'string' && j.nick.trim() && Number.isFinite(Number(j.total)))
-      .map(j => {
-        const nick = j.nick.trim().replace(/[^\p{L}\p{N}\s._\-\[\]]/gu, '').replace(/\s+/g, ' ').trim();
-        return { nick, total: Math.round(Number(j.total)) };
-      })
-      .filter(j => j.nick.length > 0);
-  }
-
-  // ---------- Processamento ----------
-  async function processarImagens(files) {
-    const prog = document.getElementById('progresso');
-    const panel = document.getElementById('resultadoPanel');
-    prog.innerHTML = '';
-    panel.style.display = 'none';
-    panel.innerHTML = '';
-    reviewItems = [];
-
-    const rows = files.map((file) => {
-      const row = document.createElement('div');
-      row.className = 'prog-item';
-      row.innerHTML = `<div class="spin"></div><div class="txt">Lendo <b>${escapeHtml(file.name)}</b>...</div>`;
-      prog.appendChild(row);
-      return row;
-    });
-
-    let okCount = 0, errCount = 0, totalJogadores = 0;
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const row = rows[i];
-      try {
-        const { dataUrl, base64, mimeType } = await comprimirImagem(file);
-
-        const spinEl = row.querySelector('.spin');
-        if (spinEl) {
-          const thumb = document.createElement('img');
-          thumb.className = 'thumb';
-          thumb.src = dataUrl;
-          spinEl.replaceWith(thumb);
-        }
-
-        const lista = await chamarGemini(base64, mimeType);
-        if (!lista.length) throw new Error('Nenhum treinador identificado.');
-
-        lista.forEach(j => reviewItems.push({ ...j, thumb: dataUrl }));
-        totalJogadores += lista.length;
-        okCount++;
-
-        row.querySelector('.txt').innerHTML =
-          `✅ <b>${escapeHtml(file.name)}</b> → ` +
-          lista.map(j => `${escapeHtml(j.nick)} (${formatarNumero(j.total)})`).join(', ');
-        const oldThumb = row.querySelector('.thumb');
-        if (oldThumb) {
-          const ico = document.createElement('i');
-          ico.className = 'fas fa-check-circle ok-ico';
-          oldThumb.replaceWith(ico);
-        }
-      } catch (err) {
-        errCount++;
-        row.querySelector('.txt').innerHTML = `❌ <b>${escapeHtml(file.name)}</b> — ${escapeHtml(err.message)}`;
-        const t = row.querySelector('.thumb') || row.querySelector('.spin');
-        if (t) {
-          const ico = document.createElement('i');
-          ico.className = 'fas fa-times-circle err-ico';
-          t.replaceWith(ico);
-        }
-      }
-    }
-
-    // Um mesmo membro pode aparecer em mais de um print: uma única linha por nick.
-    const unicos = new Map();
-    reviewItems.forEach(item => {
-      const key = chaveNick(item.nick);
-      const anterior = unicos.get(key);
-      if (!anterior || item.total >= anterior.total) unicos.set(key, item);
-    });
-    reviewItems = [...unicos.values()];
-
-    const resumo = document.createElement('div');
-    resumo.style.cssText = 'margin-top:.5rem;font-size:.85rem;font-weight:700;color:#475569;';
-    resumo.textContent = `${okCount} imagem(ns) OK · ${errCount} erro(s) · ${totalJogadores} treinador(es)`;
-    prog.appendChild(resumo);
-
-    if (reviewItems.length) renderResultado();
-  }
-
-  // ---------- Painel de resultado ----------
-  function renderResultado() {
-    const panel = document.getElementById('resultadoPanel');
-    panel.style.display = 'block';
-
-    let html = `<h4><i class="fas fa-triangle-exclamation"></i> Confira antes de adicionar (${reviewItems.length})</h4>`;
-
-    reviewItems.forEach((it, i) => {
-      html += `
-        <div class="res-item" data-idx="${i}">
-          <div class="res-item-top">
-            <input type="checkbox" class="res-check" checked style="width:20px;height:20px;accent-color:#3b82f6;cursor:pointer;" />
-            <img class="res-thumb" src="${it.thumb}" alt="" />
-            <input type="text" class="res-nick" value="${escapeHtml(it.nick)}" placeholder="Nick" />
-            <input type="number" class="res-total" value="${it.total}" min="0" step="1" placeholder="Total novo" />
-            <span class="res-info novo">—</span>
-          </div>
-          <div class="res-calc">
-            <span class="chip ant">Antes: <span class="calc-ant">—</span></span>
-            <span class="chip novo2">Novo: <span class="calc-novo">—</span></span>
-            <span class="chip diff">Este upload: <span class="calc-diff">—</span></span>
-            <span class="chip total-hoje">Hoje (soma): <span class="calc-total-hoje">—</span></span>
-          </div>
+<div class="menu-tabs">
+    <button class="tab active" data-tab="tab-analise"><i class="fas fa-home"></i> Sobre o Projeto</button>
+    <button class="tab" data-tab="tab-ficha"><i class="fas fa-id-card"></i> Ficha Pokémon PvP</button>
+    <button class="tab" data-tab="tab-times"><i class="fas fa-users"></i> Análise de Times</button>
+    <button class="tab" data-tab="tab-duel"><i class="fas fa-bolt"></i> Duelo 1x1 PvP</button>
+    <button class="tab" data-tab="tab-tier"><i class="fas fa-trophy"></i> Tier List PvP</button>
+    <button class="tab" data-tab="tab-pve"><i class="fas fa-dumbbell"></i> Ficha Pokémon PvE</button>
+</div>
+
+<!-- SOBRE -->
+<div class="tab-content active" id="tab-analise">
+    <div class="about-container">
+        <div class="about-hero">
+            <div class="about-hero-title"><i class="fas fa-star"></i> Bem-vindo, Treinador!</div>
+            <div class="about-hero-subtitle">Sua central de inteligência Pokémon com IA para PvP e PvE</div>
+            <div class="about-hero-badges">
+                <span class="badge"><i class="fas fa-robot"></i> Gemini IA</span>
+                <span class="badge"><i class="fas fa-database"></i> PokéAPI em tempo real</span>
+                <span class="badge"><i class="fas fa-chart-line"></i> Avaliação de IV</span>
+                <span class="badge"><i class="fas fa-crosshairs"></i> IV Efetivo</span>
+                <span class="badge"><i class="fas fa-dumbbell"></i> EV Efetiva</span>
+                <span class="badge"><i class="fas fa-compact-disc"></i> 231 TMs reais</span>
+                <span class="badge"><i class="fas fa-shield-alt"></i> PvP & PvE</span>
+                <span class="badge"><i class="fas fa-star"></i> Nota da IA</span>
+            </div>
         </div>
-      `;
-    });
-
-    html += `
-      <div class="res-actions">
-        <button type="button" class="btn btn-verde" id="btnAdicionar">
-          <i class="fas fa-plus-circle"></i> ADICIONAR À TABELA
-        </button>
-        <button type="button" class="btn btn-ghost" id="btnCancelar">
-          <i class="fas fa-xmark"></i> Cancelar
-        </button>
-      </div>
-    `;
-
-    panel.innerHTML = html;
-
-    panel.querySelectorAll('.res-item').forEach(item => {
-      atualizarInfo(item);
-      item.querySelector('.res-nick').addEventListener('input', () => atualizarInfo(item));
-      item.querySelector('.res-total').addEventListener('input', () => atualizarInfo(item));
-    });
-
-    document.getElementById('btnAdicionar').addEventListener('click', confirmarAdicionar);
-    document.getElementById('btnCancelar').addEventListener('click', () => {
-      panel.style.display = 'none';
-      panel.innerHTML = '';
-      document.getElementById('progresso').innerHTML = '';
-      reviewItems = [];
-    });
-
-    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-
-  function atualizarInfo(item) {
-    const nick = item.querySelector('.res-nick').value.trim();
-    const totalNovo = Number(item.querySelector('.res-total').value) || 0;
-    const infoEl = item.querySelector('.res-info');
-    const calcAnt = item.querySelector('.calc-ant');
-    const calcNovo = item.querySelector('.calc-novo');
-    const calcDiff = item.querySelector('.calc-diff');
-    const calcTotalHoje = item.querySelector('.calc-total-hoje');
-
-    if (!nick) {
-      infoEl.className = 'res-info no';
-      infoEl.textContent = 'Sem nick';
-      calcAnt.textContent = '—'; calcNovo.textContent = '—';
-      calcDiff.textContent = '—'; calcTotalHoje.textContent = '—';
-      return;
-    }
-
-    const idx = players.findIndex(p => chaveNick(p.nick) === chaveNick(nick));
-
-    if (idx >= 0) {
-      const anterior = players[idx].total;
-      const contribAnterior = players[idx].contrib;
-      const diff = totalNovo - anterior;
-      const novoContrib = contribAnterior + diff;
-      const ok = novoContrib >= META;
-
-      calcAnt.textContent = formatarNumero(anterior);
-      calcNovo.textContent = formatarNumero(totalNovo);
-      calcDiff.textContent = (diff >= 0 ? '+' : '') + formatarNumero(diff);
-      calcDiff.className = 'chip diff' + (diff < 0 ? ' neg' : '');
-      calcTotalHoje.textContent = formatarNumero(novoContrib) + ' pts';
-
-      if (ok) { infoEl.className = 'res-info ok'; infoEl.textContent = '✔ Bate meta'; }
-      else { infoEl.className = 'res-info no'; infoEl.textContent = `✖ Falta ${formatarNumero(META - novoContrib)}`; }
-    } else {
-      calcAnt.textContent = '0';
-      calcNovo.textContent = formatarNumero(totalNovo);
-      calcDiff.textContent = '+' + formatarNumero(totalNovo);
-      calcTotalHoje.textContent = formatarNumero(totalNovo) + ' pts';
-      const ok = totalNovo >= META;
-      infoEl.className = 'res-info ' + (ok ? 'ok' : 'novo');
-      infoEl.textContent = ok ? '✔ Novo + bate' : '🆕 Novo';
-    }
-  }
-
-  function confirmarAdicionar() {
-    let aplicados = 0, novos = 0, atualizados = 0, removidos = 0, bloqueados = 0;
-    const itens = [...document.querySelectorAll('#resultadoPanel .res-item')];
-    const vistosNoPrint = new Set();
-    const processados = new Set();
-
-    itens.forEach(item => {
-      const nick = item.querySelector('.res-nick').value.trim();
-      const totalNovo = Number(item.querySelector('.res-total').value);
-      if (nick && Number.isFinite(totalNovo) && totalNovo >= 0) vistosNoPrint.add(chaveNick(nick));
-    });
-
-    // Jogadores ausentes no print não são removidos automaticamente.
-    const ausentes = players.filter(p => !vistosNoPrint.has(chaveNick(p.nick)));
-    let confirmarRemocao = false;
-    if (ausentes.length) {
-      const nomes = ausentes.map(p => `• ${p.nick}`).join('\n');
-      confirmarRemocao = confirm(`⚠️ Estes jogadores não foram identificados neste print:\n\n${nomes}\n\nDeseja realmente apagar esses jogadores da guilda?\n\nCancelar mantém todos eles salvos.`);
-      if (confirmarRemocao) {
-        const antes = players.length;
-        players = players.filter(p => vistosNoPrint.has(chaveNick(p.nick)));
-        removidos = antes - players.length;
-      }
-    }
-
-    itens.forEach(item => {
-      const nick = item.querySelector('.res-nick').value.trim();
-      const totalNovo = Number(item.querySelector('.res-total').value);
-      if (!nick || !Number.isFinite(totalNovo) || totalNovo < 0) return;
-      const key = chaveNick(nick);
-      if (!item.querySelector('.res-check').checked || processados.has(key)) return;
-      processados.add(key);
-
-      const idx = players.findIndex(p => chaveNick(p.nick) === key);
-      if (idx >= 0) {
-        const anterior = Number(players[idx].total) || 0;
-        const diff = totalNovo - anterior;
-        players[idx].contrib = (Number(players[idx].contrib) || 0) + diff;
-        players[idx].total = totalNovo;
-        players[idx].nick = nick;
-        registrarHistorico(players[idx]);
-        atualizados++;
-      } else if (players.length < LIMITE_GUILDA) {
-        players.push({ nick, total: totalNovo, contrib: 0, historico: [] });
-        novos++;
-      } else {
-        bloqueados++;
-        return;
-      }
-      aplicados++;
-    });
-
-    if (!aplicados && !removidos) { alert('Nenhum item selecionado.'); return; }
-
-    saveData();
-    render();
-    reviewItems = [];
-    document.getElementById('resultadoPanel').style.display = 'none';
-    document.getElementById('resultadoPanel').innerHTML = '';
-    document.getElementById('progresso').innerHTML = '';
-
-    alert(`✅ Print aplicado!\n\n• ${aplicados} treinador(es) processado(s)\n• ${novos} novo(s)\n• ${atualizados} atualizado(s)\n• ${removidos} removido(s) por não aparecer(em) no print${bloqueados ? `\n• ${bloqueados} novo(s) bloqueado(s): limite de ${LIMITE_GUILDA} membros atingido` : ''}`);
-  }
-
-  // ============================================================
-  //  PDFs COM jsPDF PURO
-  // ============================================================
-  const { jsPDF } = window.jspdf;
-
-  function criarPDFBase(titulo, corTitulo, subtitulo1, subtitulo2) {
-    const doc = new jsPDF('p', 'mm', 'a4');
-    const pageW = doc.internal.pageSize.getWidth();
-    const margin = 15;
-
-    doc.setFillColor(...corTitulo);
-    doc.rect(0, 0, pageW, 4, 'F');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(20);
-    doc.setTextColor(...corTitulo);
-    doc.text(titulo, margin, 22);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11);
-    doc.setTextColor(71, 85, 105);
-    doc.text(subtitulo1, margin, 30);
-    doc.text(subtitulo2, margin, 36);
-
-    doc.setDrawColor(233, 237, 242);
-    doc.setLineWidth(0.5);
-    doc.line(margin, 40, pageW - margin, 40);
-
-    return { doc, pageW, margin, y: 48 };
-  }
-
-  function rodapePDF(doc, pageW, pageH, margin) {
-    doc.setFontSize(9);
-    doc.setTextColor(148, 163, 184);
-    doc.text('Gerado automaticamente pelo Gerenciador da Guilda Pokemon', pageW / 2, pageH - 10, { align: 'center' });
-  }
-
-  // ---------- PDF 1: TODOS QUE BATERAM ----------
-  function gerarPDFBateram() {
-    const hoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const batedores = players.filter(p => p.contrib >= META).sort((a, b) => b.contrib - a.contrib);
-
-    const { doc, pageW, margin } = criarPDFBase(
-      'Relatorio - Todos que Bateram a Meta',
-      [22, 163, 74],
-      `Data: ${hoje}`,
-      `Meta diária: ${META} pontos  |  Pontos feitos no dia  |  Batedores: ${batedores.length} de ${players.length}`
-    );
-
-    const pageH = doc.internal.pageSize.getHeight();
-    let y = 50;
-
-    if (batedores.length === 0) {
-      doc.setFontSize(14);
-      doc.setTextColor(220, 38, 38);
-      doc.text('Nenhum treinador bateu a meta ainda hoje.', margin, y);
-      rodapePDF(doc, pageW, pageH, margin);
-      doc.save(`relatorio_bateram_meta_${hoje.replace(/\//g, '-')}.pdf`);
-      return;
-    }
-
-    doc.setFontSize(13);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(22, 163, 74);
-    doc.text(`${batedores.length} treinador(es) bateram a meta:`, margin, y);
-    y += 10;
-
-    batedores.forEach((p, i) => {
-      if (y > pageH - 30) { doc.addPage(); y = 20; }
-
-      const medalha = i === 0 ? '1.' : i === 1 ? '2.' : i === 2 ? '3.' : `${i + 1}.`;
-
-      doc.setFillColor(i % 2 === 0 ? 248 : 255, i % 2 === 0 ? 250 : 255, i % 2 === 0 ? 252 : 255);
-      doc.rect(margin - 2, y - 5, pageW - (margin * 2) + 4, 12, 'F');
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text(`${medalha} ${p.nick}`, margin, y + 2);
-
-      doc.setTextColor(22, 163, 74);
-      doc.text(`Pontos do dia: +${formatarNumero(p.contrib)} pts`, pageW - margin, y + 2, { align: 'right' });
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(100, 116, 139);
-      doc.text(`Total acumulado: ${formatarNumero(p.total)}`, margin, y + 8);
-
-      y += 14;
-    });
-
-    rodapePDF(doc, pageW, pageH, margin);
-    doc.save(`relatorio_bateram_meta_${hoje.replace(/\//g, '-')}.pdf`);
-  }
-
-  // ---------- PDF 2: TOP 10 ----------
-  function gerarPDFTop10() {
-    const hoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const top10 = [...players].sort((a, b) => b.contrib - a.contrib).slice(0, 10);
-
-    const { doc, pageW, margin } = criarPDFBase(
-      'TOP 10 - Maiores Contribuidores do Dia',
-      [245, 158, 11],
-      `Data: ${hoje}`,
-      `Meta diária: ${META} pontos  |  TOP 10 por pontos feitos no dia`
-    );
-
-    const pageH = doc.internal.pageSize.getHeight();
-    let y = 50;
-
-    if (top10.length === 0) {
-      doc.setFontSize(14);
-      doc.setTextColor(100, 116, 139);
-      doc.text('Sem dados ainda.', margin, y);
-      rodapePDF(doc, pageW, pageH, margin);
-      doc.save(`relatorio_top10_${hoje.replace(/\//g, '-')}.pdf`);
-      return;
-    }
-
-    const colPos = margin;
-    const colNome = margin + 18;
-    const colContrib = pageW - margin - 55;
-    const colTotal = pageW - margin - 25;
-    const colMeta = pageW - margin;
-
-    doc.setFillColor(254, 243, 199);
-    doc.rect(margin - 2, y - 6, pageW - (margin * 2) + 4, 10, 'F');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(146, 64, 14);
-    doc.text('#', colPos, y);
-    doc.text('TREINADOR', colNome, y);
-    doc.text('PONTOS DO DIA', colContrib, y, { align: 'right' });
-    doc.text('TOTAL', colTotal, y, { align: 'right' });
-    doc.text('META', colMeta, y, { align: 'right' });
-
-    y += 8;
-
-    top10.forEach((p, i) => {
-      const pos = i + 1;
-      const bateu = p.contrib >= META;
-
-      if (pos === 1) doc.setFillColor(254, 249, 195);
-      else if (pos === 2) doc.setFillColor(241, 245, 249);
-      else if (pos === 3) doc.setFillColor(254, 243, 199);
-      else doc.setFillColor(255, 255, 255);
-
-      doc.rect(margin - 2, y - 5, pageW - (margin * 2) + 4, 10, 'F');
-
-      doc.setDrawColor(233, 237, 242);
-      doc.setLineWidth(0.2);
-      doc.line(margin - 2, y + 5, pageW - margin + 2, y + 5);
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.setTextColor(15, 23, 42);
-      doc.text(`${pos}`, colPos, y + 2);
-
-      doc.text(p.nick, colNome, y + 2);
-
-      doc.setTextColor(bateu ? 22 : 220, bateu ? 163 : 38, bateu ? 74 : 38);
-      doc.text(formatarNumero(p.contrib), colContrib, y + 2, { align: 'right' });
-
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(71, 85, 105);
-      doc.text(formatarNumero(p.total), colTotal, y + 2, { align: 'right' });
-
-      doc.setTextColor(bateu ? 22 : 220, bateu ? 163 : 38, bateu ? 74 : 38);
-      doc.setFont('helvetica', 'bold');
-      doc.text(bateu ? 'OK' : 'X', colMeta, y + 2, { align: 'right' });
-
-      y += 11;
-    });
-
-    rodapePDF(doc, pageW, pageH, margin);
-    doc.save(`relatorio_top10_${hoje.replace(/\//g, '-')}.pdf`);
-  }
-
-  // ---------- PDF 3: NÃO BATERAM ----------
-  function gerarPDFNao() {
-    const hoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const naoBateram = players.filter(p => p.contrib < META).sort((a, b) => a.contrib - b.contrib);
-
-    const { doc, pageW, margin } = criarPDFBase(
-      'Relatorio - Meta Nao Batida',
-      [239, 68, 68],
-      `Data: ${hoje}`,
-      `Meta diária: ${META} pontos  |  Pontos feitos no dia  |  Nao batedores: ${naoBateram.length} de ${players.length}`
-    );
-
-    const pageH = doc.internal.pageSize.getHeight();
-    let y = 50;
-
-    if (naoBateram.length === 0) {
-      doc.setFontSize(14);
-      doc.setTextColor(22, 163, 74);
-      doc.text('Parabens! Todos os membros bateram a meta hoje!', margin, y);
-      rodapePDF(doc, pageW, pageH, margin);
-      doc.save(`relatorio_nao_bateram_${hoje.replace(/\//g, '-')}.pdf`);
-      return;
-    }
-
-    doc.setFontSize(13);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(220, 38, 38);
-    doc.text(`${naoBateram.length} treinador(es) NAO bateram a meta:`, margin, y);
-    y += 10;
-
-    naoBateram.forEach((p, i) => {
-      if (y > pageH - 30) { doc.addPage(); y = 20; }
-
-      const falta = META - p.contrib;
-
-      doc.setFillColor(i % 2 === 0 ? 255 : 255, i % 2 === 0 ? 247 : 255, i % 2 === 0 ? 237 : 255);
-      doc.rect(margin - 2, y - 5, pageW - (margin * 2) + 4, 14, 'F');
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text(p.nick, margin, y + 2);
-
-      doc.setTextColor(220, 38, 38);
-      doc.text(`Pontos do dia: ${formatarNumero(p.contrib)} pts`, pageW - margin, y + 2, { align: 'right' });
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(100, 116, 139);
-      doc.text(`Total acumulado: ${formatarNumero(p.total)}  |  Pontos do dia: ${formatarNumero(p.contrib)}  |  Faltam: ${formatarNumero(falta)}`, margin, y + 8);
-
-      y += 16;
-    });
-
-    rodapePDF(doc, pageW, pageH, margin);
-    doc.save(`relatorio_nao_bateram_${hoje.replace(/\//g, '-')}.pdf`);
-  }
-
-  // ---------- PDF 4: META DE EQUILÍBRIO ----------
-  function gerarPDFEquilibrio() {
-    const alvo = Number(document.getElementById('metaEquilibrio').value);
-    if (!Number.isFinite(alvo) || alvo < 0) { alert('Digite uma pontuação válida para a meta de equilíbrio.'); return; }
-
-    const hoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const abaixo = players.filter(p => Number(p.total) < alvo).sort((a, b) => a.total - b.total);
-    const { doc, pageW, margin } = criarPDFBase(
-      'Relatorio - Meta de Equilibrio',
-      [139, 92, 246],
-      `Data: ${hoje}`,
-      `Alvo: ${formatarNumero(alvo)} pontos acumulados  |  Pendentes: ${abaixo.length} de ${players.length}`
-    );
-    const pageH = doc.internal.pageSize.getHeight();
-    let y = 50;
-
-    if (!abaixo.length) {
-      doc.setFontSize(14); doc.setTextColor(22, 163, 74);
-      doc.text('Todos os treinadores ja atingiram a meta de equilibrio!', margin, y);
-    } else {
-      doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(109, 40, 217);
-      doc.text(`${abaixo.length} treinador(es) devem atingir ${formatarNumero(alvo)} pontos:`, margin, y);
-      y += 10;
-      abaixo.forEach((p, i) => {
-        if (y > pageH - 30) { doc.addPage(); y = 20; }
-        const falta = alvo - Number(p.total);
-        doc.setFillColor(i % 2 === 0 ? 245 : 255, i % 2 === 0 ? 243 : 255, i % 2 === 0 ? 255 : 255);
-        doc.rect(margin - 2, y - 5, pageW - (margin * 2) + 4, 14, 'F');
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(15, 23, 42);
-        doc.text(`${i + 1}. ${p.nick}`, margin, y + 2);
-        doc.setTextColor(109, 40, 217);
-        doc.text(`Faltam ${formatarNumero(falta)} pts`, pageW - margin, y + 2, { align: 'right' });
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(100, 116, 139);
-        doc.text(`Total atual: ${formatarNumero(p.total)}  |  Deve atingir: ${formatarNumero(alvo)}`, margin, y + 8);
-        y += 16;
-      });
-    }
-    rodapePDF(doc, pageW, pageH, margin);
-    doc.save(`relatorio_meta_equilibrio_${hoje.replace(/\//g, '-')}.pdf`);
-  }
-
-  // ============================================================
-  //  EVENTOS
-  // ============================================================
-  document.getElementById('playerForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const nick = document.getElementById('nick').value.trim();
-    const totalAtual = document.getElementById('totalAtual').value;
-    const editIndex = parseInt(document.getElementById('editIndex').value, 10);
-
-    if (!nick) return alert('Digite o nick do treinador.');
-    if (totalAtual === '') return alert('Digite o total atual.');
-    if (isNaN(totalAtual) || Number(totalAtual) < 0) return alert('Total inválido.');
-
-    const totalNum = Number(totalAtual);
-
-    if (editIndex >= 0) salvarEdicao(editIndex, nick, totalNum);
-    else if (adicionarPlayer(nick, totalNum)) this.reset();
-  });
-
-  document.getElementById('playerForm').addEventListener('reset', resetForm);
-  document.getElementById('totalAtual').addEventListener('input', calcularContribuicao);
-
-  document.getElementById('nickSearch').addEventListener('input', (e) => {
-    filtroNick = e.target.value.trim();
-    document.getElementById('limparBusca').style.display = filtroNick ? 'inline-flex' : 'none';
-    render();
-  });
-  document.getElementById('limparBusca').addEventListener('click', () => {
-    document.getElementById('nickSearch').value = '';
-    filtroNick = '';
-    document.getElementById('limparBusca').style.display = 'none';
-    render();
-    document.getElementById('nickSearch').focus();
-  });
-
-  document.getElementById('btnPDFBateram').addEventListener('click', gerarPDFBateram);
-  document.getElementById('btnPDFTop10').addEventListener('click', gerarPDFTop10);
-  document.getElementById('btnPDFNaoBateram').addEventListener('click', gerarPDFNao);
-  document.getElementById('btnPDFEquilibrio').addEventListener('click', gerarPDFEquilibrio);
-  document.getElementById('btnEditarTotalGuilda').addEventListener('click', editarTotalGuilda);
-  document.getElementById('btnAnalisarMetaIA').addEventListener('click', analisarMetaComIA);
-  document.getElementById('btnPDFComparacao').addEventListener('click', gerarPDFComparacao);
-  document.getElementById('guildaSelect').addEventListener('change',e=>trocarGuilda(e.target.value));
-  document.getElementById('btnNovaGuilda').addEventListener('click',criarGuilda);
-  document.getElementById('btnExcluirGuilda').addEventListener('click',apagarGuilda);
-  document.getElementById('btnBackup').addEventListener('click',fazerBackup);
-  document.getElementById('btnRestaurar').addEventListener('click',()=>document.getElementById('backupInput').click());
-  document.getElementById('btnRestaurarAnterior').addEventListener('click',restaurarUltimaVersao);
-  document.getElementById('backupInput').addEventListener('change',e=>{if(e.target.files[0])restaurarBackup(e.target.files[0]);e.target.value='';});
-
-  // ============================================================
-  //  INIT
-  // ============================================================
-  loadData();
-
-  function boot() {
-    inicializarGraficos();
-    inicializarComparacao();
-    render();
-    initGeminiConfig(); atualizarSeletorGuildas(); atualizarComparacao();
-  }
-
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    boot();
-  } else {
-    document.addEventListener('DOMContentLoaded', boot);
-  }
-</script>
-
-  <script>
-    let eventoInstalacaoPWA = null;
-    const botaoInstalarApp = document.getElementById('btnInstalarApp');
-
-    window.addEventListener('beforeinstallprompt', (evento) => {
-      evento.preventDefault();
-      eventoInstalacaoPWA = evento;
-      if (botaoInstalarApp) botaoInstalarApp.classList.add('visivel');
-    });
-
-    function prepararTutorialInstalacao() {
-      const tutorialInstalacao = document.getElementById('tutorialInstalacao');
-      const fecharTutorial = document.getElementById('fecharTutorial');
-      if (botaoInstalarApp && tutorialInstalacao && fecharTutorial) {
-        botaoInstalarApp.addEventListener('click', () => tutorialInstalacao.classList.add('aberto'));
-        fecharTutorial.addEventListener('click', () => tutorialInstalacao.classList.remove('aberto'));
-        tutorialInstalacao.addEventListener('click', (evento) => {
-          if (evento.target === tutorialInstalacao) tutorialInstalacao.classList.remove('aberto');
-        });
-      }
-    }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', prepararTutorialInstalacao);
-    else prepararTutorialInstalacao();
-
-    window.addEventListener('appinstalled', () => {
-      if (botaoInstalarApp) botaoInstalarApp.classList.remove('visivel');
-    });
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
-    }
-  </script>
-
-  <div class="tutorial-overlay" id="tutorialInstalacao" role="dialog" aria-modal="true" aria-labelledby="tituloTutorial">
-    <div class="tutorial-card">
-      <div class="tutorial-head">
-        <h2 id="tituloTutorial"><i class="fas fa-mobile-screen-button" style="color:#7c3aed;"></i> Como instalar o app</h2>
-        <button type="button" class="tutorial-close" id="fecharTutorial" aria-label="Fechar">&times;</button>
-      </div>
-      <p>Instale este sistema na tela inicial para abrir como aplicativo, sem precisar procurar o site toda vez.</p>
-      <div class="tutorial-section">
-        <h3><i class="fab fa-android"></i> Android — Chrome</h3>
-        <ol>
-          <li>Abra o sistema no <b>Google Chrome</b> usando o link do app.</li>
-          <li>Toque no menu de três pontos <b>⋮</b>.</li>
-          <li>Escolha <b>Instalar aplicativo</b> ou <b>Adicionar à tela inicial</b>.</li>
-          <li>Confirme em <b>Instalar</b> ou <b>Adicionar</b>.</li>
-        </ol>
-      </div>
-      <div class="tutorial-section">
-        <h3><i class="fab fa-apple"></i> iPhone — Safari</h3>
-        <ol>
-          <li>Abra o sistema no <b>Safari</b>.</li>
-          <li>Toque no botão <b>Compartilhar</b> (quadrado com seta para cima).</li>
-          <li>Role o menu e toque em <b>Adicionar à Tela de Início</b>.</li>
-          <li>Toque em <b>Adicionar</b> para confirmar.</li>
-        </ol>
-      </div>
-      <div class="tutorial-note"><b>Importante:</b> o sistema precisa ser aberto por um link do navegador, de preferência com <b>HTTPS</b>. Não abra somente o arquivo index.html pelo gerenciador de arquivos do celular.</div>
+        <div class="about-card">
+            <div class="about-card-header">
+                <div class="about-card-icon"><i class="fas fa-info-circle"></i></div>
+                <div class="about-card-title">O que é o Assistente do Treinador?</div>
+            </div>
+            <p>O <strong>Assistente do Treinador</strong> é uma ferramenta completa de análise competitiva Pokémon que utiliza <strong>Inteligência Artificial (Gemini)</strong> combinada com dados em tempo real da <strong>PokéAPI</strong>.</p>
+            <p><strong>Novidades:</strong> A IA <strong>lê os IVs direto da imagem</strong>, recomenda <strong>apenas TMs que existem no jogo</strong> (231 TMs reais), dá uma <strong>NOTA de 0 a 10</strong>, e ainda calcula <strong>IV Efetivo</strong> e <strong>EV Efetiva</strong> baseados na natureza recomendada!</p>
+        </div>
+        <div class="about-card">
+            <div class="about-card-header">
+                <div class="about-card-icon"><i class="fas fa-list-ul"></i></div>
+                <div class="about-card-title">O que cada aba faz</div>
+            </div>
+            <ul>
+                <li><i class="fas fa-id-card"></i> <strong>Ficha Pokémon PvP:</strong> IV + Natureza + Nota IA + IV Efetivo + EV Efetiva + TMs.</li>
+                <li><i class="fas fa-users"></i> <strong>Análise de Times:</strong> Compare dois times com TMs recomendadas.</li>
+                <li><i class="fas fa-bolt"></i> <strong>Duelo 1x1 PvP:</strong> TMs corretas para o duelo.</li>
+                <li><i class="fas fa-trophy"></i> <strong>Tier List PvP:</strong> Times do metagame.</li>
+                <li><i class="fas fa-dumbbell"></i> <strong>Ficha Pokémon PvE:</strong> Builds + TMs reais + Nota da IA.</li>
+            </ul>
+        </div>
+        <div class="about-card" style="background:linear-gradient(135deg,#fdf4ff,#fae8ff); border-color:#d946ef;">
+            <div class="about-card-header" style="border-bottom-color:#e9d5ff;">
+                <div class="about-card-icon" style="background:linear-gradient(135deg,#d946ef,#a21caf);"><i class="fas fa-crosshairs"></i></div>
+                <div class="about-card-title" style="color:#86198f;">Como funciona o IV Efetivo</div>
+            </div>
+            <p>O <strong>IV Efetivo</strong> analisa <strong>somente os stats que a natureza recomendada usa</strong> (HP + o stat que a natureza sobe). Por exemplo, um Pokémon com natureza <strong>Adamant</strong> (+ATK, -SpA) só terá o ATK e HP avaliados — SpA baixo não penaliza!</p>
+        </div>
+        <div class="about-card" style="background:linear-gradient(135deg,#ecfeff,#cffafe); border-color:#06b6d4;">
+            <div class="about-card-header" style="border-bottom-color:#a5f3fc;">
+                <div class="about-card-icon" style="background:linear-gradient(135deg,#06b6d4,#0891b2);"><i class="fas fa-dumbbell"></i></div>
+                <div class="about-card-title" style="color:#155e75;">Como funciona a EV Efetiva</div>
+            </div>
+            <p>A <strong>EV Efetiva</strong> avalia se os EVs foram investidos <strong>nos stats que a natureza recomendada usa</strong>. A IA detecta pontos desperdiçados em stats irrelevantes para aquela natureza e dá uma nota de 0 a 10.</p>
+        </div>
+        <div class="about-card" style="background:linear-gradient(135deg,#fffbeb,#fef3c7); border-color:#fbbf24;">
+            <div class="about-card-header" style="border-bottom-color:#fcd34d;">
+                <div class="about-card-icon" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);"><i class="fas fa-star"></i></div>
+                <div class="about-card-title" style="color:#7c2d12;">Como funciona a Nota da IA (0 a 10)</div>
+            </div>
+            <ul style="list-style:none; padding:0;">
+                <li style="border-left-color:#fbbf24;"><i class="fas fa-crown" style="color:#fbbf24;"></i> <strong>9.0 — 10.0</strong> → Excelente. Pokémon de elite, meta dominante.</li>
+                <li style="border-left-color:#22c55e;"><i class="fas fa-star" style="color:#22c55e;"></i> <strong>7.0 — 8.9</strong> → Muito bom. Vale investir pesado.</li>
+                <li style="border-left-color:#3b82f6;"><i class="fas fa-thumbs-up" style="color:#3b82f6;"></i> <strong>5.0 — 6.9</strong> → Bom. Viável, mas com ressalvas.</li>
+                <li style="border-left-color:#f97316;"><i class="fas fa-meh" style="color:#f97316;"></i> <strong>3.0 — 4.9</strong> → Mediano. Só em times específicos.</li>
+                <li style="border-left-color:#ef4444;"><i class="fas fa-times-circle" style="color:#ef4444;"></i> <strong>0.0 — 2.9</strong> → Fraco. Não recomendado.</li>
+            </ul>
+        </div>
+        <div class="about-card" style="background:linear-gradient(135deg,#eef2ff,#e0e7ff); border-color:#818cf8;">
+            <div class="about-card-header" style="border-bottom-color:#c7d2fe;">
+                <div class="about-card-icon" style="background:linear-gradient(135deg,#6366f1,#4338ca);"><i class="fas fa-chart-line"></i></div>
+                <div class="about-card-title" style="color:#3730a3;">Como funciona a Avaliação de IV</div>
+            </div>
+            <ul style="list-style:none; padding:0;">
+                <li style="border-left-color:#f97316;"><i class="fas fa-balance-scale" style="color:#f97316;"></i> <strong>IV abaixo de 100</strong> → Equilibrando — não recomendado upar.</li>
+                <li style="border-left-color:#22c55e;"><i class="fas fa-check-circle" style="color:#22c55e;"></i> <strong>IV 100+ com natureza correta</strong> → Vale a pena upar!</li>
+                <li style="border-left-color:#f59e0b;"><i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> <strong>Natureza incorreta</strong> → Não vale upar mesmo com IV bom.</li>
+            </ul>
+        </div>
+        <div class="about-card" style="background:linear-gradient(135deg,#fff7ed,#fed7aa); border-color:#fb923c;">
+            <div class="about-card-header" style="border-bottom-color:#fdba74;">
+                <div class="about-card-icon" style="background:linear-gradient(135deg,#ea580c,#c2410c);"><i class="fas fa-compact-disc"></i></div>
+                <div class="about-card-title" style="color:#7c2d12;">231 TMs reais do jogo</div>
+            </div>
+            <p>A IA recomenda <strong>apenas TMs que existem no jogo</strong>, filtradas por tipo do Pokémon (STAB + cobertura). Nada de moves inventados! Análise de Times e Duelo têm <strong>validação automática</strong> que risca qualquer TM inexistente.</p>
+        </div>
+        <div class="about-card">
+            <div class="about-card-header">
+                <div class="about-card-icon"><i class="fas fa-key"></i></div>
+                <div class="about-card-title">Como obter sua chave da API Gemini</div>
+            </div>
+            <p><strong>1.</strong> Acesse o <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#2563eb; font-weight:800; text-decoration:underline;">Google AI Studio</a>.</p>
+            <p><strong>2.</strong> Clique em <strong>"Create API Key"</strong> e copie a chave.</p>
+            <p><strong>3.</strong> Cole a chave e clique em <strong>"Salvar"</strong>.</p>
+            <div class="tutorial-container" style="margin-top:1rem; margin-bottom:0;">
+                <div class="aviso-seguranca"><i class="fas fa-exclamation-triangle"></i> ⚠️ Nunca compartilhe sua chave publicamente.</div>
+            </div>
+        </div>
+        <div class="about-community">
+            <div class="about-community-title"><i class="fas fa-users"></i> Sobre a Comunidade</div>
+            <div class="about-community-text">
+                Este projeto foi criado pelo <strong>Agnus</strong> para ajudar os membros da comunidade <strong>Anomalia</strong>.<br><br>
+                Com o crescimento do projeto, será <strong>liberado para toda a comunidade Pokémon</strong>.
+            </div>
+            <div class="about-community-tag"><i class="fas fa-heart"></i> Feito com carinho para a comunidade</div>
+        </div>
     </div>
-  </div>
+</div>
 
+<!-- FICHA PVP -->
+<div class="tab-content" id="tab-ficha">
+    <div class="api-key-container">
+        <label><i class="fas fa-key"></i> Chave API</label>
+        <input type="text" id="apiKeyInput" placeholder="Cole sua chave do Gemini aqui..." />
+        <button class="btn-salvar-api" id="btnSalvarApi"><i class="fas fa-save"></i> Salvar</button>
+        <span class="api-status" id="apiStatus"></span>
+    </div>
+    <div class="model-selector">
+        <label><i class="fas fa-microchip"></i> Modelo</label>
+        <select id="modelSelect">
+            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite ⭐ Principal</option>
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+            <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+            <option value="gemini-3.1-flash-image">Gemini 3.1 Flash Image</option>
+        </select>
+    </div>
+    <div class="upload-area" id="uploadArea">
+        <div class="icon-upload"><i class="fas fa-cloud-upload-alt"></i></div>
+        <p>Clique aqui ou arraste uma imagem do Pokémon</p>
+        <p class="formats">A IA extrai nome, nível, natureza, IVs, EVs e status · PNG · JPG · WEBP</p>
+        <input type="file" id="fileInput" accept="image/*" />
+        <img id="preview" />
+        <div class="file-badge" id="fileBadge"><i class="fas fa-check-circle"></i> <span id="fileName">imagem.png</span></div>
+    </div>
+    <button class="btn-analisar" id="analisarBtn" disabled><i class="fas fa-flask"></i> Analisar com Gemini</button>
+    <div class="loading" id="loading"><i class="fas fa-spinner fa-spin"></i> Analisando imagem...</div>
+    <div class="resultado-box" id="resultadoBox"></div>
+
+    <div class="ficha-header" id="fichaHeader" style="display:none; margin-top:1.5rem;">
+        <div class="ficha-sprite-box" id="fichaSpriteBox"><div class="placeholder"><i class="fas fa-question"></i></div></div>
+        <div class="ficha-info">
+            <div class="ficha-nome" id="fichaNome">—</div>
+            <div class="ficha-tipos" id="fichaTipos"></div>
+            <div class="ficha-meta">
+                <span><i class="fas fa-layer-group"></i> Nível <strong id="fichaNivel">—</strong></span>
+                <span><i class="fas fa-leaf"></i> Natureza <strong id="fichaNatureza">—</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-download-ficha" id="btnPdfPvp" type="button" style="display:none;"><i class="fas fa-file-pdf"></i> Baixar ficha PvP em PDF</button>
+
+    <div class="iv-eval-container" id="ivEvaluationPvp">
+        <div class="iv-eval-header">
+            <div class="iv-eval-icon" id="ivEvalIconPvp"><i class="fas fa-chart-line"></i></div>
+            <div>
+                <div class="iv-eval-title">Avaliação de IV (PvP)</div>
+                <div class="iv-eval-subtitle" id="ivEvalSubtitlePvp">Analisando potencial competitivo...</div>
+            </div>
+            <div class="iv-eval-total" id="ivEvalTotalPvp">0<small>/186</small></div>
+        </div>
+        <div class="iv-eval-percent-bar">
+            <div class="iv-eval-percent-fill" id="ivEvalPercentFillPvp" style="width:0%;"></div>
+        </div>
+        <div class="iv-eval-grid" id="ivEvalGridPvp"></div>
+        <div class="iv-eval-veredito" id="ivEvalVereditoPvp">
+            <i class="fas fa-spinner fa-spin"></i> Aguardando dados...
+        </div>
+
+        <!-- ⭐ IV EFETIVO PvP -->
+        <div class="iv-efetivo-container" id="ivEfetivoPvp">
+            <div class="iv-efetivo-header">
+                <div class="iv-efetivo-icon" id="ivEfetivoIconPvp"><i class="fas fa-crosshairs"></i></div>
+                <div style="flex:1;">
+                    <div class="iv-efetivo-title">IV Efetivo — Stats da Natureza Recomendada</div>
+                    <div class="iv-efetivo-subtitle">Analisa SOMENTE os stats que a natureza recomendada usa</div>
+                </div>
+                <div class="iv-efetivo-score" id="ivEfetivoScorePvp">—<small>/10</small></div>
+            </div>
+            <div class="iv-efetivo-bar">
+                <div class="iv-efetivo-fill" id="ivEfetivoFillPvp" style="width:0%;"></div>
+            </div>
+            <div class="iv-efetivo-stats-usados" id="ivEfetivoStatsUsadosPvp"></div>
+            <div class="iv-efetivo-body" id="ivEfetivoBodyPvp">
+                <i class="fas fa-info-circle"></i> Clique no botão abaixo para gerar a análise
+            </div>
+            <button class="btn-iv-efetivo" id="btnGerarIvEfetivoPvp">
+                <i class="fas fa-magic"></i> Gerar IV Efetivo com IA
+            </button>
+        </div>
+
+        <!-- ⭐ EV EFETIVA PvP -->
+        <div class="ev-efetiva-container" id="evEfetivaPvp">
+            <div class="ev-efetiva-header">
+                <div class="ev-efetiva-icon" id="evEfetivaIconPvp"><i class="fas fa-dumbbell"></i></div>
+                <div style="flex:1;">
+                    <div class="ev-efetiva-title">EV Efetiva — EVs nos Stats da Natureza</div>
+                    <div class="ev-efetiva-subtitle">Avalia se os EVs estão nos stats que a natureza recomendada usa</div>
+                </div>
+                <div class="ev-efetiva-score" id="evEfetivaScorePvp">—<small>/10</small></div>
+            </div>
+            <div class="ev-efetiva-bar">
+                <div class="ev-efetiva-fill" id="evEfetivaFillPvp" style="width:0%;"></div>
+            </div>
+            <div class="ev-efetiva-stats" id="evEfetivaStatsPvp"></div>
+            <div class="ev-efetiva-body" id="evEfetivaBodyPvp">
+                <i class="fas fa-info-circle"></i> Clique no botão abaixo para gerar a análise
+            </div>
+            <button class="btn-ev-efetiva" id="btnGerarEVEfetivaPvp">
+                <i class="fas fa-magic"></i> Gerar EV Efetiva com IA
+            </button>
+        </div>
+    </div>
+
+    <!-- ⭐ NOTA DA IA PvP -->
+    <div class="ai-rating-container" id="aiRatingContainerPvp">
+        <div class="ai-rating-header">
+            <div class="ai-rating-icon" id="aiRatingIconPvp"><i class="fas fa-star"></i></div>
+            <div class="ai-rating-info">
+                <div class="ai-rating-title">Nota da IA — Status Reais</div>
+                <div class="ai-rating-subtitle">Avaliação de 0 a 10 baseada nos status calculados com seus EVs</div>
+            </div>
+            <div class="ai-rating-score" id="aiRatingScorePvp">—<small>/10</small></div>
+        </div>
+        <div class="ai-rating-bar">
+            <div class="ai-rating-fill" id="aiRatingFillPvp" style="width:0%;"></div>
+        </div>
+        <div class="ai-rating-stars" id="aiRatingStarsPvp"></div>
+        <div class="ai-rating-justificativa" id="aiRatingJustificativaPvp">
+            <i class="fas fa-spinner fa-spin"></i> Clique no botão abaixo para gerar a nota.
+        </div>
+        <button class="btn-ai-rating" id="btnGerarNotaPvp">
+            <i class="fas fa-magic"></i> Gerar Nota da IA (Status Reais)
+        </button>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; margin-bottom:1rem;">
+        <div class="ficha-subtitle" style="margin-bottom:0;"><i class="fas fa-heart"></i> Status Base</div>
+        <span class="status-carregado" id="statusCarregadoBadge"><i class="fas fa-check-circle"></i> Carregado</span>
+        <button class="btn-exemplo" id="btnCarregarExemplo"><i class="fas fa-download"></i> Carregar Exemplo (Flygon)</button>
+    </div>
+    <div class="status-container"><div class="status-grid" id="statusGrid"></div></div>
+
+    <div class="ev-total-counter" id="evTotalCounter">
+        <div class="ev-counter-label"><i class="fas fa-bolt"></i> Pontos de EV (estilo jogo)</div>
+        <div class="ev-counter-value" id="evCounterValue">
+            <span class="used" id="evUsedPoints">0</span>
+            <span class="max">/ 51</span>
+        </div>
+        <div class="ev-counter-bar"><div class="ev-counter-fill" id="evCounterFill"></div></div>
+    </div>
+
+    <div class="ev-controls">
+        <button class="btn-ev primary" id="btnAplicarEVs"><i class="fas fa-check"></i> Aplicar EVs</button>
+        <button class="btn-ev" id="btnSugerirEVs"><i class="fas fa-lightbulb"></i> Sugerir EVs</button>
+        <button class="btn-ev danger" id="btnResetarEVs"><i class="fas fa-undo"></i> Resetar EVs</button>
+        <span style="color:#5a647e; font-size:0.65rem; margin-left:0.5rem;">26 pontos = 252 EVs · 51 pontos = 510 EVs</span>
+    </div>
+    <div class="natureza-container">
+        <div class="label"><i class="fas fa-leaf"></i> Natureza atual</div>
+        <div class="value" id="natureza">Nenhuma</div>
+    </div>
+    <div class="natureza-recomendada-container" id="naturezaRecomendadaContainer" style="flex-direction:column; align-items:stretch;">
+        <div class="label" style="margin-bottom:0.8rem;"><i class="fas fa-thumbs-up"></i> Naturezas recomendadas + EVs para PvP</div>
+        <div class="pve-naturezas-grid" id="naturezasRecomendadas"></div>
+    </div>
+    <div class="moves-container">
+        <div class="moves-label"><i class="fas fa-compact-disc"></i> Melhores TMs PvP (disponíveis no jogo)</div>
+        <div class="moves-loading" id="movesLoading"><i class="fas fa-spinner fa-spin"></i> Gerando TMs...</div>
+        <div class="moves-resultado" id="movesResultado" style="display:none;"></div>
+    </div>
+</div>
+
+<!-- TIMES -->
+<div class="tab-content" id="tab-times">
+    <div class="api-key-container" style="margin-bottom:1rem;">
+        <label><i class="fas fa-key"></i> Chave API</label>
+        <input type="text" id="apiKeyInputTimes" placeholder="Cole sua chave do Gemini aqui..." />
+        <button class="btn-salvar-api" id="btnSalvarApiTimes"><i class="fas fa-save"></i> Salvar</button>
+        <span class="api-status" id="apiStatusTimes"></span>
+    </div>
+    <div class="model-selector" style="margin-bottom:1.5rem;">
+        <label><i class="fas fa-microchip"></i> Modelo</label>
+        <select id="modelSelectTimes">
+            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite ⭐ Principal</option>
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+            <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+            <option value="gemini-3.1-flash-image">Gemini 3.1 Flash Image</option>
+        </select>
+    </div>
+    <div class="team-upload-grid">
+        <div class="team-upload-box">
+            <div class="team-title"><i class="fas fa-shield-alt ally"></i> <span class="ally">Time Aliado</span></div>
+            <div class="team-upload-area" id="teamAllyArea">
+                <div><i class="fas fa-cloud-upload-alt" style="font-size:2rem; color:#16a34a; opacity:0.6;"></i></div>
+                <p style="color:#475569; font-size:0.8rem; font-weight:600;">Clique para selecionar a imagem</p>
+                <input type="file" id="teamAllyInput" accept="image/*" />
+                <img id="teamAllyPreview" />
+            </div>
+            <div class="team-status" id="teamAllyStatus"><span class="empty">Nenhuma imagem selecionada</span></div>
+            <div class="manual-input">
+                <label><i class="fas fa-pen"></i> Ou digite os nomes:</label>
+                <input type="text" id="allyManualInput" placeholder="Ex: Slowbro, Flygon, Scizor" />
+            </div>
+        </div>
+        <div class="team-upload-box">
+            <div class="team-title"><i class="fas fa-shield-alt enemy"></i> <span class="enemy">Time Rival</span></div>
+            <div class="team-upload-area" id="teamEnemyArea">
+                <div><i class="fas fa-cloud-upload-alt" style="font-size:2rem; color:#dc2626; opacity:0.6;"></i></div>
+                <p style="color:#475569; font-size:0.8rem; font-weight:600;">Clique para selecionar a imagem</p>
+                <input type="file" id="teamEnemyInput" accept="image/*" />
+                <img id="teamEnemyPreview" />
+            </div>
+            <div class="team-status" id="teamEnemyStatus"><span class="empty">Nenhuma imagem selecionada</span></div>
+            <div class="manual-input">
+                <label><i class="fas fa-pen"></i> Ou digite os nomes:</label>
+                <input type="text" id="enemyManualInput" placeholder="Ex: Rhyperior, Aggron, Metagross" />
+            </div>
+        </div>
+    </div>
+    <button class="btn-analisar-times" id="btnAnalisarTimes" disabled><i class="fas fa-crosshairs"></i> Analisar Times</button>
+    <div class="loading" id="loadingTimes" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Analisando times...</div>
+    <div class="team-result" id="teamResult" style="display:none;">
+        <div class="result-title"><i class="fas fa-chart-simple"></i> Resultado da Análise</div>
+        <div id="teamResultContent"></div>
+        <div class="ia-analysis" id="iaAnalysis">
+            <h4><i class="fas fa-robot"></i> Veredito da IA</h4>
+            <div class="ia-loading" id="iaLoading"><i class="fas fa-spinner fa-spin"></i> A IA está analisando os times...</div>
+            <div class="ia-resultado" id="iaResultado"></div>
+        </div>
+    </div>
+    <button class="btn-download-ficha" id="btnPdfTimes" type="button" style="display:none;"><i class="fas fa-file-pdf"></i> Baixar análise dos times em PDF</button>
+</div>
+
+<!-- DUELO 1x1 PVP -->
+<div class="tab-content" id="tab-duel">
+    <div class="api-key-container" style="margin-bottom:1rem;">
+        <label><i class="fas fa-key"></i> Chave API</label>
+        <input type="text" id="apiKeyInputDuel" placeholder="Cole sua chave do Gemini aqui..." />
+        <button class="btn-salvar-api" id="btnSalvarApiDuel"><i class="fas fa-save"></i> Salvar</button>
+        <span class="api-status" id="apiStatusDuel"></span>
+    </div>
+    <div class="model-selector" style="margin-bottom:1.5rem;">
+        <label><i class="fas fa-microchip"></i> Modelo</label>
+        <select id="modelSelectDuel">
+            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite ⭐ Principal</option>
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+            <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+            <option value="gemini-3.1-flash-image">Gemini 3.1 Flash Image</option>
+        </select>
+    </div>
+
+    <div class="tutorial-container" style="margin-bottom:1.5rem;">
+        <h4><i class="fas fa-bolt"></i> Duelo 1x1 — TMs reais do jogo</h4>
+        <p>A IA recomenda apenas <strong>TMs que existem no jogo</strong>, sem inventar moves. Envie foto OU digite o nome!</p>
+    </div>
+
+    <div class="duel-grid">
+        <div class="duel-card ally">
+            <div class="duel-label"><i class="fas fa-shield-alt"></i> Seu Pokémon</div>
+            <div class="duel-mode-toggle">
+                <button type="button" class="mode-btn active" data-mode="nome" data-side="ally"><i class="fas fa-pen"></i> Nome</button>
+                <button type="button" class="mode-btn" data-mode="foto" data-side="ally"><i class="fas fa-camera"></i> Foto</button>
+            </div>
+            <div class="duel-sprite-box" id="duelAllySprite"><div class="placeholder"><i class="fas fa-question"></i></div></div>
+            <div class="duel-name-zone" id="duelAllyNomeZone">
+                <input type="text" class="duel-input" id="duelAllyInput" placeholder="Ex: Charizard" />
+            </div>
+            <div class="duel-photo-zone" id="duelAllyFotoZone">
+                <div class="duel-photo-drop" id="duelAllyPhotoDrop">
+                    <i class="fas fa-camera"></i>
+                    <p>Clique para enviar a foto com os status</p>
+                    <input type="file" id="duelAllyPhotoInput" accept="image/*" />
+                </div>
+                <img id="duelAllyPhotoPreview" class="duel-photo-preview" />
+            </div>
+            <div class="duel-name" id="duelAllyName">—</div>
+            <div class="duel-types" id="duelAllyTypes"></div>
+            <div class="duel-stats-grid" id="duelAllyStats"></div>
+            <div class="duel-stats-note" id="duelAllyStatsNote"></div>
+        </div>
+
+        <div class="duel-vs">VS</div>
+
+        <div class="duel-card enemy">
+            <div class="duel-label"><i class="fas fa-skull-crossbones"></i> Oponente</div>
+            <div class="duel-mode-toggle">
+                <button type="button" class="mode-btn active" data-mode="nome" data-side="enemy"><i class="fas fa-pen"></i> Nome</button>
+                <button type="button" class="mode-btn" data-mode="foto" data-side="enemy"><i class="fas fa-camera"></i> Foto</button>
+            </div>
+            <div class="duel-sprite-box" id="duelEnemySprite"><div class="placeholder"><i class="fas fa-question"></i></div></div>
+            <div class="duel-name-zone" id="duelEnemyNomeZone">
+                <input type="text" class="duel-input" id="duelEnemyInput" placeholder="Ex: Garchomp" />
+            </div>
+            <div class="duel-photo-zone" id="duelEnemyFotoZone">
+                <div class="duel-photo-drop" id="duelEnemyPhotoDrop">
+                    <i class="fas fa-camera"></i>
+                    <p>Clique para enviar a foto com os status</p>
+                    <input type="file" id="duelEnemyPhotoInput" accept="image/*" />
+                </div>
+                <img id="duelEnemyPhotoPreview" class="duel-photo-preview" />
+            </div>
+            <div class="duel-name" id="duelEnemyName">—</div>
+            <div class="duel-types" id="duelEnemyTypes"></div>
+            <div class="duel-stats-grid" id="duelEnemyStats"></div>
+            <div class="duel-stats-note" id="duelEnemyStatsNote"></div>
+        </div>
+    </div>
+
+    <button class="btn-analisar-times" id="btnAnalisarDuelo" disabled><i class="fas fa-bolt"></i> Gerar TMs corretas com IA</button>
+    <div class="loading" id="loadingDuelo" style="display:none;"><i class="fas fa-spinner fa-spin"></i> A IA está analisando o confronto...</div>
+    <div class="duel-ia-result" id="duelIAResult" style="display:none;"></div>
+    <button class="btn-download-ficha" id="btnPdfDuelo" type="button" style="display:none;"><i class="fas fa-file-pdf"></i> Baixar duelo em PDF</button>
+</div>
+
+<!-- TIER -->
+<div class="tab-content" id="tab-tier">
+    <div class="api-key-container" style="margin-bottom:1rem;">
+        <label><i class="fas fa-key"></i> Chave API</label>
+        <input type="text" id="apiKeyInputTier" placeholder="Cole sua chave do Gemini aqui..." />
+        <button class="btn-salvar-api" id="btnSalvarApiTier"><i class="fas fa-save"></i> Salvar</button>
+        <span class="api-status" id="apiStatusTier"></span>
+    </div>
+    <div class="model-selector" style="margin-bottom:1.5rem;">
+        <label><i class="fas fa-microchip"></i> Modelo</label>
+        <select id="modelSelectTier">
+            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite ⭐ Principal</option>
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+            <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+            <option value="gemini-3.1-flash-image">Gemini 3.1 Flash Image</option>
+        </select>
+    </div>
+    <h3 style="color:#7c2d12; margin-bottom:0.5rem; font-size:1rem; font-weight:900;"><i class="fas fa-list" style="color:#a855f7;"></i> Times Competitivos (Metagame)</h3>
+    <p style="color:#64748b; font-size:0.82rem; margin-bottom:1.5rem; font-weight:600;">Sprites carregados automaticamente da PokéAPI.</p>
+
+    <div class="tier-container">
+        <div class="tier-section" data-tier="S">
+            <div class="tier-header"><span class="tier-badge">S</span><span class="tier-desc">Meta dominante — Altíssima performance</span></div>
+            <div class="team-list">
+                <div class="team-item">
+                    <div class="team-name"><i class="fas fa-crown" style="color:#f59e0b;"></i> Core Dragão + Aço</div>
+                    <div class="team-pokemon">
+                        <span class="poke-tag" data-poke="Garchomp"><span class="poke-name">Garchomp</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Dragonite"><span class="poke-name">Dragonite</span> <span class="nature">(Jolly)</span></span>
+                        <span class="poke-tag" data-poke="Metagross"><span class="poke-name">Metagross</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Tyranitar"><span class="poke-name">Tyranitar</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Salamence"><span class="poke-name">Salamence</span> <span class="nature">(Naive)</span></span>
+                        <span class="poke-tag" data-poke="Flygon"><span class="poke-name">Flygon</span> <span class="nature">(Jolly)</span></span>
+                    </div>
+                    <div class="team-desc">Pressão ofensiva devastadora com resistências a tipos comuns.</div>
+                </div>
+                <div class="team-item">
+                    <div class="team-name"><i class="fas fa-crown" style="color:#f59e0b;"></i> Rain Offense</div>
+                    <div class="team-pokemon">
+                        <span class="poke-tag" data-poke="Swampert"><span class="poke-name">Swampert</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Kingdra"><span class="poke-name">Kingdra</span> <span class="nature">(Modest)</span></span>
+                        <span class="poke-tag" data-poke="Ludicolo"><span class="poke-name">Ludicolo</span> <span class="nature">(Modest)</span></span>
+                        <span class="poke-tag" data-poke="Ferrothorn"><span class="poke-name">Ferrothorn</span> <span class="nature">(Relaxed)</span></span>
+                        <span class="poke-tag" data-poke="Tornadus"><span class="poke-name">Tornadus</span> <span class="nature">(Timid)</span></span>
+                        <span class="poke-tag" data-poke="Pelipper"><span class="poke-name">Pelipper</span> <span class="nature">(Bold)</span></span>
+                    </div>
+                    <div class="team-desc">Chuva + Swift Swim. Velocidade e poder de água imparáveis.</div>
+                </div>
+                <div class="team-item">
+                    <div class="team-name"><i class="fas fa-crown" style="color:#f59e0b;"></i> Hyper Offense Psíquico</div>
+                    <div class="team-pokemon">
+                        <span class="poke-tag" data-poke="Mewtwo"><span class="poke-name">Mewtwo</span> <span class="nature">(Timid)</span></span>
+                        <span class="poke-tag" data-poke="Alakazam"><span class="poke-name">Alakazam</span> <span class="nature">(Timid)</span></span>
+                        <span class="poke-tag" data-poke="Gardevoir"><span class="poke-name">Gardevoir</span> <span class="nature">(Modest)</span></span>
+                        <span class="poke-tag" data-poke="Latios"><span class="poke-name">Latios</span> <span class="nature">(Timid)</span></span>
+                        <span class="poke-tag" data-poke="Gengar"><span class="poke-name">Gengar</span> <span class="nature">(Timid)</span></span>
+                        <span class="poke-tag" data-poke="Metagross"><span class="poke-name">Metagross</span> <span class="nature">(Adamant)</span></span>
+                    </div>
+                    <div class="team-desc">Poder psíquico massivo. Especialistas em sweep rápido.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tier-section" data-tier="A">
+            <div class="tier-header"><span class="tier-badge">A</span><span class="tier-desc">Excelente — Times muito fortes</span></div>
+            <div class="team-list">
+                <div class="team-item">
+                    <div class="team-name"><i class="fas fa-star" style="color:#22c55e;"></i> Fogo + Lutador</div>
+                    <div class="team-pokemon">
+                        <span class="poke-tag" data-poke="Blaziken"><span class="poke-name">Blaziken</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Infernape"><span class="poke-name">Infernape</span> <span class="nature">(Jolly)</span></span>
+                        <span class="poke-tag" data-poke="Charizard"><span class="poke-name">Charizard</span> <span class="nature">(Timid)</span></span>
+                        <span class="poke-tag" data-poke="Lucario"><span class="poke-name">Lucario</span> <span class="nature">(Jolly)</span></span>
+                        <span class="poke-tag" data-poke="Conkeldurr"><span class="poke-name">Conkeldurr</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Volcarona"><span class="poke-name">Volcarona</span> <span class="nature">(Timid)</span></span>
+                    </div>
+                    <div class="team-desc">Pressão mista de fogo e luta. Ótima cobertura ofensiva.</div>
+                </div>
+                <div class="team-item">
+                    <div class="team-name"><i class="fas fa-star" style="color:#22c55e;"></i> Stall Defensivo</div>
+                    <div class="team-pokemon">
+                        <span class="poke-tag" data-poke="Blissey"><span class="poke-name">Blissey</span> <span class="nature">(Bold)</span></span>
+                        <span class="poke-tag" data-poke="Skarmory"><span class="poke-name">Skarmory</span> <span class="nature">(Impish)</span></span>
+                        <span class="poke-tag" data-poke="Chansey"><span class="poke-name">Chansey</span> <span class="nature">(Bold)</span></span>
+                        <span class="poke-tag" data-poke="Toxapex"><span class="poke-name">Toxapex</span> <span class="nature">(Bold)</span></span>
+                        <span class="poke-tag" data-poke="Ferrothorn"><span class="poke-name">Ferrothorn</span> <span class="nature">(Relaxed)</span></span>
+                        <span class="poke-tag" data-poke="Slowbro"><span class="poke-name">Slowbro</span> <span class="nature">(Bold)</span></span>
+                    </div>
+                    <div class="team-desc">Defesa absurda + regeneração. Time para desgastar o oponente.</div>
+                </div>
+                <div class="team-item">
+                    <div class="team-name"><i class="fas fa-star" style="color:#22c55e;"></i> Sand Balance</div>
+                    <div class="team-pokemon">
+                        <span class="poke-tag" data-poke="Tyranitar"><span class="poke-name">Tyranitar</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Excadrill"><span class="poke-name">Excadrill</span> <span class="nature">(Jolly)</span></span>
+                        <span class="poke-tag" data-poke="Gliscor"><span class="poke-name">Gliscor</span> <span class="nature">(Impish)</span></span>
+                        <span class="poke-tag" data-poke="Rotom-Wash"><span class="poke-name">Rotom-Wash</span> <span class="nature">(Bold)</span></span>
+                        <span class="poke-tag" data-poke="Ferrothorn"><span class="poke-name">Ferrothorn</span> <span class="nature">(Relaxed)</span></span>
+                        <span class="poke-tag" data-poke="Garchomp"><span class="poke-name">Garchomp</span> <span class="nature">(Jolly)</span></span>
+                    </div>
+                    <div class="team-desc">Areia + Sand Rush. Excadrill vira um monstro de velocidade.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tier-section" data-tier="B">
+            <div class="tier-header"><span class="tier-badge">B</span><span class="tier-desc">Bom — Times viáveis</span></div>
+            <div class="team-list">
+                <div class="team-item">
+                    <div class="team-name"><i class="fas fa-medal" style="color:#3b82f6;"></i> Trick Room</div>
+                    <div class="team-pokemon">
+                        <span class="poke-tag" data-poke="Porygon2"><span class="poke-name">Porygon2</span> <span class="nature">(Sassy)</span></span>
+                        <span class="poke-tag" data-poke="Slowbro"><span class="poke-name">Slowbro</span> <span class="nature">(Sassy)</span></span>
+                        <span class="poke-tag" data-poke="Conkeldurr"><span class="poke-name">Conkeldurr</span> <span class="nature">(Brave)</span></span>
+                        <span class="poke-tag" data-poke="Rhyperior"><span class="poke-name">Rhyperior</span> <span class="nature">(Brave)</span></span>
+                        <span class="poke-tag" data-poke="Aggron"><span class="poke-name">Aggron</span> <span class="nature">(Brave)</span></span>
+                        <span class="poke-tag" data-poke="Magearna"><span class="poke-name">Magearna</span> <span class="nature">(Quiet)</span></span>
+                    </div>
+                    <div class="team-desc">Inverte velocidades. Pokémon lentos ficam imbatíveis por 5 turnos.</div>
+                </div>
+                <div class="team-item">
+                    <div class="team-name"><i class="fas fa-medal" style="color:#3b82f6;"></i> Sun Offense</div>
+                    <div class="team-pokemon">
+                        <span class="poke-tag" data-poke="Torkoal"><span class="poke-name">Torkoal</span> <span class="nature">(Relaxed)</span></span>
+                        <span class="poke-tag" data-poke="Venusaur"><span class="poke-name">Venusaur</span> <span class="nature">(Modest)</span></span>
+                        <span class="poke-tag" data-poke="Charizard"><span class="poke-name">Charizard</span> <span class="nature">(Timid)</span></span>
+                        <span class="poke-tag" data-poke="Exeggutor"><span class="poke-name">Exeggutor</span> <span class="nature">(Modest)</span></span>
+                        <span class="poke-tag" data-poke="Volcarona"><span class="poke-name">Volcarona</span> <span class="nature">(Timid)</span></span>
+                        <span class="poke-tag" data-poke="Mandibuzz"><span class="poke-name">Mandibuzz</span> <span class="nature">(Impish)</span></span>
+                    </div>
+                    <div class="team-desc">Sol + Chlorophyll. Venusaur e Charizard ficam imparáveis.</div>
+                </div>
+                <div class="team-item">
+                    <div class="team-name"><i class="fas fa-medal" style="color:#3b82f6;"></i> Volt-Turn</div>
+                    <div class="team-pokemon">
+                        <span class="poke-tag" data-poke="Rotom-Wash"><span class="poke-name">Rotom-Wash</span> <span class="nature">(Bold)</span></span>
+                        <span class="poke-tag" data-poke="Scizor"><span class="poke-name">Scizor</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Landorus-Therian"><span class="poke-name">Landorus-T</span> <span class="nature">(Jolly)</span></span>
+                        <span class="poke-tag" data-poke="Tornadus-Therian"><span class="poke-name">Tornadus-T</span> <span class="nature">(Timid)</span></span>
+                        <span class="poke-tag" data-poke="Magnezone"><span class="poke-name">Magnezone</span> <span class="nature">(Modest)</span></span>
+                        <span class="poke-tag" data-poke="Tapu Koko"><span class="poke-name">Tapu Koko</span> <span class="nature">(Timid)</span></span>
+                    </div>
+                    <div class="team-desc">Troca constante com U-turn e Volt Switch. Mantém momentum.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tier-section" data-tier="C">
+            <div class="tier-header"><span class="tier-badge">C</span><span class="tier-desc">Situacional — Times para nicho</span></div>
+            <div class="team-list">
+                <div class="team-item">
+                    <div class="team-name"><i class="fas fa-leaf" style="color:#ec4899;"></i> Mono Grass</div>
+                    <div class="team-pokemon">
+                        <span class="poke-tag" data-poke="Venusaur"><span class="poke-name">Venusaur</span> <span class="nature">(Modest)</span></span>
+                        <span class="poke-tag" data-poke="Ferrothorn"><span class="poke-name">Ferrothorn</span> <span class="nature">(Relaxed)</span></span>
+                        <span class="poke-tag" data-poke="Rillaboom"><span class="poke-name">Rillaboom</span> <span class="nature">(Adamant)</span></span>
+                        <span class="poke-tag" data-poke="Kartana"><span class="poke-name">Kartana</span> <span class="nature">(Jolly)</span></span>
+                        <span class="poke-tag" data-poke="Breloom"><span class="poke-name">Breloom</span> <span class="nature">(Jolly)</span></span>
+                        <span class="poke-tag" data-poke="Amoonguss"><span class="poke-name">Amoonguss</span> <span class="nature">(Bold)</span></span>
+                    </div>
+                    <div class="team-desc">Time temático. Divertido, mas previsível contra counters específicos.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PVE -->
+<div class="tab-content" id="tab-pve">
+    <div class="api-key-container" style="margin-bottom:1rem;">
+        <label><i class="fas fa-key"></i> Chave API</label>
+        <input type="text" id="apiKeyInputPve" placeholder="Cole sua chave do Gemini aqui..." />
+        <button class="btn-salvar-api" id="btnSalvarApiPve"><i class="fas fa-save"></i> Salvar</button>
+        <span class="api-status" id="apiStatusPve"></span>
+    </div>
+    <div class="model-selector" style="margin-bottom:1.5rem;">
+        <label><i class="fas fa-microchip"></i> Modelo</label>
+        <select id="modelSelectPve">
+            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite ⭐ Principal</option>
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+            <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+            <option value="gemini-3.1-flash-image">Gemini 3.1 Flash Image</option>
+        </select>
+    </div>
+    <div class="pve-upload-area" id="pveUploadArea">
+        <div class="icon-upload"><i class="fas fa-camera"></i></div>
+        <p>Envie uma foto do Pokémon para a IA identificar</p>
+        <input type="file" id="pveFileInput" accept="image/*" />
+        <img id="pveImgPreview" />
+        <div class="pve-file-badge" id="pveFileBadge"><i class="fas fa-check-circle"></i> <span id="pveFileName">imagem.png</span></div>
+    </div>
+    <button class="btn-analisar-pve-img" id="btnAnalisarPveImg" disabled><i class="fas fa-magic"></i> Identificar Pokémon, IVs, Status e Natureza pela Imagem</button>
+    <div class="loading" id="loadingPveImg" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Analisando imagem com IA...</div>
+    <div class="pve-selector">
+        <label><i class="fas fa-search"></i> Ou escolha o Pokémon pelo nome</label>
+        <div class="pve-input-row">
+            <input type="text" id="pvePokemonInput" placeholder="Ex: Garchomp, Charizard, Lucario..." />
+            <button class="btn-pve-analisar" id="btnPveAnalisar"><i class="fas fa-magic"></i> Gerar Build PvE</button>
+        </div>
+    </div>
+    <div class="loading" id="loadingPve" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Analisando Pokémon para PvE...</div>
+    <div class="pve-result" id="pveResult" style="display:none;">
+        <div class="ficha-header">
+            <div class="ficha-sprite-box" id="pveSpriteBox"><div class="placeholder"><i class="fas fa-question"></i></div></div>
+            <div class="ficha-info">
+                <div class="ficha-nome" id="pveNome">—</div>
+                <div class="ficha-tipos" id="pveTipos"></div>
+                <div class="ficha-meta">
+                    <span><i class="fas fa-layer-group"></i> Nível <strong id="pveNivel">—</strong></span>
+                    <span><i class="fas fa-leaf"></i> Natureza <strong id="pveNaturezaFicha">—</strong></span>
+                    <span class="pve-real-stats-badge" id="pveRealStatsBadge" style="display:none;"><i class="fas fa-camera"></i> Status da Foto</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="iv-eval-container" id="ivEvaluationPve">
+            <div class="iv-eval-header">
+                <div class="iv-eval-icon" id="ivEvalIconPve"><i class="fas fa-chart-line"></i></div>
+                <div>
+                    <div class="iv-eval-title">Avaliação de IV (PvE)</div>
+                    <div class="iv-eval-subtitle" id="ivEvalSubtitlePve">Analisando potencial para PvE...</div>
+                </div>
+                <div class="iv-eval-total" id="ivEvalTotalPve">0<small>/186</small></div>
+            </div>
+            <div class="iv-eval-percent-bar">
+                <div class="iv-eval-percent-fill" id="ivEvalPercentFillPve" style="width:0%;"></div>
+            </div>
+            <div class="iv-eval-grid" id="ivEvalGridPve"></div>
+            <div class="iv-eval-veredito" id="ivEvalVereditoPve">
+                <i class="fas fa-spinner fa-spin"></i> Aguardando dados...
+            </div>
+
+            <!-- ⭐ IV EFETIVO PvE -->
+            <div class="iv-efetivo-container" id="ivEfetivoPve">
+                <div class="iv-efetivo-header">
+                    <div class="iv-efetivo-icon" id="ivEfetivoIconPve"><i class="fas fa-crosshairs"></i></div>
+                    <div style="flex:1;">
+                        <div class="iv-efetivo-title">IV Efetivo — Stats da Natureza Recomendada</div>
+                        <div class="iv-efetivo-subtitle">Analisa SOMENTE os stats que a natureza recomendada usa</div>
+                    </div>
+                    <div class="iv-efetivo-score" id="ivEfetivoScorePve">—<small>/10</small></div>
+                </div>
+                <div class="iv-efetivo-bar">
+                    <div class="iv-efetivo-fill" id="ivEfetivoFillPve" style="width:0%;"></div>
+                </div>
+                <div class="iv-efetivo-stats-usados" id="ivEfetivoStatsUsadosPve"></div>
+                <div class="iv-efetivo-body" id="ivEfetivoBodyPve">
+                    <i class="fas fa-info-circle"></i> Clique no botão abaixo para gerar a análise
+                </div>
+                <button class="btn-iv-efetivo" id="btnGerarIvEfetivoPve">
+                    <i class="fas fa-magic"></i> Gerar IV Efetivo com IA
+                </button>
+            </div>
+
+            <!-- ⭐ EV EFETIVA PvE -->
+            <div class="ev-efetiva-container" id="evEfetivaPve">
+                <div class="ev-efetiva-header">
+                    <div class="ev-efetiva-icon" id="evEfetivaIconPve"><i class="fas fa-dumbbell"></i></div>
+                    <div style="flex:1;">
+                        <div class="ev-efetiva-title">EV Efetiva — EVs nos Stats da Natureza</div>
+                        <div class="ev-efetiva-subtitle">Avalia se os EVs estão nos stats que a natureza recomendada usa</div>
+                    </div>
+                    <div class="ev-efetiva-score" id="evEfetivaScorePve">—<small>/10</small></div>
+                </div>
+                <div class="ev-efetiva-bar">
+                    <div class="ev-efetiva-fill" id="evEfetivaFillPve" style="width:0%;"></div>
+                </div>
+                <div class="ev-efetiva-stats" id="evEfetivaStatsPve"></div>
+                <div class="ev-efetiva-body" id="evEfetivaBodyPve">
+                    <i class="fas fa-info-circle"></i> Clique no botão abaixo para gerar a análise
+                </div>
+                <button class="btn-ev-efetiva" id="btnGerarEVEfetivaPve">
+                    <i class="fas fa-magic"></i> Gerar EV Efetiva com IA
+                </button>
+            </div>
+        </div>
+
+        <div class="ai-rating-container" id="aiRatingContainerPve">
+            <div class="ai-rating-header">
+                <div class="ai-rating-icon" id="aiRatingIconPve"><i class="fas fa-star"></i></div>
+                <div class="ai-rating-info">
+                    <div class="ai-rating-title">Nota da IA — PvE</div>
+                    <div class="ai-rating-subtitle">Avaliação de 0 a 10 considerando stats, IVs, natureza e utilidade para PvE</div>
+                </div>
+                <div class="ai-rating-score" id="aiRatingScorePve">—<small>/10</small></div>
+            </div>
+            <div class="ai-rating-bar">
+                <div class="ai-rating-fill" id="aiRatingFillPve" style="width:0%;"></div>
+            </div>
+            <div class="ai-rating-stars" id="aiRatingStarsPve"></div>
+            <div class="ai-rating-justificativa" id="aiRatingJustificativaPve">
+                <i class="fas fa-spinner fa-spin"></i> Aguardando análise...
+            </div>
+        </div>
+
+        <div id="pveNatureAlert"></div>
+        <div class="status-container">
+            <div class="ficha-subtitle" style="margin-bottom:1rem;" id="pveStatusTitle"><i class="fas fa-chart-bar"></i> Atributos Base</div>
+            <div class="status-grid" id="pveStatusGrid"></div>
+        </div>
+        <div class="natureza-recomendada-container visivel" id="pveNaturezasContainer" style="flex-direction:column; align-items:stretch;">
+            <div class="label" style="margin-bottom:0.8rem;"><i class="fas fa-leaf"></i> Melhores Naturezas + EVs para PvE</div>
+            <div class="pve-naturezas-grid" id="pveNaturezas"></div>
+        </div>
+        <div class="moves-container">
+            <div class="moves-label"><i class="fas fa-compact-disc"></i> Melhores TMs para PvE (reais do jogo)</div>
+            <div class="moves-resultado" id="pveMoves"></div>
+        </div>
+        <div class="ia-analysis" id="pveStrategy" style="display:block;">
+            <h4><i class="fas fa-robot"></i> Estratégia PvE</h4>
+            <div class="ia-resultado" id="pveStrategyText">Aguardando análise...</div>
+            <button class="btn-download-ficha" id="btnPdfPve" type="button"><i class="fas fa-file-pdf"></i> Baixar ficha PvE em PDF</button>
+        </div>
+    </div>
+</div>
+
+
+<div class="credits-section">
+    <div class="credits-title"><i class="fas fa-star"></i> Créditos do Projeto <i class="fas fa-star"></i></div>
+    <div class="credits-subtitle">Conheça quem fez este projeto acontecer</div>
+    <div class="credits-grid">
+        <div class="credit-card">
+            <div class="credit-photo-box">
+                <img src="icons/trainer-pikachu.png" alt="Ash e Pikachu"
+                     onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'photo-placeholder\'><i class=\'fas fa-user\'></i></div>';">
+            </div>
+            <div class="credit-name">Agnus</div>
+            <div class="credit-role creator"><i class="fas fa-crown"></i> Criador do Projeto</div>
+        </div>
+        <div class="credit-card">
+            <div class="credit-photo-box">
+                <img src="icons/trainer-pikachu.png" alt="Ash e Pikachu"
+                     onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'photo-placeholder\'><i class=\'fas fa-user\'></i></div>';">
+            </div>
+            <div class="credit-name">Fkzerayt</div>
+            <div class="credit-role contributor"><i class="fas fa-hands-helping"></i> Contribuidor do Projeto</div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <div class="aviso"><i class="fas fa-exclamation-triangle"></i> Este projeto está em desenvolvimento.</div>
+    <p><i class="fas fa-egg"></i> Assistente do Treinador · Gemini + PokéAPI + IV Checker + 231 TMs + IV/EV Efetivo + Nota IA</p>
+</div>
+</div>
+
+
+<div class="pwa-modal" id="pwaModal" role="dialog" aria-modal="true" aria-labelledby="pwaTitle">
+  <div class="pwa-modal-card">
+    <button class="pwa-modal-close" id="btnFecharPwa" type="button" aria-label="Fechar">×</button>
+    <h2 id="pwaTitle"><i class="fas fa-download"></i> Instalar o app</h2>
+    <p>Instale o Assistente do Treinador na tela inicial para abrir como aplicativo.</p>
+    <ol>
+      <li><strong>Android/Chrome:</strong> toque em <strong>Instalar app</strong> ou no menu ⋮ e escolha <strong>Instalar aplicativo</strong>.</li>
+      <li><strong>iPhone/iPad:</strong> abra no Safari, toque em <strong>Compartilhar</strong> e escolha <strong>Adicionar à Tela de Início</strong>.</li>
+      <li><strong>Computador:</strong> no Chrome ou Edge, clique no ícone de instalação na barra de endereço ou escolha <strong>Instalar aplicativo</strong> no menu.</li>
+    </ol>
+    <button class="pwa-install-now" id="btnInstalarAgora" type="button" hidden><i class="fas fa-download"></i> Instalar agora</button>
+  </div>
+</div>
+<script src="script.js"></script>
+<script>
+let eventoInstalacaoPwa = null;
+window.addEventListener('beforeinstallprompt', evento => { evento.preventDefault(); eventoInstalacaoPwa = evento; const b=document.getElementById('btnInstalarAgora'); if(b)b.hidden=false; });
+const abrirPwa=()=>document.getElementById('pwaModal')?.classList.add('aberto');
+document.getElementById('btnInstalarPwa')?.addEventListener('click', abrirPwa);
+document.getElementById('btnFecharPwa')?.addEventListener('click', ()=>document.getElementById('pwaModal')?.classList.remove('aberto'));
+document.getElementById('pwaModal')?.addEventListener('click', e=>{if(e.target.id==='pwaModal')e.currentTarget.classList.remove('aberto')});
+document.getElementById('btnInstalarAgora')?.addEventListener('click', async ()=>{ if(!eventoInstalacaoPwa)return; eventoInstalacaoPwa.prompt(); await eventoInstalacaoPwa.userChoice; eventoInstalacaoPwa=null; document.getElementById('pwaModal')?.classList.remove('aberto'); });
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {scope: './'}).catch(console.warn));
+}
+</script>
 </body>
 </html>
