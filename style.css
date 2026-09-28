@@ -551,3 +551,90 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
 /* PDF v2: layout colorido e sem fundo escuro aplicado no documento de impressão. */
 
 /* PDF v3 */
+
+
+/* RAID BOSS */
+.raid-panel { display:flex; flex-direction:column; gap:1.15rem; }
+.raid-heading { display:flex; align-items:center; gap:1rem; padding:1.25rem 1.5rem; border:2px solid #c4b5fd; border-radius:20px; background:linear-gradient(135deg,#ede9fe,#fce7f3 58%,#dbeafe); }
+.raid-heading-icon { width:54px; height:54px; flex:0 0 54px; display:flex; align-items:center; justify-content:center; border-radius:16px; color:#fff; font-size:1.45rem; background:linear-gradient(135deg,#7c3aed,#db2777); box-shadow:0 5px 14px #7c3aed44; }
+.raid-heading h2 { color:#312e81; font-size:1.45rem; font-weight:900; }
+.raid-heading p { margin-top:.2rem; color:#475569; font-size:.85rem; }
+.raid-save-note { padding:.75rem 1rem; border:1px solid #a7f3d0; border-radius:12px; background:#ecfdf5; color:#065f46; font-size:.8rem; line-height:1.5; }
+.raid-save-note i { margin-right:.35rem; }
+.raid-boss-card { padding:1.15rem; border:2px solid #fda4af; border-radius:18px; background:linear-gradient(135deg,#fff1f2,#fff7ed); }
+.raid-boss-card h3,.raid-team-heading h3 { margin:0 0 .9rem; color:#7c2d12; font-size:1rem; font-weight:900; }
+.raid-boss-card h3 i,.raid-team-heading h3 i { margin-right:.4rem; color:#e11d48; }
+.raid-boss-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.9rem; }
+.raid-field { display:flex; flex-direction:column; gap:.35rem; min-width:0; }
+.raid-field > span { color:#334155; font-size:.72rem; font-weight:800; }
+.raid-field input,.raid-field textarea { width:100%; border:1.5px solid #cbd5e1; border-radius:10px; padding:.65rem .75rem; color:#0f172a; background:#fff; font:500 .82rem Inter,sans-serif; }
+.raid-field input:focus,.raid-field textarea:focus { outline:3px solid #c4b5fd88; border-color:#7c3aed; }
+.raid-field textarea { resize:vertical; min-height:130px; line-height:1.55; }
+.raid-team-heading { display:flex; align-items:baseline; justify-content:space-between; gap:.75rem; margin-top:.15rem; }
+.raid-team-heading h3 { margin:0; }
+.raid-team-heading > span { color:#64748b; font-size:.73rem; }
+.raid-team-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.8rem; }
+.raid-member-card { display:flex; flex-direction:column; gap:.75rem; padding:.9rem; border:1.5px solid #c4b5fd; border-radius:15px; background:linear-gradient(145deg,#faf5ff,#eff6ff); }
+.raid-slot { color:#5b21b6; font-size:.75rem; font-weight:900; text-transform:uppercase; letter-spacing:.04em; }
+.raid-strategy-field { padding:1rem; border:2px solid #93c5fd; border-radius:16px; background:linear-gradient(135deg,#eff6ff,#f5f3ff); }
+.raid-actions { display:flex; align-items:center; flex-wrap:wrap; gap:.8rem; }
+.raid-save-button { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; padding:.7rem 1.1rem; border:0; border-radius:30px; color:#fff; background:linear-gradient(135deg,#4f46e5,#7c3aed); font:800 .82rem Inter,sans-serif; cursor:pointer; box-shadow:0 5px 14px #4f46e544; }
+.raid-save-button:hover { filter:brightness(1.08); transform:translateY(-1px); }
+.raid-save-status { color:#475569; font-size:.76rem; font-weight:700; }
+.raid-save-status.salvo { color:#15803d; }
+.raid-save-status.erro { color:#b91c1c; }
+@media(max-width:800px) { .raid-team-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:560px) { .raid-boss-fields,.raid-team-grid { grid-template-columns:1fr; } .raid-team-heading { align-items:flex-start; flex-direction:column; gap:.25rem; } .raid-heading { align-items:flex-start; padding:1rem; } }
+
+
+/* RAID BOSS: sprites de Pokémon e ícones de TM */
+.raid-boss-sprite { margin-top:.9rem; min-height:74px; }
+.raid-pokemon-preview { display:flex; align-items:center; gap:.65rem; min-height:62px; padding:.5rem .65rem; border:1px dashed #c4b5fd; border-radius:12px; background:#ffffffb8; color:#64748b; font-size:.7rem; line-height:1.4; }
+.raid-pokemon-preview img { width:58px; height:58px; flex:0 0 58px; object-fit:contain; image-rendering:pixelated; }
+.raid-boss-sprite img { width:72px; height:72px; flex-basis:72px; }
+.raid-pokemon-placeholder i { margin-right:.3rem; color:#8b5cf6; }
+.raid-tm-details { padding:.65rem .7rem; border:1px solid #ddd6fe; border-radius:11px; background:#ffffffb8; }
+.raid-tm-details summary { color:#5b21b6; font-size:.74rem; font-weight:900; cursor:pointer; }
+.raid-tm-details summary i { margin-right:.3rem; }
+.raid-tm-details summary span { color:#64748b; font-weight:600; }
+.raid-tm-slots { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; margin-top:.75rem; }
+.raid-tm-field { padding:.55rem; border-radius:9px; background:#f8fafc; }
+.raid-tm-field input { padding:.5rem .6rem; font-size:.74rem; }
+.raid-tm-preview { display:flex; align-items:center; gap:.35rem; min-height:27px; color:#64748b; font-size:.64rem; line-height:1.3; }
+.raid-tm-preview img { width:26px; height:26px; object-fit:contain; image-rendering:pixelated; }
+.raid-tm-preview.encontrada { color:#166534; font-weight:800; }
+.raid-tm-preview.nao-encontrada { color:#b45309; }
+@media(max-width:560px) { .raid-tm-slots { grid-template-columns:1fr; } }
+
+
+/* Raid Boss: seletores estritos de TMs e análise Gemini */
+.raid-field select { width:100%; border:1.5px solid #cbd5e1; border-radius:10px; padding:.62rem .7rem; color:#0f172a; background:#fff; font:500 .76rem Inter,sans-serif; }
+.raid-field select:focus { outline:3px solid #c4b5fd88; border-color:#7c3aed; }
+.raid-field select:disabled { color:#64748b; background:#f1f5f9; cursor:not-allowed; }
+.raid-tm-field select { padding:.5rem .55rem; font-size:.7rem; }
+.raid-tm-notice { color:#5b21b6; font-size:.73rem; font-weight:700; padding:.5rem .7rem; border-radius:10px; background:#f5f3ff; }
+.raid-ai-card { display:flex; flex-direction:column; gap:.75rem; padding:1.1rem; border:2px solid #c4b5fd; border-radius:18px; background:linear-gradient(135deg,#f5f3ff,#fce7f3 65%,#eff6ff); }
+.raid-ai-heading { display:flex; align-items:flex-start; gap:.7rem; color:#5b21b6; }
+.raid-ai-heading > i { font-size:1.35rem; margin-top:.12rem; }
+.raid-ai-heading h3 { margin:0; font-size:.98rem; font-weight:900; }
+.raid-ai-heading p { margin-top:.25rem; color:#475569; font-size:.74rem; line-height:1.45; }
+.raid-ai-button { align-self:flex-start; display:inline-flex; align-items:center; gap:.45rem; border:0; border-radius:25px; padding:.7rem 1rem; color:#fff; background:linear-gradient(135deg,#7c3aed,#db2777); font:800 .78rem Inter,sans-serif; cursor:pointer; box-shadow:0 5px 14px #7c3aed44; }
+.raid-ai-button:disabled { opacity:.55; cursor:wait; }
+.raid-ai-status { color:#475569; font-size:.73rem; font-weight:700; }
+.raid-ai-status.salvo { color:#15803d; }
+.raid-ai-status.erro { color:#b91c1c; }
+.raid-ai-output-field textarea { min-height:210px; background:#fff; white-space:pre-wrap; }
+
+
+/* Raid Boss: vários times salvos */
+.raid-presets { display:grid; grid-template-columns:minmax(180px,1fr) minmax(180px,1fr); gap:.75rem; padding:1rem; border:1.5px solid #c4b5fd; border-radius:16px; background:linear-gradient(135deg,#f5f3ff,#fff); }
+.raid-presets-title { grid-column:1/-1; display:flex; align-items:center; gap:.6rem; color:#5b21b6; }
+.raid-presets-title > i { font-size:1.2rem; }
+.raid-presets-title strong,.raid-presets-title small { display:block; }
+.raid-presets-title strong { font-size:.9rem; }
+.raid-presets-title small { margin-top:.15rem; color:#64748b; font-size:.7rem; }
+.raid-presets-actions { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:.5rem; }
+.raid-preset-button { display:inline-flex; align-items:center; gap:.35rem; padding:.55rem .8rem; border:1px solid #cbd5e1; border-radius:20px; color:#334155; background:#fff; font:700 .72rem Inter,sans-serif; cursor:pointer; }
+.raid-preset-button.principal { border-color:#7c3aed; color:#fff; background:#7c3aed; }
+.raid-preset-status { grid-column:1/-1; color:#64748b; font-size:.7rem; }
+@media(max-width:560px) { .raid-presets { grid-template-columns:1fr; } .raid-presets-title,.raid-presets-actions,.raid-preset-status { grid-column:1; } }

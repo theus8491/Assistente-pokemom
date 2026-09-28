@@ -67,7 +67,7 @@ Thunder|electric|e|110|70 ; Thunder Fang|electric|f|65|95 ; Thunder Punch|electr
 Trailblaze|grass|f|50|100 ; Tri Attack|normal|e|80|100 ; Triple Axel|ice|f|20|90 ; U Turn|bug|f|70|100
 Upper Hand|fighting|f|65|100 ; Uproar|normal|e|90|100 ; Vacuum Wave|fighting|e|40|100 ; Venoshock|poison|e|65|100
 Volt Switch|electric|e|70|100 ; Water Gun|water|e|40|100 ; Water Pledge|water|e|80|100 ; Water Pulse|water|e|60|100
-Waterfall|water|f|80|100 ; Weather Ball|normal|e|50|100 ; Whirlpool|water|e|35|85 ; Wild Charge|electric|f|90|100
+Metronome|normal|s|| ; Weather Ball|normal|e|50|100 ; Whirlpool|water|e|35|85 ; Wild Charge|electric|f|90|100
 X Scissor|bug|f|80|100 ; Zap Cannon|electric|e|120|50 ; Zen Headbutt|psychic|f|80|90
 `;
 
@@ -80,7 +80,7 @@ const TMS_DISPONIVEIS = TMS_RAW
         return {
             nome: p[0],
             tipo: p[1],
-            categoria: p[2] === 'f' ? 'Físico' : 'Especial',
+            categoria: p[2] === 'f' ? 'Físico' : p[2] === 's' ? 'Status' : 'Especial',
             poder: p[3] ? parseInt(p[3]) : null,
             precisao: p[4] ? parseInt(p[4]) : null
         };
@@ -2261,3 +2261,452 @@ function abrirPdfAnalise(titulo, tipo, elementos) {
 }
 document.getElementById('btnPdfDuelo')?.addEventListener('click',()=>abrirPdfAnalise('Duelo 1x1 PvP','TMs da lista oficial e análise do confronto',['#duelIAResult']));
 document.getElementById('btnPdfTimes')?.addEventListener('click',()=>abrirPdfAnalise('Análise de Times PvP','TMs da lista oficial e veredito da IA',['#teamResultContent','#iaAnalysis']));
+
+
+// ============================================================
+// RAID BOSS — TMs compatíveis por Pokémon, sprites, Gemini e salvamento
+(() => {
+    const storageKey = 'assistenteTreinador.raidBoss.v1';
+    const fields = Array.from(document.querySelectorAll('[data-raid-field]'));
+    const pokemonInputs = Array.from(document.querySelectorAll('[data-raid-pokemon-input]'));
+    const moveInputs = Array.from(document.querySelectorAll('[data-raid-move-input]'));
+    const saveButton = document.getElementById('saveRaidData');
+    const status = document.getElementById('raidSaveStatus');
+    const teamSelect = document.getElementById('raidTeamSelect');
+    const teamNameInput = document.getElementById('raidTeamName');
+    const saveTeamButton = document.getElementById('saveRaidTeam');
+    const newTeamButton = document.getElementById('newRaidTeam');
+    const teamStatus = document.getElementById('raidTeamStatus');
+    const aiButton = document.getElementById('raidAiButton');
+    const aiStatus = document.getElementById('raidAiStatus');
+    const aiOutput = document.getElementById('raidAiOutput');
+    if (!fields.length || !saveButton || !status) return;
+
+    const teamsStorageKey = 'assistenteTreinador.raidBoss.teams.v1';
+    const activeTeamStorageKey = 'assistenteTreinador.raidBoss.activeTeam.v1';
+    const draftStorageKey = 'assistenteTreinador.raidBoss.draft.v1';
+    let savedTeams = [];
+    try { const parsed = JSON.parse(localStorage.getItem(teamsStorageKey) || '[]'); savedTeams = Array.isArray(parsed) ? parsed : []; } catch (_) { savedTeams = []; }
+    let activeTeamId = localStorage.getItem(activeTeamStorageKey) || '';
+    let saveTimer = null;
+    const pokemonPromises = new Map();
+    const spriteTimers = new WeakMap();
+    const spriteRequestIds = new WeakMap();
+    const compatibilityBySlot = new Map();
+    const pendingSavedMoves = new Map();
+    const setStatus = (message, type = '') => {
+        status.textContent = message;
+        status.classList.remove('salvo', 'erro');
+        if (type) status.classList.add(type);
+    };
+    const setAiStatus = (message, type = '') => {
+        if (!aiStatus) return;
+        aiStatus.textContent = message;
+        aiStatus.classList.remove('salvo', 'erro');
+        if (type) aiStatus.classList.add(type);
+    };
+    const currentValues = () => {
+        const values = Object.fromEntries(fields.map(field => [field.name, field.value]));
+        pendingSavedMoves.forEach((value, name) => { if (!values[name]) values[name] = value; });
+        return values;
+    };
+    const normalizeMoveKey = name => String(name || '').trim().replace(/^TM\s+/i, '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[._\s]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+    function refreshTeamOptions(updateName = false) {
+        if (!teamSelect) return;
+        teamSelect.replaceChildren();
+        const draftOption = document.createElement('option'); draftOption.value = ''; draftOption.textContent = 'Rascunho atual'; teamSelect.appendChild(draftOption);
+        savedTeams.forEach(team => {
+            const option = document.createElement('option'); option.value = team.id; option.textContent = team.name || 'Time sem nome'; teamSelect.appendChild(option);
+        });
+        if (activeTeamId && !savedTeams.some(team => team.id === activeTeamId)) activeTeamId = '';
+        teamSelect.value = activeTeamId;
+        if (updateName && teamNameInput) teamNameInput.value = savedTeams.find(team => team.id === activeTeamId)?.name || '';
+        if (teamStatus) teamStatus.textContent = `${savedTeams.length} ${savedTeams.length === 1 ? 'time salvo' : 'times salvos'} neste navegador.`;
+    }
+
+    function saveRaidData() {
+        try {
+            const payload = { values: currentValues(), savedAt: new Date().toISOString() };
+            localStorage.setItem(storageKey, JSON.stringify(payload));
+            if (activeTeamId) {
+                const index = savedTeams.findIndex(team => team.id === activeTeamId);
+                if (index >= 0) {
+                    savedTeams[index] = { ...savedTeams[index], values: payload.values, savedAt: payload.savedAt };
+                    localStorage.setItem(teamsStorageKey, JSON.stringify(savedTeams));
+                } else activeTeamId = '';
+            }
+            if (!activeTeamId) localStorage.setItem(draftStorageKey, JSON.stringify(payload));
+            localStorage.setItem(activeTeamStorageKey, activeTeamId);
+            refreshTeamOptions(false);
+            const label = savedTeams.find(team => team.id === activeTeamId)?.name || 'rascunho atual';
+            setStatus(`“${label}” salvo às ${new Date(payload.savedAt).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`, 'salvo');
+            return true;
+        } catch (error) {
+            console.error('Não foi possível salvar a ficha Raid Boss:', error);
+            setStatus('Não foi possível salvar. Verifique o armazenamento do navegador.', 'erro');
+            return false;
+        }
+    }
+
+    function setPreviewMessage(preview, message, className = 'raid-pokemon-placeholder') {
+        if (!preview) return;
+        preview.replaceChildren();
+        const span = document.createElement('span');
+        span.className = className;
+        span.textContent = message;
+        preview.appendChild(span);
+    }
+
+    function pokemonSlug(name) {
+        return String(name || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/♀/g, '-f').replace(/♂/g, '-m').replace(/[’']/g, '')
+            .replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    }
+    function moveSlug(name) {
+        const normalized = normalizeMoveKey(name);
+        const aliases = { 'selfdestruction':'self-destruct', 'double-edge':'double-edge', 'u-turn':'u-turn', 'x-scissor':'x-scissor' };
+        return aliases[normalized] || normalized;
+    }
+
+    async function getPokemonData(name) {
+        const slug = pokemonSlug(name);
+        if (!slug) return null;
+        if (!pokemonPromises.has(slug)) {
+            const request = fetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(slug)}`)
+                .then(response => response.ok ? response.json() : null)
+                .then(data => {
+                    if (!data) return null;
+                    const machineMoves = new Set((data.moves || [])
+                        .filter(entry => (entry.version_group_details || []).some(detail => detail.move_learn_method?.name === 'machine'))
+                        .map(entry => moveSlug(entry.move?.name || '')));
+                    const seen = new Set();
+                    const compatibleTMs = TMS_DISPONIVEIS.filter(tm => {
+                        const key = moveSlug(tm.nome);
+                        if (!key || seen.has(key) || !machineMoves.has(key)) return false;
+                        seen.add(key);
+                        return true;
+                    });
+                    return {
+                        sprite: data.sprites?.front_default || data.sprites?.other?.['official-artwork']?.front_default || data.sprites?.other?.home?.front_default || null,
+                        compatibleTMs
+                    };
+                }).catch(() => null);
+            pokemonPromises.set(slug, request);
+        }
+        return pokemonPromises.get(slug);
+    }
+
+    function memberSlotForPokemonField(fieldName) {
+        const match = String(fieldName).match(/^raidPokemon([1-6])$/);
+        return match ? Number(match[1]) : null;
+    }
+    function slotMoveSelects(slot) {
+        return moveInputs.filter(select => select.name.startsWith(`raidMoves${slot}_`));
+    }
+    function setSelectPlaceholder(select, label, disabled = true) {
+        select.replaceChildren();
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = label;
+        select.appendChild(placeholder);
+        select.disabled = disabled;
+    }
+
+    function updateTmSprite(select) {
+        const preview = document.querySelector(`[data-raid-tm-preview="${select.name}"]`);
+        if (!preview) return;
+        preview.replaceChildren();
+        const typed = select.value.trim();
+        if (!typed) {
+            preview.classList.remove('encontrada', 'nao-encontrada');
+            const hint = document.createElement('span'); hint.textContent = 'Escolha uma TM disponível'; preview.appendChild(hint); return;
+        }
+        const tm = TMS_DISPONIVEIS.find(item => normalizeMoveKey(item.nome) === normalizeMoveKey(typed));
+        if (!tm) {
+            preview.classList.remove('encontrada'); preview.classList.add('nao-encontrada');
+            const hint = document.createElement('span'); hint.textContent = 'TM fora do catálogo permitido'; preview.appendChild(hint); return;
+        }
+        preview.classList.remove('nao-encontrada'); preview.classList.add('encontrada');
+        const icon = document.createElement('img');
+        icon.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-${tm.tipo}.png`;
+        icon.alt = `Ícone da TM ${tm.nome}`; icon.loading = 'lazy';
+        icon.onerror = () => { icon.onerror = null; icon.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png'; };
+        preview.appendChild(icon);
+        const label = document.createElement('span'); label.textContent = `${tm.nome} · ${tm.tipo}`; preview.appendChild(label);
+    }
+
+    function populateCompatibleTMs(pokemonInput, data, preserveSaved = false) {
+        const slot = memberSlotForPokemonField(pokemonInput.name);
+        if (!slot) return [];
+        const selects = slotMoveSelects(slot);
+        const compatible = data?.compatibleTMs || [];
+        compatibilityBySlot.set(slot, compatible);
+        const names = new Set(compatible.map(tm => normalizeMoveKey(tm.nome)));
+        const selectedForAi = [];
+        selects.forEach(select => {
+            const oldValue = preserveSaved ? (select.value || pendingSavedMoves.get(select.name) || '') : '';
+            setSelectPlaceholder(select, compatible.length ? `Selecione uma das ${compatible.length} TMs compatíveis` : 'Nenhuma TM compatível encontrada');
+            compatible.forEach(tm => {
+                const option = document.createElement('option');
+                option.value = tm.nome;
+                option.textContent = `${tm.nome} · ${tm.tipo}${tm.poder ? ` · ${tm.poder} P` : ''}`;
+                select.appendChild(option);
+            });
+            select.disabled = compatible.length === 0;
+            if (oldValue && names.has(normalizeMoveKey(oldValue))) select.value = compatible.find(tm => normalizeMoveKey(tm.nome) === normalizeMoveKey(oldValue))?.nome || '';
+            if (preserveSaved) pendingSavedMoves.delete(select.name);
+            if (oldValue && !select.value && preserveSaved) {
+                setAiStatus(`${oldValue} não está disponível por TM para ${pokemonInput.value.trim()}; removi da seleção.`, 'erro');
+            }
+            updateTmSprite(select);
+            if (select.value) selectedForAi.push(select.value);
+        });
+        return selectedForAi;
+    }
+
+    async function resolvePokemon(input, requestId, preserveSaved = false) {
+        const name = input.value.trim();
+        const preview = document.querySelector(`[data-raid-pokemon-preview="${input.name}"]`);
+        const slot = memberSlotForPokemonField(input.name);
+        if (!name) {
+            setPreviewMessage(preview, input.name === 'raidBossName' ? 'A sprite do boss aparecerá aqui' : 'Sprite aparecerá aqui');
+            if (slot) {
+                compatibilityBySlot.delete(slot);
+                slotMoveSelects(slot).forEach(select => setSelectPlaceholder(select, 'Digite o Pokémon primeiro'));
+            }
+            return;
+        }
+        setPreviewMessage(preview, 'Buscando sprite e TMs compatíveis na PokéAPI…');
+        if (slot) slotMoveSelects(slot).forEach(select => setSelectPlaceholder(select, 'Carregando TMs compatíveis…'));
+        const data = await getPokemonData(name);
+        if (spriteRequestIds.get(input) !== requestId) return;
+        if (!data) {
+            setPreviewMessage(preview, 'Pokémon não localizado; confira a grafia.');
+            if (slot) populateCompatibleTMs(input, {compatibleTMs:[]}, false);
+            return;
+        }
+        preview.replaceChildren();
+        if (data.sprite) {
+            const image = document.createElement('img'); image.src = data.sprite; image.alt = `Sprite de ${name}`; image.loading = 'lazy';
+            image.onerror = () => setPreviewMessage(preview, 'Não foi possível carregar a sprite.');
+            preview.appendChild(image);
+        }
+        const label = document.createElement('span'); label.textContent = name; preview.appendChild(label);
+        if (slot) populateCompatibleTMs(input, data, preserveSaved);
+    }
+
+    function schedulePokemonLookup(input, delay = 450, preserveSaved = false) {
+        const requestId = (spriteRequestIds.get(input) || 0) + 1;
+        spriteRequestIds.set(input, requestId);
+        window.clearTimeout(spriteTimers.get(input));
+        if (!input.value.trim()) {
+            const preview = document.querySelector(`[data-raid-pokemon-preview="${input.name}"]`);
+            setPreviewMessage(preview, input.name === 'raidBossName' ? 'A sprite do boss aparecerá aqui' : 'Sprite aparecerá aqui');
+            const slot = memberSlotForPokemonField(input.name);
+            if (slot) { compatibilityBySlot.delete(slot); slotMoveSelects(slot).forEach(select => setSelectPlaceholder(select, 'Digite o Pokémon primeiro')); }
+            return;
+        }
+        spriteTimers.set(input, window.setTimeout(() => resolvePokemon(input, requestId, preserveSaved), delay));
+    }
+
+    function clearSlotMoves(pokemonInput) {
+        const slot = memberSlotForPokemonField(pokemonInput.name);
+        if (!slot) return;
+        compatibilityBySlot.delete(slot);
+        slotMoveSelects(slot).forEach(select => { pendingSavedMoves.delete(select.name); select.value = ''; setSelectPlaceholder(select, 'Carregando TMs compatíveis…'); updateTmSprite(select); });
+    }
+
+    function loadTeamValues(values = {}) {
+        window.clearTimeout(saveTimer);
+        pendingSavedMoves.clear();
+        compatibilityBySlot.clear();
+        fields.forEach(field => {
+            if (typeof values[field.name] !== 'string') { field.value = ''; return; }
+            if (field.matches('[data-raid-move-input]')) pendingSavedMoves.set(field.name, values[field.name]);
+            else field.value = values[field.name];
+        });
+        pokemonInputs.forEach(input => {
+            const slot = memberSlotForPokemonField(input.name);
+            if (input.value.trim()) schedulePokemonLookup(input, 0, true);
+            else {
+                setPreviewMessage(document.querySelector(`[data-raid-pokemon-preview="${input.name}"]`), input.name === 'raidBossName' ? 'A sprite do boss aparecerá aqui' : 'Sprite aparecerá aqui');
+                if (slot) slotMoveSelects(slot).forEach(select => setSelectPlaceholder(select, 'Digite o Pokémon primeiro'));
+            }
+        });
+    }
+
+    function storedPayload(key) {
+        try { const value = JSON.parse(localStorage.getItem(key) || 'null'); return value && typeof value === 'object' ? value : null; }
+        catch (_) { return null; }
+    }
+
+    function saveNamedTeam() {
+        const name = teamNameInput?.value.trim() || '';
+        if (!name && !activeTeamId) {
+            if (teamStatus) teamStatus.textContent = 'Digite um nome para criar seu time.';
+            teamNameInput?.focus();
+            return;
+        }
+        const payload = { values: currentValues(), savedAt: new Date().toISOString() };
+        let team = savedTeams.find(item => item.id === activeTeamId);
+        if (team) {
+            team = { ...team, name: name || team.name, ...payload };
+            savedTeams = savedTeams.map(item => item.id === activeTeamId ? team : item);
+        } else {
+            team = { id: (crypto.randomUUID ? crypto.randomUUID() : `raid-${Date.now()}`), name, ...payload };
+            savedTeams.push(team);
+            activeTeamId = team.id;
+        }
+        localStorage.setItem(teamsStorageKey, JSON.stringify(savedTeams));
+        localStorage.setItem(activeTeamStorageKey, activeTeamId);
+        localStorage.setItem(storageKey, JSON.stringify(payload));
+        teamNameInput.value = team.name;
+        refreshTeamOptions(true);
+        saveRaidData();
+        if (teamStatus) teamStatus.textContent = `“${team.name}” salvo. Você pode escolher outro time na lista.`;
+    }
+
+    function startNewTeam() {
+        window.clearTimeout(saveTimer);
+        saveRaidData();
+        activeTeamId = '';
+        localStorage.setItem(activeTeamStorageKey, '');
+        if (teamNameInput) teamNameInput.value = '';
+        loadTeamValues({});
+        const emptyDraft = { values: {}, savedAt: new Date().toISOString() };
+        localStorage.setItem(draftStorageKey, JSON.stringify(emptyDraft));
+        refreshTeamOptions(true);
+        setStatus('Novo time em branco. Dê um nome e salve quando estiver pronto.');
+    }
+
+    refreshTeamOptions(false);
+    const startupTeam = savedTeams.find(team => team.id === activeTeamId);
+    if (startupTeam) {
+        if (teamNameInput) teamNameInput.value = startupTeam.name || '';
+        loadTeamValues(startupTeam.values || {});
+        const when = startupTeam.savedAt ? new Date(startupTeam.savedAt) : null;
+        setStatus(when && !Number.isNaN(when.getTime()) ? `Time “${startupTeam.name}” carregado · salvo ${when.toLocaleString('pt-BR')}` : `Time “${startupTeam.name}” carregado`, 'salvo');
+    } else {
+        activeTeamId = '';
+        const draft = storedPayload(draftStorageKey) || storedPayload(storageKey);
+        loadTeamValues(draft?.values || {});
+        if (draft?.savedAt) {
+            const when = new Date(draft.savedAt);
+            setStatus(!Number.isNaN(when.getTime()) ? `Rascunho carregado · último salvamento ${when.toLocaleString('pt-BR')}` : 'Rascunho carregado', 'salvo');
+        }
+    }
+    refreshTeamOptions(true);
+
+    pokemonInputs.forEach(input => {
+        input.addEventListener('input', () => { clearSlotMoves(input); schedulePokemonLookup(input); });
+        if (input.value.trim()) schedulePokemonLookup(input, 0, true);
+        else {
+            const slot = memberSlotForPokemonField(input.name);
+            if (slot) slotMoveSelects(slot).forEach(select => setSelectPlaceholder(select, 'Digite o Pokémon primeiro'));
+        }
+    });
+    moveInputs.forEach(select => select.addEventListener('change', () => updateTmSprite(select)));
+
+    fields.forEach(field => {
+        const scheduleSave = () => {
+            setStatus('Salvando alterações…');
+            window.clearTimeout(saveTimer);
+            saveTimer = window.setTimeout(saveRaidData, 350);
+        };
+        field.addEventListener('input', scheduleSave);
+        field.addEventListener('change', scheduleSave);
+    });
+    saveButton.addEventListener('click', () => { window.clearTimeout(saveTimer); saveRaidData(); });
+    saveTeamButton?.addEventListener('click', () => { window.clearTimeout(saveTimer); saveNamedTeam(); });
+    newTeamButton?.addEventListener('click', startNewTeam);
+    teamSelect?.addEventListener('change', () => {
+        const requestedId = teamSelect.value;
+        if (requestedId === activeTeamId) return;
+        window.clearTimeout(saveTimer);
+        saveRaidData();
+        activeTeamId = requestedId;
+        localStorage.setItem(activeTeamStorageKey, activeTeamId);
+        const selectedTeam = savedTeams.find(team => team.id === activeTeamId);
+        const payload = selectedTeam || storedPayload(draftStorageKey);
+        if (teamNameInput) teamNameInput.value = selectedTeam?.name || '';
+        loadTeamValues(payload?.values || {});
+        refreshTeamOptions(true);
+        if (selectedTeam) setStatus(`Time “${selectedTeam.name}” carregado.`, 'salvo');
+        else setStatus('Rascunho atual carregado.');
+    });
+    window.addEventListener('pagehide', () => { if (saveTimer) { window.clearTimeout(saveTimer); saveRaidData(); } });
+
+    async function analyzeRaidWithGemini() {
+        if (!aiButton || !aiOutput) return;
+        const key = localStorage.getItem('geminiApiKey') || (typeof apiKey !== 'undefined' ? apiKey : '') || document.getElementById('apiKeyInput')?.value?.trim() || '';
+        if (!key) { setAiStatus('Salve primeiro sua chave Gemini na aba Ficha Pokémon PvP.', 'erro'); return; }
+        const activeInputs = pokemonInputs.filter(input => memberSlotForPokemonField(input.name) && input.value.trim());
+        if (!activeInputs.length) { setAiStatus('Preencha pelo menos um Pokémon da equipe.', 'erro'); return; }
+        aiButton.disabled = true;
+        setAiStatus('Consultando compatibilidade e analisando a raid…');
+        try {
+            const team = [];
+            for (const input of activeInputs) {
+                const slot = memberSlotForPokemonField(input.name);
+                const data = await getPokemonData(input.value.trim());
+                if (!data) continue;
+                populateCompatibleTMs(input, data, true);
+                const allowed = data.compatibleTMs.map(tm => tm.nome);
+                team.push({
+                    slot,
+                    pokemon: input.value.trim(),
+                    owner: document.querySelector(`[name="raidOwner${slot}"]`)?.value.trim() || '',
+                    selected_tms: slotMoveSelects(slot).map(select => select.value).filter(Boolean),
+                    allowed_tms: allowed
+                });
+            }
+            if (!team.length) throw new Error('Não consegui validar os Pokémon pela PokéAPI. Confira os nomes e tente novamente.');
+            const boss = document.getElementById('raidBossName')?.value.trim() || 'não informado';
+            const details = document.getElementById('raidBossDetails')?.value.trim() || '';
+            const notes = document.getElementById('raidStrategy')?.value.trim() || '';
+            const prompt = `Você é estrategista de raids Pokémon. Analise o boss e equipe abaixo. Regra obrigatória: para cada membro, recomende TM somente entre os nomes do campo allowed_tms daquele mesmo Pokémon. Nunca invente TM, nunca sugira movimento fora da lista. As listas são a interseção do catálogo com o aprendizado por máquina registrado pela PokéAPI. Não mencione nomes de golpes nos campos summary, battle_plan ou role; os únicos nomes de movimentos podem aparecer em recommended_tms. Se a lista allowed_tms estiver vazia, retorne recommended_tms vazio. Responda SOMENTE JSON válido com formato: {"summary":"...","battle_plan":["..."],"members":[{"slot":1,"role":"...","recommended_tms":["nome exato da lista allowed_tms"]}]}. Boss: ${boss}. Detalhes: ${details}. Observações do treinador: ${notes}. Equipe e listas permitidas: ${JSON.stringify(team)}`;
+            const model = (typeof modelSelect !== 'undefined' && modelSelect?.value) || 'gemini-2.5-flash-lite';
+            const controller = new AbortController();
+            const timeout = window.setTimeout(() => controller.abort(), 45000);
+            let response;
+            try {
+                response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:1800,responseMimeType:'application/json'}}),
+                    signal:controller.signal
+                });
+            } finally { window.clearTimeout(timeout); }
+            const responseData = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(responseData.error?.message || `Erro da Gemini API (${response.status}).`);
+            const rawText = responseData.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('').trim() || '';
+            const jsonText = rawText.match(/\{[\s\S]*\}/)?.[0];
+            if (!jsonText) throw new Error('A IA não devolveu uma análise estruturada. Tente novamente.');
+            const result = JSON.parse(jsonText);
+            const asText = value => Array.isArray(value) ? value.map(x=>String(x)).join('\n') : String(value || '');
+            const lines = ['ANÁLISE DA RAID', asText(result.summary), '', 'PLANO DE BATALHA', ...((Array.isArray(result.battle_plan) ? result.battle_plan : []).map((step,i)=>`${i+1}. ${String(step)}`)), '', 'EQUIPE E TMs COMPATÍVEIS'];
+            const teamBySlot = new Map(team.map(member => [member.slot, member]));
+            const outputMembers = Array.isArray(result.members) ? result.members : [];
+            for (const member of team) {
+                const recommendation = outputMembers.find(item => Number(item.slot) === member.slot) || {};
+                const role = String(recommendation.role || 'Papel não especificado');
+                const allowed = new Map(member.allowed_tms.map(name => [normalizeMoveKey(name), name]));
+                const valid = (Array.isArray(recommendation.recommended_tms) ? recommendation.recommended_tms : [])
+                    .map(name => allowed.get(normalizeMoveKey(name))).filter(Boolean);
+                const uniqueValid = [...new Set(valid)];
+                lines.push(`Vaga ${member.slot} — ${member.pokemon}${member.owner ? ` (${member.owner})` : ''}: ${role}`);
+                lines.push(`TMs recomendadas e validadas: ${uniqueValid.length ? uniqueValid.join(', ') : 'nenhuma; não há recomendação válida na lista disponível'}`);
+            }
+            aiOutput.value = lines.join('\n');
+            aiOutput.dispatchEvent(new Event('input', {bubbles:true}));
+            window.clearTimeout(saveTimer);
+            saveRaidData();
+            setAiStatus('Análise concluída. Recomendações de TM filtradas e validadas por Pokémon.', 'salvo');
+        } catch (error) {
+            console.error('Erro na análise da Raid Boss:', error);
+            setAiStatus(error.name === 'AbortError' ? 'A análise demorou demais. Tente novamente.' : `Falha na análise: ${error.message}`, 'erro');
+        } finally { aiButton.disabled = false; }
+    }
+    aiButton?.addEventListener('click', analyzeRaidWithGemini);
+})();
+

@@ -52,6 +52,7 @@
     <button class="tab" data-tab="tab-duel"><i class="fas fa-bolt"></i> Duelo 1x1 PvP</button>
     <button class="tab" data-tab="tab-tier"><i class="fas fa-trophy"></i> Tier List PvP</button>
     <button class="tab" data-tab="tab-pve"><i class="fas fa-dumbbell"></i> Ficha Pokémon PvE</button>
+    <button class="tab" data-tab="tab-raid"><i class="fas fa-dragon"></i> Raid Boss</button>
 </div>
 
 <!-- SOBRE -->
@@ -787,6 +788,109 @@
     </div>
 </div>
 
+
+<!-- RAID BOSS -->
+<div class="tab-content" id="tab-raid">
+    <section class="raid-panel" aria-labelledby="raidTitle">
+        <header class="raid-heading">
+            <div class="raid-heading-icon"><i class="fas fa-dragon"></i></div>
+            <div>
+                <h2 id="raidTitle">Raid Boss</h2>
+                <p>Monte e mantenha salva a ficha da raid e dos treinadores.</p>
+            </div>
+        </header>
+        <p class="raid-save-note"><i class="fas fa-lock"></i> A ficha é salva automaticamente. As TMs são filtradas pelo Pokémon usando o catálogo de 231 movimentos e a PokéAPI.</p>
+
+        <section class="raid-presets" aria-label="Times salvos">
+            <div class="raid-presets-title"><i class="fas fa-layer-group"></i><div><strong>Meus times</strong><small>Salve formações diferentes e alterne entre elas quando quiser.</small></div></div>
+            <label class="raid-field"><span>Carregar time</span><select id="raidTeamSelect"><option value="">Rascunho atual</option></select></label>
+            <label class="raid-field"><span>Nome do time</span><input id="raidTeamName" type="text" maxlength="40" placeholder="Ex.: Time do Mewtwo"></label>
+            <div class="raid-presets-actions">
+                <button class="raid-preset-button principal" id="saveRaidTeam" type="button"><i class="fas fa-save"></i> Salvar time</button>
+                <button class="raid-preset-button" id="newRaidTeam" type="button"><i class="fas fa-plus"></i> Novo time</button>
+            </div>
+            <span class="raid-preset-status" id="raidTeamStatus" role="status" aria-live="polite">Os times ficam salvos apenas neste navegador.</span>
+        </section>
+        <div class="raid-boss-card">
+            <h3><i class="fas fa-skull"></i> Boss da raid</h3>
+            <div class="raid-boss-fields">
+                <label class="raid-field">
+                    <span>Nome do boss</span>
+                    <input type="text" id="raidBossName" name="raidBossName" data-raid-field data-raid-pokemon-input maxlength="80" placeholder="Ex.: Mewtwo, Charizard...">
+                </label>
+                <label class="raid-field">
+                    <span>Nível, dificuldade ou detalhes</span>
+                    <input type="text" id="raidBossDetails" name="raidBossDetails" data-raid-field maxlength="120" placeholder="Ex.: 5 estrelas, nível 100...">
+                </label>
+            </div>
+            <div class="raid-pokemon-preview raid-boss-sprite" data-raid-pokemon-preview="raidBossName"><span class="raid-pokemon-placeholder"><i class="fas fa-image"></i> A sprite do boss aparecerá aqui</span></div>
+        </div>
+
+        <div class="raid-team-heading">
+            <h3><i class="fas fa-users"></i> Time da raid</h3>
+            <span>Até 6 Pokémon · opções mostram somente TMs compatíveis cadastradas</span>
+        </div>
+        <div class="raid-team-grid">
+            <article class="raid-member-card">
+                <div class="raid-slot">Vaga 1</div>
+                <label class="raid-field"><span>Pokémon</span><input type="text" name="raidPokemon1" data-raid-field data-raid-pokemon-input maxlength="80" placeholder="Nome do Pokémon"></label>
+                <div class="raid-pokemon-preview" data-raid-pokemon-preview="raidPokemon1"><span class="raid-pokemon-placeholder"><i class="fas fa-image"></i> Sprite aparecerá aqui</span></div>
+                <label class="raid-field"><span>Dono / nick</span><input type="text" name="raidOwner1" data-raid-field maxlength="60" placeholder="Nick do treinador"></label>
+                <details class="raid-tm-details"><summary><i class="fas fa-compact-disc"></i> TMs compatíveis <span>(até 4)</span></summary><div class="raid-tm-slots"><label class="raid-field raid-tm-field"><span>TM 1</span><select name="raidMoves1_1" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves1_1"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 2</span><select name="raidMoves1_2" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves1_2"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 3</span><select name="raidMoves1_3" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves1_3"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 4</span><select name="raidMoves1_4" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves1_4"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label></div></details>
+            </article>
+            <article class="raid-member-card">
+                <div class="raid-slot">Vaga 2</div>
+                <label class="raid-field"><span>Pokémon</span><input type="text" name="raidPokemon2" data-raid-field data-raid-pokemon-input maxlength="80" placeholder="Nome do Pokémon"></label>
+                <div class="raid-pokemon-preview" data-raid-pokemon-preview="raidPokemon2"><span class="raid-pokemon-placeholder"><i class="fas fa-image"></i> Sprite aparecerá aqui</span></div>
+                <label class="raid-field"><span>Dono / nick</span><input type="text" name="raidOwner2" data-raid-field maxlength="60" placeholder="Nick do treinador"></label>
+                <details class="raid-tm-details"><summary><i class="fas fa-compact-disc"></i> TMs compatíveis <span>(até 4)</span></summary><div class="raid-tm-slots"><label class="raid-field raid-tm-field"><span>TM 1</span><select name="raidMoves2_1" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves2_1"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 2</span><select name="raidMoves2_2" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves2_2"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 3</span><select name="raidMoves2_3" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves2_3"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 4</span><select name="raidMoves2_4" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves2_4"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label></div></details>
+            </article>
+            <article class="raid-member-card">
+                <div class="raid-slot">Vaga 3</div>
+                <label class="raid-field"><span>Pokémon</span><input type="text" name="raidPokemon3" data-raid-field data-raid-pokemon-input maxlength="80" placeholder="Nome do Pokémon"></label>
+                <div class="raid-pokemon-preview" data-raid-pokemon-preview="raidPokemon3"><span class="raid-pokemon-placeholder"><i class="fas fa-image"></i> Sprite aparecerá aqui</span></div>
+                <label class="raid-field"><span>Dono / nick</span><input type="text" name="raidOwner3" data-raid-field maxlength="60" placeholder="Nick do treinador"></label>
+                <details class="raid-tm-details"><summary><i class="fas fa-compact-disc"></i> TMs compatíveis <span>(até 4)</span></summary><div class="raid-tm-slots"><label class="raid-field raid-tm-field"><span>TM 1</span><select name="raidMoves3_1" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves3_1"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 2</span><select name="raidMoves3_2" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves3_2"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 3</span><select name="raidMoves3_3" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves3_3"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 4</span><select name="raidMoves3_4" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves3_4"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label></div></details>
+            </article>
+            <article class="raid-member-card">
+                <div class="raid-slot">Vaga 4</div>
+                <label class="raid-field"><span>Pokémon</span><input type="text" name="raidPokemon4" data-raid-field data-raid-pokemon-input maxlength="80" placeholder="Nome do Pokémon"></label>
+                <div class="raid-pokemon-preview" data-raid-pokemon-preview="raidPokemon4"><span class="raid-pokemon-placeholder"><i class="fas fa-image"></i> Sprite aparecerá aqui</span></div>
+                <label class="raid-field"><span>Dono / nick</span><input type="text" name="raidOwner4" data-raid-field maxlength="60" placeholder="Nick do treinador"></label>
+                <details class="raid-tm-details"><summary><i class="fas fa-compact-disc"></i> TMs compatíveis <span>(até 4)</span></summary><div class="raid-tm-slots"><label class="raid-field raid-tm-field"><span>TM 1</span><select name="raidMoves4_1" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves4_1"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 2</span><select name="raidMoves4_2" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves4_2"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 3</span><select name="raidMoves4_3" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves4_3"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 4</span><select name="raidMoves4_4" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves4_4"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label></div></details>
+            </article>
+            <article class="raid-member-card">
+                <div class="raid-slot">Vaga 5</div>
+                <label class="raid-field"><span>Pokémon</span><input type="text" name="raidPokemon5" data-raid-field data-raid-pokemon-input maxlength="80" placeholder="Nome do Pokémon"></label>
+                <div class="raid-pokemon-preview" data-raid-pokemon-preview="raidPokemon5"><span class="raid-pokemon-placeholder"><i class="fas fa-image"></i> Sprite aparecerá aqui</span></div>
+                <label class="raid-field"><span>Dono / nick</span><input type="text" name="raidOwner5" data-raid-field maxlength="60" placeholder="Nick do treinador"></label>
+                <details class="raid-tm-details"><summary><i class="fas fa-compact-disc"></i> TMs compatíveis <span>(até 4)</span></summary><div class="raid-tm-slots"><label class="raid-field raid-tm-field"><span>TM 1</span><select name="raidMoves5_1" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves5_1"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 2</span><select name="raidMoves5_2" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves5_2"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 3</span><select name="raidMoves5_3" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves5_3"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 4</span><select name="raidMoves5_4" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves5_4"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label></div></details>
+            </article>
+            <article class="raid-member-card">
+                <div class="raid-slot">Vaga 6</div>
+                <label class="raid-field"><span>Pokémon</span><input type="text" name="raidPokemon6" data-raid-field data-raid-pokemon-input maxlength="80" placeholder="Nome do Pokémon"></label>
+                <div class="raid-pokemon-preview" data-raid-pokemon-preview="raidPokemon6"><span class="raid-pokemon-placeholder"><i class="fas fa-image"></i> Sprite aparecerá aqui</span></div>
+                <label class="raid-field"><span>Dono / nick</span><input type="text" name="raidOwner6" data-raid-field maxlength="60" placeholder="Nick do treinador"></label>
+                <details class="raid-tm-details"><summary><i class="fas fa-compact-disc"></i> TMs compatíveis <span>(até 4)</span></summary><div class="raid-tm-slots"><label class="raid-field raid-tm-field"><span>TM 1</span><select name="raidMoves6_1" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves6_1"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 2</span><select name="raidMoves6_2" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves6_2"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 3</span><select name="raidMoves6_3" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves6_3"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label><label class="raid-field raid-tm-field"><span>TM 4</span><select name="raidMoves6_4" data-raid-field data-raid-move-input disabled><option value="">Digite o Pokémon primeiro</option></select><small class="raid-tm-preview" data-raid-tm-preview="raidMoves6_4"><i class="fas fa-compact-disc"></i> Selecione uma TM cadastrada</small></label></div></details>
+            </article>
+        </div>
+
+        <label class="raid-field raid-strategy-field" for="raidStrategy">
+            <span><i class="fas fa-chess"></i> Estratégia da raid</span>
+            <textarea id="raidStrategy" name="raidStrategy" data-raid-field rows="6" maxlength="5000" placeholder="Escreva a estratégia, ordem de entrada, golpes importantes e observações..."></textarea>
+        </label>
+        <section class="raid-ai-card" aria-labelledby="raidAiTitle">
+            <div class="raid-ai-heading"><i class="fas fa-robot"></i><div><h3 id="raidAiTitle">Análise da Raid com IA</h3><p>Recomenda estratégia e só pode sugerir TMs válidas para cada Pokémon desta equipe.</p></div></div>
+            <button class="raid-ai-button" id="raidAiButton" type="button"><i class="fas fa-magic"></i> Analisar raid com Gemini</button>
+            <div class="raid-ai-status" id="raidAiStatus" role="status" aria-live="polite">Use a chave Gemini já salva na aba Ficha Pokémon PvP.</div>
+            <label class="raid-field raid-ai-output-field"><span>Resultado da IA (salvo junto com a ficha)</span><textarea id="raidAiOutput" name="raidAiOutput" data-raid-field rows="9" readonly placeholder="A análise da raid aparecerá aqui..."></textarea></label>
+        </section>
+        <div class="raid-actions">
+            <button class="raid-save-button" id="saveRaidData" type="button"><i class="fas fa-save"></i> Salvar agora</button>
+            <span class="raid-save-status" id="raidSaveStatus" role="status" aria-live="polite">Pronto para preencher</span>
+        </div>
+    </section>
+</div>
 
 <div class="credits-section">
     <div class="credits-title"><i class="fas fa-star"></i> Créditos do Projeto <i class="fas fa-star"></i></div>
