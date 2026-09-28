@@ -8,83 +8,310 @@ document.addEventListener('keydown', function(e) {
 }, true);
 
 // ============================================================
-// BANCO DE TMs REAIS DO JOGO (231 TMs)
+// CATÁLOGO LOCAL ESTÁTICO: 268 TMs únicas; sem arquivo/API de catálogo.
+// Compatibilidade por espécie usa o método machine do código original + exceções locais.
 // ============================================================
 const TMS_RAW = `
-Waterfall|water|f|80|100 ; Acid Spray|poison|e|40|100 ; Acrobatics|flying|f|55|100 ; Aerial Ace|flying|f|60|
-Air Cutter|flying|e|60|95 ; Air Slash|flying|e|75|95 ; Alluring Voice|fairy|e|80|100 ; Assurance|dark|f|60|100
-Aura Sphere|fighting|e|80| ; Avalanche|ice|f|60|100 ; Bite|dark|f|60|100 ; Blast Burn|fire|e|100|90
-Blaze Kick|fire|f|85|90 ; Blizzard|ice|e|110|70 ; Body Press|fighting|f|80|100 ; Body Slam|normal|f|85|100
-Bounce|flying|f|85|85 ; Brave Bird|flying|f|120|100 ; Breaking Swipe|dragon|f|60|100 ; Brick Break|fighting|f|75|100
-Brine|water|e|65|100 ; Brutal Swing|dark|f|60|100 ; Bubble Beam|water|e|65|100 ; Bug Bite|bug|f|60|100
-Bug Buzz|bug|e|90|100 ; Bulldoze|ground|f|60|100 ; Bullet Seed|grass|f|25|100 ; Burning Jealousy|fire|e|70|100
-Charge Beam|electric|e|50|90 ; Chilling Water|water|e|50|100 ; Close Combat|fighting|f|120|100 ; Cross Poison|poison|f|70|100
-Crunch|dark|f|80|100 ; Cut|normal|f|50|95 ; Dark Pulse|dark|e|80|100 ; Darkest Lariat|dark|f|85|100
-Dazzling Gleam|fairy|e|80|100 ; Dig|ground|f|80|100 ; Disarming Voice|fairy|e|40| ; Dive|water|f|80|100
-Double Edge|normal|f|120|100 ; Draco Meteor|dragon|e|130|90 ; Dragon Breath|dragon|e|60|100 ; Dragon Claw|dragon|f|80|100
-Dragon Pulse|dragon|e|85|100 ; Dragon Rage|dragon|e||100 ; Dragon Tail|dragon|f|60|90 ; Drain Punch|fighting|f|75|100
-Draining Kiss|fairy|e|50|100 ; Dream Eater|psychic|e|100|100 ; Drill Run|ground|f|80|95 ; Dual Wingbeat|flying|f|40|90
-Dynamic Punch|fighting|f|100|50 ; Earth Power|ground|e|90|100 ; Earthquake|ground|f|100|100 ; Echoed Voice|normal|e|40|100
-Egg Bomb|normal|f|100|75 ; Electroweb|electric|e|55|95 ; Energy Ball|grass|e|90|100 ; Expanding Force|psychic|e|80|100
-Explosion|normal|f|250|100 ; Facade|normal|f|70|100 ; False Swipe|normal|f|40|100 ; Fire Blast|fire|e|110|85
-Fire Fang|fire|f|65|95 ; Fire Pledge|fire|e|80|100 ; Fire Punch|fire|f|75|100 ; Fire Spin|fire|e|35|85
-Fissure|ground|f||30 ; Flame Charge|fire|f|50|100 ; Flamethrower|fire|e|90|100 ; Flare Blitz|fire|f|120|100
-Flash Cannon|steel|e|80|100 ; Flip Turn|water|f|60|100 ; Fly|flying|f|90|95 ; Focus Blast|fighting|e|120|70
-Focus Punch|fighting|f|100|100 ; Foul Play|dark|f|95|100 ; Frenzy Plant|grass|e|100|90 ; Frost Breath|ice|e|60|90
-Fury Cutter|bug|f|40|95 ; Future Sight|psychic|e|120|100 ; Giga Drain|grass|e|75|100 ; Giga Impact|normal|f|100|90
-Grass Pledge|grass|e|80|100 ; Grassy Glide|grass|f|55|100 ; Gunk Shot|poison|f|120|80 ; Headbutt|normal|f|70|100
-Heat Wave|fire|e|95|90 ; Hex|ghost|e|65|100 ; Hidden Power|normal|e|60|100 ; High Horsepower|ground|f|95|95
-Horn Drill|normal|f||30 ; Hurricane|flying|e|110|70 ; Hydro Cannon|water|e|100|90 ; Hydro Pump|water|e|110|80
-Hyper Beam|normal|e|100|90 ; Hyper Voice|normal|e|90|100 ; Ice Beam|ice|e|90|100 ; Ice Fang|ice|f|65|95
-Ice Punch|ice|f|75|100 ; Ice Spinner|ice|f|80|100 ; Icicle Spear|ice|f|25|100 ; Icy Wind|ice|e|55|95
-Incinerate|fire|e|60|100 ; Infestation|bug|e|20|100 ; Iron Head|steel|f|80|100 ; Iron Tail|steel|f|100|75
-Knock Off|dark|f|65|100 ; Lash Out|dark|f|75|100 ; Leaf Blade|grass|f|90|100 ; Leaf Storm|grass|e|130|90
-Leech Life|bug|f|80|100 ; Liquidation|water|f|85|100 ; Low Sweep|fighting|f|65|100 ; Lunge|bug|f|80|100
-Magical Leaf|grass|e|60| ; Mega Drain|grass|e|40|100 ; Mega Kick|normal|f|120|75 ; Mega Punch|normal|f|80|85
-Megahorn|bug|f|120|85 ; Metal Claw|steel|f|50|95 ; Meteor Beam|rock|e|120|90 ; Misty Explosion|fairy|e|100|100
-Mud Shot|ground|e|55|95 ; Mud Slap|ground|e|20|100 ; Muddy Water|water|e|90|85 ; Mystical Fire|fire|e|75|100
-Night Shade|ghost|e||100 ; Outrage|dragon|f|105|100 ; Overheat|fire|e|130|90 ; Pay Day|normal|f|40|100
-Payback|dark|f|50|100 ; Petal Blizzard|grass|f|90|100 ; Phantom Force|ghost|f|90|100 ; Pin Missile|bug|f|25|95
-Play Rough|fairy|f|90|90 ; Pluck|flying|f|60|100 ; Poison Jab|poison|f|80|100 ; Poison Tail|poison|f|50|100
-Pollen Puff|bug|e|90|100 ; Poltergeist|ghost|f|110|90 ; Pounce|bug|f|50|100 ; Power Gem|rock|e|80|100
-Power Up Punch|fighting|f|40|100 ; Power Whip|grass|f|120|85 ; Psybeam|psychic|e|65|100 ; Psychic|psychic|e|90|100
-Psychic Fangs|psychic|f|85|100 ; Psychic Noise|psychic|e|75|100 ; Psycho Cut|psychic|f|70|100 ; Psyshock|psychic|e|80|100
-Rage|normal|f|20|100 ; Razor Shell|water|f|75|95 ; Razor Wind|normal|e|80|100 ; Retaliate|normal|f|70|100
-Revenge|fighting|f|60|100 ; Rock Blast|rock|f|25|90 ; Rock Climb|normal|f|90|85 ; Rock Slide|rock|f|75|90
-Rock Smash|fighting|f|40|100 ; Rock Throw|rock|f|50|90 ; Rock Tomb|rock|f|60|95 ; Rollout|rock|f|30|90
-Round|normal|e|60|100 ; Sand Tomb|ground|f|35|85 ; Scald|water|e|80|100 ; Scale Shot|dragon|f|25|90
-Scorching Sands|ground|e|70|100 ; Secret Power|normal|f|70|100 ; Seed Bomb|grass|f|80|100 ; Seismic Toss|fighting|f||100
-Selfdestruction|normal|f|200|100 ; Shadow Ball|ghost|e|80|100 ; Shadow Claw|ghost|f|70|100 ; Shock Wave|electric|e|60|
-Silver Wind|bug|e|60|100 ; Skitter Smack|bug|f|70|90 ; Skull Bash|normal|f|130|100 ; Sky Attack|flying|f|100|90
-Sky Drop|flying|f|60|100 ; Sludge Bomb|poison|e|90|100 ; Sludge Wave|poison|e|95|100 ; Smack Down|rock|f|50|100
-Smart Strike|steel|f|70| ; Snarl|dark|e|55|95 ; Snore|normal|e|50|100 ; Solar Beam|grass|e|120|100
-Solar Blade|grass|f|125|100 ; Steel Beam|steel|e|100|95 ; Steel Wing|steel|f|70|90 ; Stomping Tantrum|ground|f|75|100
-Stone Edge|rock|f|100|80 ; Stored Power|psychic|e|20|100 ; Strength|normal|f|80|100 ; Struggle Bug|bug|e|50|100
-Submission|fighting|f|80|80 ; Super Fang|normal|f||90 ; Supercell Slam|electric|f|100|95 ; Superpower|fighting|f|120|100
-Surf|water|e|90|100 ; Swift|normal|e|60| ; Tail Slap|normal|f|25|85 ; Take Down|normal|f|90|85
-Temper Flare|fire|f|75|100 ; Tera Blast|normal|e|80|100 ; Thief|dark|f|60|100 ; Throat Chop|dark|f|80|100
-Thunder|electric|e|110|70 ; Thunder Fang|electric|f|65|95 ; Thunder Punch|electric|f|75|100 ; Thunderbolt|electric|e|90|100
-Trailblaze|grass|f|50|100 ; Tri Attack|normal|e|80|100 ; Triple Axel|ice|f|20|90 ; U Turn|bug|f|70|100
-Upper Hand|fighting|f|65|100 ; Uproar|normal|e|90|100 ; Vacuum Wave|fighting|e|40|100 ; Venoshock|poison|e|65|100
-Volt Switch|electric|e|70|100 ; Water Gun|water|e|40|100 ; Water Pledge|water|e|80|100 ; Water Pulse|water|e|60|100
-Metronome|normal|s|| ; Weather Ball|normal|e|50|100 ; Whirlpool|water|e|35|85 ; Wild Charge|electric|f|90|100
-X Scissor|bug|f|80|100 ; Zap Cannon|electric|e|120|50 ; Zen Headbutt|psychic|f|80|90
+Acid Spray|poison|e|40|100
+Acrobatics|flying|f|110|100
+Aerial Ace|flying|f|60|
+Agility|psychic|s||
+Air Cutter|flying|e|60|95
+Air Slash|flying|e|75|95
+Alluring Voice|fairy|e|80|100
+Amnesia|psychic|s||
+Assurance|dark|f|60|100
+Aura Sphere|fighting|e|80|
+Avalanche|ice|f|60|100
+Bite|dark|f|60|100
+Blast Burn|fire|e|150|90
+Blaze Kick|fire|f|85|90
+Blizzard|ice|e|110|70
+Body Press|fighting|f|80|100
+Body Slam|normal|f|85|100
+Bounce|flying|f|85|85
+Brave Bird|flying|f|120|100
+Breaking Swipe|dragon|f|60|100
+Brick Break|fighting|f|75|100
+Brine|water|e|65|100
+Brutal Swing|dark|f|60|100
+Bubble Beam|water|e|65|100
+Bug Bite|bug|f|60|100
+Bug Buzz|bug|e|90|100
+Bulk Up|fighting|s||
+Bulldoze|ground|f|60|100
+Bullet Seed|grass|f|25|100
+Burning Jealousy|fire|e|70|100
+Calm Mind|psychic|s||
+Captivate|normal|s||100
+Charge|electric|s||
+Charge Beam|electric|e|50|90
+Charm|fairy|s||100
+Chilling Water|water|e|50|100
+Close Combat|fighting|f|120|100
+Coaching|fighting|s||
+Confide|normal|s||
+Confuse Ray|ghost|s||100
+Cosmic Power|psychic|s||
+Cross Poison|poison|f|70|100
+Crunch|dark|f|80|100
+Cut|normal|f|50|95
+Dark Pulse|dark|e|80|100
+Darkest Lariat|dark|f|85|100
+Dazzling Gleam|fairy|e|80|100
+Defense Curl|normal|s||
+Dig|ground|f|80|100
+Disarming Voice|fairy|e|40|
+Dive|water|f|80|100
+Double Edge|normal|f|120|100
+Draco Meteor|dragon|e|130|90
+Dragon Breath|dragon|e|60|100
+Dragon Claw|dragon|f|80|100
+Dragon Dance|dragon|s||
+Dragon Pulse|dragon|e|85|100
+Dragon Rage|dragon|e||100
+Dragon Tail|dragon|f|60|90
+Drain Punch|fighting|f|75|100
+Draining Kiss|fairy|e|50|100
+Dream Eater|psychic|e|100|100
+Drill Run|ground|f|80|95
+Dual Wingbeat|flying|f|40|90
+Dynamic Punch|fighting|f|100|50
+Earth Power|ground|e|90|100
+Earthquake|ground|f|100|100
+Echoed Voice|normal|e|40|100
+Eerie Impulse|electric|s||100
+Egg Bomb|normal|f|100|75
+Electro Ball|electric|e|75|100
+Electroweb|electric|e|55|95
+Encore|normal|s||100
+Energy Ball|grass|e|90|100
+Expanding Force|psychic|e|80|100
+Explosion|normal|f|250|100
+Facade|normal|f|70|100
+Fake Tears|dark|s||100
+False Swipe|normal|f|40|100
+Feather Dance|flying|s||100
+Fire Blast|fire|e|110|85
+Fire Fang|fire|f|65|95
+Fire Pledge|fire|e|80|100
+Fire Punch|fire|f|75|100
+Fire Spin|fire|e|35|85
+Fissure|ground|f||30
+Flame Charge|fire|f|50|100
+Flamethrower|fire|e|90|100
+Flare Blitz|fire|f|120|100
+Flash Cannon|steel|e|80|100
+Flip Turn|water|f|60|100
+Fly|flying|f|90|95
+Focus Blast|fighting|e|120|70
+Focus Punch|fighting|f|100|100
+Foul Play|dark|f|95|100
+Frenzy Plant|grass|e|150|90
+Frost Breath|ice|e|60|90
+Fury Cutter|bug|f|40|95
+Future Sight|psychic|e|120|100
+Giga Drain|grass|e|75|100
+Giga Impact|normal|f|150|90
+Grass Pledge|grass|e|80|100
+Grassy Glide|grass|f|55|100
+Gunk Shot|poison|f|120|80
+Gyro Ball|steel|f|25|100
+Hard Press|steel|f|70|100
+Headbutt|normal|f|70|100
+Heat Wave|fire|e|95|90
+Hex|ghost|e|65|100
+Hidden Power|normal|e|60|100
+High Horsepower|ground|f|95|95
+Horn Drill|normal|f||30
+Hurricane|flying|e|110|70
+Hydro Cannon|water|e|150|90
+Hydro Pump|water|e|110|80
+Hyper Beam|normal|e|150|90
+Hyper Voice|normal|e|90|100
+Ice Beam|ice|e|90|100
+Ice Fang|ice|f|65|95
+Ice Punch|ice|f|75|100
+Ice Spinner|ice|f|80|100
+Icicle Spear|ice|f|25|100
+Icy Wind|ice|e|55|95
+Incinerate|fire|e|60|100
+Infestation|bug|e|20|100
+Iron Defense|steel|s||
+Iron Head|steel|f|80|100
+Iron Tail|steel|f|100|75
+Knock Off|dark|f|65|100
+Lash Out|dark|f|75|100
+Leaf Blade|grass|f|90|100
+Leaf Storm|grass|e|130|90
+Leech Life|bug|f|80|100
+Liquidation|water|f|85|100
+Low Sweep|fighting|f|65|100
+Lunge|bug|f|80|100
+Magical Leaf|grass|e|60|
+Mega Drain|grass|e|40|100
+Mega Kick|normal|f|120|75
+Mega Punch|normal|f|80|85
+Megahorn|bug|f|120|85
+Metal Claw|steel|f|50|95
+Metal Sound|steel|s||85
+Meteor Beam|rock|e|120|90
+Misty Explosion|fairy|e|100|100
+Moonblast|fairy|e|95|100
+Mud Shot|ground|e|55|95
+Mud Slap|ground|e|20|100
+Muddy Water|water|e|90|85
+Mystical Fire|fire|e|75|100
+Nasty Plot|dark|s||
+Night Shade|ghost|e||100
+Outrage|dragon|f|120|100
+Overheat|fire|e|130|90
+Pay Day|normal|f|40|100
+Payback|dark|f|50|100
+Petal Blizzard|grass|f|90|100
+Phantom Force|ghost|f|90|100
+Pin Missile|bug|f|25|95
+Play Rough|fairy|f|90|90
+Pluck|flying|f|60|100
+Poison Jab|poison|f|80|100
+Poison Tail|poison|f|50|100
+Pollen Puff|bug|e|90|100
+Poltergeist|ghost|f|110|90
+Pounce|bug|f|50|100
+Power Gem|rock|e|80|100
+Power Up Punch|fighting|f|40|100
+Power Whip|grass|f|120|85
+Psybeam|psychic|e|65|100
+Psychic|psychic|e|90|100
+Psychic Fangs|psychic|f|85|100
+Psychic Noise|psychic|e|75|100
+Psycho Cut|psychic|f|70|100
+Psyshock|psychic|e|80|100
+Rage|normal|f|20|100
+Razor Shell|water|f|75|95
+Razor Wind|normal|e|80|100
+Retaliate|normal|f|70|100
+Revenge|fighting|f|60|100
+Reversal|fighting|f|30|100
+Rock Blast|rock|f|25|90
+Rock Climb|normal|f|90|85
+Rock Polish|rock|s||
+Rock Slide|rock|f|75|90
+Rock Smash|fighting|f|40|100
+Rock Throw|rock|f|50|90
+Rock Tomb|rock|f|60|95
+Rollout|rock|f|30|90
+Roost|flying|s||
+Round|normal|e|60|100
+Sand Tomb|ground|f|35|85
+Scald|water|e|80|100
+Scale Shot|dragon|f|25|90
+Scary Face|normal|s||100
+Scorching Sands|ground|e|70|100
+Screech|normal|s||85
+Secret Power|normal|f|70|100
+Seed Bomb|grass|f|80|100
+Seismic Toss|fighting|f||100
+Selfdestruction|normal|f|200|100
+Shadow Ball|ghost|e|80|100
+Shadow Claw|ghost|f|70|100
+Shock Wave|electric|e|60|
+Silver Wind|bug|e|60|100
+Skitter Smack|bug|f|70|90
+Skull Bash|normal|f|130|100
+Sky Attack|flying|f|100|90
+Sky Drop|flying|f|60|100
+Sludge Bomb|poison|e|90|100
+Sludge Wave|poison|e|95|100
+Smack Down|rock|f|50|100
+Smart Strike|steel|f|70|
+Snarl|dark|e|55|95
+Snore|normal|e|50|100
+Soft Boiled|normal|s||
+Solar Beam|grass|e|120|100
+Solar Blade|grass|f|125|100
+Steel Beam|steel|e|100|95
+Steel Wing|steel|f|70|90
+Stomping Tantrum|ground|f|75|100
+Stone Edge|rock|f|100|80
+Stored Power|psychic|e|20|100
+Strength|normal|f|80|100
+Struggle Bug|bug|e|50|100
+Submission|fighting|f|80|80
+Super Fang|normal|f||90
+Supercell Slam|electric|f|100|95
+Superpower|fighting|f|120|100
+Surf|water|e|90|100
+Swagger|normal|s||85
+Swift|normal|e|60|
+Swords Dance|normal|s||
+Tail Slap|normal|f|25|85
+Take Down|normal|f|90|85
+Taunt|dark|s||100
+Temper Flare|fire|f|75|100
+Tera Blast|normal|e|80|100
+Thief|dark|f|60|100
+Throat Chop|dark|f|80|100
+Thunder|electric|e|110|70
+Thunder Fang|electric|f|65|95
+Thunder Punch|electric|f|75|100
+Thunder Wave|electric|s||90
+Thunderbolt|electric|e|90|100
+Toxic|poison|s||90
+Trailblaze|grass|f|50|100
+Tri Attack|normal|e|80|100
+Triple Axel|ice|f|105|90
+U Turn|bug|f|70|100
+Upper Hand|fighting|f|65|100
+Uproar|normal|e|90|100
+Vacuum Wave|fighting|e|40|100
+Venom Drench|poison|s||100
+Venoshock|poison|e|65|100
+Volt Switch|electric|e|70|100
+Water Gun|water|e|40|100
+Water Pledge|water|e|80|100
+Water Pulse|water|e|60|100
+Waterfall|water|f|80|100
+Weather Ball|normal|e|50|100
+Whirlpool|water|e|35|85
+Wild Charge|electric|f|90|100
+Will O Wisp|fire|s||85
+Work Up|normal|s||
+X Scissor|bug|f|80|100
+Zap Cannon|electric|e|120|50
+Zen Headbutt|psychic|f|80|90
 `;
-
-const TMS_DISPONIVEIS = TMS_RAW
+const TMS_DISPONIVEIS = [...new Map(TMS_RAW
     .split(/[;\n]+/)
     .map(l => l.trim())
     .filter(l => l.length > 0 && l.includes('|'))
     .map(l => {
         const p = l.split('|');
         return {
-            nome: p[0],
-            tipo: p[1],
+            nome: p[0].trim(),
+            tipo: p[1].trim(),
             categoria: p[2] === 'f' ? 'Físico' : p[2] === 's' ? 'Status' : 'Especial',
-            poder: p[3] ? parseInt(p[3]) : null,
-            precisao: p[4] ? parseInt(p[4]) : null
+            poder: p[3] ? parseInt(p[3], 10) : null,
+            precisao: p[4] ? parseInt(p[4], 10) : null
         };
-    });
+    })
+    // Waterfall está duplicada no catálogo original; mostra uma opção só.
+    .map(tm => [normalizarNome(tm.nome), tm])).values()];
+
+// Ajustes específicos do jogo informados pelo treinador.
+const TMS_COMPATIBILIDADE_MANUAL = {
+    'clefable': ['Moonblast'],
+    'dusknoir': ['Will O Wisp']
+};
+
+function getTMsFromMoveLearnset(nome, rawMoves) {
+    const permitidas = new Set((rawMoves || [])
+        .filter(m => (m.version_group_details || []).some(v => v.move_learn_method?.name === 'machine'))
+        .map(m => normalizarNome(m.move?.name || '')));
+    (TMS_COMPATIBILIDADE_MANUAL[normalizarNome(nome)] || [])
+        .forEach(tm => permitidas.add(normalizarNome(tm)));
+    return TMS_DISPONIVEIS.filter(tm => permitidas.has(normalizarNome(tm.nome)));
+}
 
 function getTMsRelevantes(tiposPokemon) {
     const tipos = (tiposPokemon || []).map(t => t.toLowerCase());
@@ -102,15 +329,10 @@ function getTMsTextoPrompt(tiposPokemon, nomePokemon = '') {
 function getTMsReaisDoPokemon(nome) {
     const chave = normalizarNome(nome);
     const rawMoves = dadosCache[chave]?.raw?.moves || [];
-    const maquinas = new Set(rawMoves
-        .filter(m => (m.version_group_details || []).some(v => v.move_learn_method?.name === 'machine'))
-        .map(m => normalizarNome(m.move?.name || '')));
-    if (maquinas.size === 0) return [];
-    return TMS_DISPONIVEIS.filter(tm => maquinas.has(normalizarNome(tm.nome)));
+    return getTMsFromMoveLearnset(chave, rawMoves);
 }
 
-// Lista fechada de TMs reais do jogo, separada por Pokémon identificado.
-// A IA não recebe uma lista global que possa misturar TMs entre espécies.
+// Lista fechada de TMs disponíveis por Pokémon; a IA não mistura golpes entre espécies.
 function getTMsTextoPorPokemon(nomesPokemon) {
     return (nomesPokemon || []).map(nome => {
         const tms = getTMsReaisDoPokemon(nome);
@@ -441,9 +663,68 @@ function natureEstaRecomendada(naturezaAtual, listaRecomendadas) {
     });
 }
 
+const QUALITY_NATURES = {
+    Hardy:[null,null], Lonely:['atk','def'], Brave:['atk','spe'], Adamant:['atk','spa'], Naughty:['atk','spd'],
+    Bold:['def','atk'], Docile:[null,null], Relaxed:['def','spe'], Impish:['def','spa'], Lax:['def','spd'],
+    Timid:['spe','atk'], Hasty:['spe','def'], Serious:[null,null], Jolly:['spe','spa'], Naive:['spe','spd'],
+    Modest:['spa','atk'], Mild:['spa','def'], Quiet:['spa','spe'], Bashful:[null,null], Rash:['spa','spd'],
+    Calm:['spd','atk'], Gentle:['spd','def'], Sassy:['spd','spe'], Careful:['spd','spa'], Quirky:[null,null]
+};
+function renderQualityStars(prefixo, dados) {
+    const card = document.getElementById('qualityStars' + prefixo);
+    if (!card) return;
+    const show = html => { card.innerHTML = html; card.classList.add('visivel'); };
+    if (!dados?.nome || !dados.ivs) { card.classList.remove('visivel'); card.innerHTML = ''; return; }
+    const keys = ['hp','atk','def','spa','spd','spe'];
+    const ivs = keys.map(key => Number(dados.ivs[key]));
+    if (ivs.some(value => !Number.isFinite(value) || value < 0 || value > 31)) {
+        show('<strong>Estrelas de qualidade</strong><span>Preencha os seis IVs e a natureza para calcular.</span>'); return;
+    }
+    const natureName = normalizarNaturezaIngles(dados.natureza || '');
+    const naturePair = QUALITY_NATURES[natureName];
+    if (!naturePair) { show('<strong>Estrelas de qualidade</strong><span>Informe uma natureza reconhecida para calcular.</span>'); return; }
+    let raw = dadosCache[normalizarNome(dados.nome)]?.raw;
+    if (!raw && !card.dataset.pending) {
+        card.dataset.pending = '1';
+        show('<strong>Estrelas de qualidade</strong><span>Buscando atributos da espécie…</span>');
+        buscarDadosPokemon(dados.nome).then(result => {
+            card.dataset.pending = '';
+            if (result?.raw) renderQualityStars(prefixo, dados);
+            else show('<strong>Estrelas de qualidade</strong><span>Não foi possível carregar os dados da espécie para ponderar os atributos.</span>');
+        }).catch(() => { card.dataset.pending = ''; show('<strong>Estrelas de qualidade</strong><span>Não foi possível carregar os dados da espécie.</span>'); });
+        return;
+    }
+    const apiNames = {hp:'hp', attack:'atk', defense:'def', 'special-attack':'spa', 'special-defense':'spd', speed:'spe'};
+    const baseStats = {...(dados.baseStats || {})};
+    const effort = Object.fromEntries(keys.map(key => [key, 0]));
+    for (const row of raw?.stats || []) {
+        const key = apiNames[row.stat?.name];
+        if (key) { baseStats[key] = Number(row.base_stat) || baseStats[key] || 1; effort[key] = Number(row.effort) || 0; }
+    }
+    // A página publica as faixas e a divisão 70/30, mas não os coeficientes por atributo.
+    // Peso transparente/estimado: Base Stat + 10 x rendimento de EV da espécie.
+    const weights = Object.fromEntries(keys.map(key => [key, Math.max(1, Number(baseStats[key]) + 10 * effort[key])]));
+    const totalWeight = keys.reduce((sum, key) => sum + weights[key], 0);
+    const ivPercent = keys.reduce((sum, key, index) => sum + (ivs[index] / 31) * weights[key], 0) / totalWeight * 100;
+    const natureDelta = pair => (pair[0] ? weights[pair[0]] : 0) - (pair[1] ? weights[pair[1]] : 0);
+    const deltas = Object.values(QUALITY_NATURES).map(natureDelta);
+    const minDelta = Math.min(...deltas), maxDelta = Math.max(...deltas);
+    const naturePercent = maxDelta === minDelta ? 50 : ((natureDelta(naturePair) - minDelta) / (maxDelta - minDelta)) * 100;
+    const score = Math.max(0, Math.min(100, 0.7 * ivPercent + 0.3 * naturePercent));
+    const bands = [
+        {min:98, stars:7, label:'Perfeito'}, {min:94, stars:6, label:'Impecável'},
+        {min:85, stars:5, label:'Excepcional'}, {min:75, stars:4, label:'Excelente'},
+        {min:65, stars:3, label:'Ótimo'}, {min:50, stars:2, label:'Bom'}, {min:0, stars:1, label:'Razoável'}
+    ];
+    const band = bands.find(item => score >= item.min) || bands[bands.length - 1];
+    const stars = '★'.repeat(band.stars) + '☆'.repeat(7 - band.stars);
+    show(`<div class="quality-stars-row"><span class="quality-stars-glyph">${stars}</span><strong>${band.stars}/7 · ${band.label}</strong><b>${score.toFixed(1)}%</b></div><div class="quality-stars-meter"><span style="width:${score.toFixed(1)}%"></span></div><small>Faixas locais · 70% IV + 30% natureza. Peso estimado por atributo: Base Stat + 10×rendimento de EV; a página não publica os coeficientes exatos.</small>`);
+}
+
 function renderAvaliacaoIV(prefixo, dados, naturezasRecomendadas, contexto) {
     const container = document.getElementById('ivEvaluation' + prefixo);
     if (!container) return;
+    renderQualityStars(prefixo, dados);
     const totalIV = calcularTotalIV(dados.ivs);
     if (totalIV === 0) { container.classList.remove('visivel'); return; }
 
@@ -865,21 +1146,23 @@ const apiKeyInputTimes=document.getElementById('apiKeyInputTimes'),btnSalvarApiT
 const apiKeyInputTier=document.getElementById('apiKeyInputTier'),btnSalvarApiTier=document.getElementById('btnSalvarApiTier'),apiStatusTier=document.getElementById('apiStatusTier');
 const apiKeyInputPve=document.getElementById('apiKeyInputPve'),btnSalvarApiPve=document.getElementById('btnSalvarApiPve'),apiStatusPve=document.getElementById('apiStatusPve');
 const apiKeyInputDuel=document.getElementById('apiKeyInputDuel'),btnSalvarApiDuel=document.getElementById('btnSalvarApiDuel'),apiStatusDuel=document.getElementById('apiStatusDuel');
-const modelSelect=document.getElementById('modelSelect'),modelSelectTimes=document.getElementById('modelSelectTimes'),modelSelectTier=document.getElementById('modelSelectTier'),modelSelectPve=document.getElementById('modelSelectPve'),modelSelectDuel=document.getElementById('modelSelectDuel');
+const apiKeyInputRaid=document.getElementById('apiKeyInputRaid'),btnSalvarApiRaid=document.getElementById('btnSalvarApiRaid'),apiStatusRaid=document.getElementById('apiStatusRaid');
+const modelSelect=document.getElementById('modelSelect'),modelSelectTimes=document.getElementById('modelSelectTimes'),modelSelectTier=document.getElementById('modelSelectTier'),modelSelectPve=document.getElementById('modelSelectPve'),modelSelectDuel=document.getElementById('modelSelectDuel'),modelSelectRaid=document.getElementById('modelSelectRaid');
+if(modelSelect && modelSelectRaid){modelSelectRaid.innerHTML=modelSelect.innerHTML;modelSelectRaid.value=modelSelect.value;}
 
 let apiKey = '';
 function carregarChaveSalva() {
     const s = localStorage.getItem('geminiApiKey');
     if (s) {
-        apiKeyInput.value=s; apiKeyInputTimes.value=s; apiKeyInputTier.value=s; apiKeyInputPve.value=s; apiKeyInputDuel.value=s; apiKey=s;
-        [apiStatus,apiStatusTimes,apiStatusTier,apiStatusPve,apiStatusDuel].forEach(el => { el.textContent='✓ Chave carregada'; el.className='api-status ok'; });
+        apiKeyInput.value=s; apiKeyInputTimes.value=s; apiKeyInputTier.value=s; apiKeyInputPve.value=s; apiKeyInputDuel.value=s; apiKeyInputRaid.value=s; apiKey=s;
+        [apiStatus,apiStatusTimes,apiStatusTier,apiStatusPve,apiStatusDuel,apiStatusRaid].forEach(el => { el.textContent='✓ Chave carregada'; el.className='api-status ok'; });
     } else {
-        [apiStatus,apiStatusTimes,apiStatusTier,apiStatusPve,apiStatusDuel].forEach(el => { el.textContent='⚠️ Insira sua chave'; el.className='api-status erro'; });
+        [apiStatus,apiStatusTimes,apiStatusTier,apiStatusPve,apiStatusDuel,apiStatusRaid].forEach(el => { el.textContent='⚠️ Insira sua chave'; el.className='api-status erro'; });
     }
 }
 function salvarChave(chave) {
     apiKey=chave; localStorage.setItem('geminiApiKey',chave);
-    [apiStatus,apiStatusTimes,apiStatusTier,apiStatusPve,apiStatusDuel].forEach(el => { el.textContent='✓ Chave salva!'; el.className='api-status ok'; });
+    [apiStatus,apiStatusTimes,apiStatusTier,apiStatusPve,apiStatusDuel,apiStatusRaid].forEach(el => { el.textContent='✓ Chave salva!'; el.className='api-status ok'; });
     testarChave(chave);
 }
 btnSalvarApi.addEventListener('click',()=>{const c=apiKeyInput.value.trim();if(c.length>10)salvarChave(c);else{apiStatus.textContent='❌ Chave inválida';apiStatus.className='api-status erro';}});
@@ -887,22 +1170,24 @@ btnSalvarApiTimes.addEventListener('click',()=>{const c=apiKeyInputTimes.value.t
 btnSalvarApiTier.addEventListener('click',()=>{const c=apiKeyInputTier.value.trim();if(c.length>10)salvarChave(c);else{apiStatusTier.textContent='❌ Chave inválida';apiStatusTier.className='api-status erro';}});
 btnSalvarApiPve.addEventListener('click',()=>{const c=apiKeyInputPve.value.trim();if(c.length>10)salvarChave(c);else{apiStatusPve.textContent='❌ Chave inválida';apiStatusPve.className='api-status erro';}});
 btnSalvarApiDuel.addEventListener('click',()=>{const c=apiKeyInputDuel.value.trim();if(c.length>10)salvarChave(c);else{apiStatusDuel.textContent='❌ Chave inválida';apiStatusDuel.className='api-status erro';}});
+btnSalvarApiRaid.addEventListener('click',()=>{const c=apiKeyInputRaid.value.trim();if(c.length>10)salvarChave(c);else{apiStatusRaid.textContent='❌ Chave inválida';apiStatusRaid.className='api-status erro';}});
 
 async function testarChave(chave) {
     try {
         const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${chave}`);
-        if (r.ok) { [apiStatus,apiStatusTimes,apiStatusTier,apiStatusPve,apiStatusDuel].forEach(el=>{el.textContent='✓ Chave válida!';el.className='api-status ok';}); }
-        else { const d=await r.json(); const m=`❌ ${d.error?.message||'Chave inválida'}`; [apiStatus,apiStatusTimes,apiStatusTier,apiStatusPve,apiStatusDuel].forEach(el=>{el.textContent=m;el.className='api-status erro';}); }
+        if (r.ok) { [apiStatus,apiStatusTimes,apiStatusTier,apiStatusPve,apiStatusDuel,apiStatusRaid].forEach(el=>{el.textContent='✓ Chave válida!';el.className='api-status ok';}); }
+        else { const d=await r.json(); const m=`❌ ${d.error?.message||'Chave inválida'}`; [apiStatus,apiStatusTimes,apiStatusTier,apiStatusPve,apiStatusDuel,apiStatusRaid].forEach(el=>{el.textContent=m;el.className='api-status erro';}); }
     } catch(e) {}
 }
 function sincronizarModelos(valor) {
-    modelSelect.value=valor; modelSelectTimes.value=valor; modelSelectTier.value=valor; modelSelectPve.value=valor; modelSelectDuel.value=valor;
+    modelSelect.value=valor; modelSelectTimes.value=valor; modelSelectTier.value=valor; modelSelectPve.value=valor; modelSelectDuel.value=valor; modelSelectRaid.value=valor;
 }
 modelSelect.addEventListener('change',function(){sincronizarModelos(this.value);});
 modelSelectTimes.addEventListener('change',function(){sincronizarModelos(this.value);});
 modelSelectTier.addEventListener('change',function(){sincronizarModelos(this.value);});
 modelSelectPve.addEventListener('change',function(){sincronizarModelos(this.value);});
 modelSelectDuel.addEventListener('change',function(){sincronizarModelos(this.value);});
+modelSelectRaid.addEventListener('change',function(){sincronizarModelos(this.value);});
 
 // ============================================================
 // FICHA PVP
@@ -2159,7 +2444,7 @@ Dados:
         }
         if (movM) {
             const listaMovesBruta = await traduzirListaMoves(movM[1]); const permitidasPve = new Set(getTMsReaisDoPokemon(nome).map(tm=>normalizarNome(tm.nome))); const listaMoves = listaMovesBruta.filter(m=>permitidasPve.has(normalizarNome(String(m).replace(/^TM\s+/i,'').trim())));
-            pveMoves.innerHTML = '<div class="moves-flex">' + listaMoves.map(x => {const nome=String(x).replace(/^TM\s+/i,'').trim();const tm=TMS_DISPONIVEIS.find(y=>y.nome.toLowerCase()===nome.toLowerCase());return `<span class="move-tag move-tag-tm">${tm?`<img class="move-tm-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-${tm.tipo}.png" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png'" alt="">`:''}${x}</span>`}).join('') + '</div>';
+            pveMoves.innerHTML = '<div class="moves-flex">' + listaMoves.map(x => {const nome=String(x).replace(/^TM\s+/i,'').trim();const tm=TMS_DISPONIVEIS.find(y=>y.nome.toLowerCase()===nome.toLowerCase());return `<span class="move-tag move-tag-tm">${tm?`<img class="move-tm-sprite" src="${tm.spriteUrl || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-${tm.tipo}.png`}" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png'" alt="">`:''}${x}</span>`}).join('') + '</div>';
             renderTMCardsOficiais(pveMoves, listaMoves, 'TMs recomendadas para PvE');
         } else pveMoves.innerHTML = '<div class="moves-flex"><span class="move-tag">Não disponível</span></div>';
         pveStrategyText.innerHTML = estM ? estM[1].replace(/\n/g,'<br>') : texto.replace(/\n/g,'<br>');
@@ -2377,19 +2662,12 @@ document.getElementById('btnPdfTimes')?.addEventListener('click',()=>abrirPdfAna
                 .then(response => response.ok ? response.json() : null)
                 .then(data => {
                     if (!data) return null;
-                    const machineMoves = new Set((data.moves || [])
-                        .filter(entry => (entry.version_group_details || []).some(detail => detail.move_learn_method?.name === 'machine'))
-                        .map(entry => moveSlug(entry.move?.name || '')));
-                    const seen = new Set();
-                    const compatibleTMs = TMS_DISPONIVEIS.filter(tm => {
-                        const key = moveSlug(tm.nome);
-                        if (!key || seen.has(key) || !machineMoves.has(key)) return false;
-                        seen.add(key);
-                        return true;
-                    });
+                    const speciesName = data.species?.name || data.name || slug;
+                    const compatibleTMs = getTMsFromMoveLearnset(speciesName, data.moves || []);
                     return {
                         sprite: data.sprites?.front_default || data.sprites?.other?.['official-artwork']?.front_default || data.sprites?.other?.home?.front_default || null,
-                        compatibleTMs
+                        compatibleTMs,
+                        compatibilitySource: 'lista local do código + PokéAPI'
                     };
                 }).catch(() => null);
             pokemonPromises.set(slug, request);
@@ -2429,9 +2707,9 @@ document.getElementById('btnPdfTimes')?.addEventListener('click',()=>abrirPdfAna
         }
         preview.classList.remove('nao-encontrada'); preview.classList.add('encontrada');
         const icon = document.createElement('img');
-        icon.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-${tm.tipo}.png`;
+        icon.src = tm.spriteUrl || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-${tm.tipo}.png`;
         icon.alt = `Ícone da TM ${tm.nome}`; icon.loading = 'lazy';
-        icon.onerror = () => { icon.onerror = null; icon.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png'; };
+        icon.onerror = () => { icon.onerror = null; icon.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-${tm.tipo}.png`; };
         preview.appendChild(icon);
         const label = document.createElement('span'); label.textContent = `${tm.nome} · ${tm.tipo}`; preview.appendChild(label);
     }
@@ -2477,7 +2755,7 @@ document.getElementById('btnPdfTimes')?.addEventListener('click',()=>abrirPdfAna
             }
             return;
         }
-        setPreviewMessage(preview, 'Buscando sprite e TMs compatíveis na PokéAPI…');
+        setPreviewMessage(preview, 'Buscando sprite e TMs compatíveis…');
         if (slot) slotMoveSelects(slot).forEach(select => setSelectPlaceholder(select, 'Carregando TMs compatíveis…'));
         const data = await getPokemonData(name);
         if (spriteRequestIds.get(input) !== requestId) return;
@@ -2493,7 +2771,7 @@ document.getElementById('btnPdfTimes')?.addEventListener('click',()=>abrirPdfAna
             preview.appendChild(image);
         }
         const label = document.createElement('span'); label.textContent = name; preview.appendChild(label);
-        if (slot) populateCompatibleTMs(input, data, preserveSaved);
+        if (slot) { populateCompatibleTMs(input, data, preserveSaved); if (preserveSaved) saveRaidData(); }
     }
 
     function schedulePokemonLookup(input, delay = 450, preserveSaved = false) {
@@ -2637,6 +2915,104 @@ document.getElementById('btnPdfTimes')?.addEventListener('click',()=>abrirPdfAna
     });
     window.addEventListener('pagehide', () => { if (saveTimer) { window.clearTimeout(saveTimer); saveRaidData(); } });
 
+    const raidPhotoInput = document.getElementById('raidTeamPhotoInput');
+    const raidPhotoButton = document.getElementById('raidImportPhotoButton');
+    const raidPhotoPreview = document.getElementById('raidTeamPhotoPreview');
+    const raidPhotoStatus = document.getElementById('raidPhotoImportStatus');
+    let raidPhotoFile = null;
+    const setRaidPhotoStatus = (message, isError = false) => {
+        if (!raidPhotoStatus) return;
+        raidPhotoStatus.textContent = message;
+        raidPhotoStatus.classList.toggle('erro', isError);
+        raidPhotoStatus.classList.toggle('salvo', !isError);
+    };
+    raidPhotoInput?.addEventListener('change', event => {
+        const file = event.target.files?.[0];
+        raidPhotoFile = file || null;
+        if (!file) { if (raidPhotoButton) raidPhotoButton.disabled = true; return; }
+        if (!file.type.startsWith('image/')) { raidPhotoFile = null; if (raidPhotoButton) raidPhotoButton.disabled = true; setRaidPhotoStatus('Escolha um arquivo de imagem.', true); return; }
+        if (file.size > 12 * 1024 * 1024) { raidPhotoFile = null; if (raidPhotoButton) raidPhotoButton.disabled = true; setRaidPhotoStatus('A imagem precisa ter até 12 MB.', true); return; }
+        if (raidPhotoButton) raidPhotoButton.disabled = false;
+        if (raidPhotoPreview) {
+            raidPhotoPreview.src = URL.createObjectURL(file);
+            raidPhotoPreview.hidden = false;
+            raidPhotoPreview.onload = () => URL.revokeObjectURL(raidPhotoPreview.src);
+        }
+        setRaidPhotoStatus('Imagem pronta. Ela só será enviada ao Gemini quando você clicar no botão.');
+    });
+
+    async function importRaidTeamFromPhoto() {
+        if (!raidPhotoFile || !raidPhotoButton) return;
+        const key = localStorage.getItem('geminiApiKey') || document.getElementById('apiKeyInputRaid')?.value.trim() || document.getElementById('apiKeyInput')?.value.trim() || '';
+        if (!key) { setRaidPhotoStatus('Configure e salve sua chave Gemini primeiro.', true); return; }
+        raidPhotoButton.disabled = true;
+        setRaidPhotoStatus('Lendo a imagem e identificando os dados visíveis…');
+        try {
+            const base64 = await toBase64(raidPhotoFile);
+            const prompt = `Leia a imagem de equipe Pokémon e transcreva SOMENTE o que estiver visível e legível. Não adivinhe nem invente Pokémon, nível ou golpes. Retorne no máximo seis membros, na ordem visual, com os campos pokemon, level e moves (até quatro golpes). Se um campo não estiver visível ou estiver ilegível, use null ou lista vazia. Os nomes podem ser normalizados em inglês. Responda somente JSON válido no formato: {"members":[{"pokemon":"...","level":100,"moves":["...","...","...","..."]}]}`;
+            const model = (typeof modelSelectRaid !== 'undefined' && modelSelectRaid?.value) || 'gemini-2.5-flash-lite';
+            const controller = new AbortController();
+            const timeout = window.setTimeout(() => controller.abort(), 45000);
+            let response;
+            try {
+                response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({contents:[{parts:[{text:prompt},{inline_data:{mime_type:raidPhotoFile.type || 'image/jpeg',data:base64.split(',')[1]}}]}],generationConfig:{temperature:0,responseMimeType:'application/json',maxOutputTokens:1800}}),
+                    signal:controller.signal
+                });
+            } finally { window.clearTimeout(timeout); }
+            const responseData = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(responseData.error?.message || `Erro da Gemini API (${response.status}).`);
+            const text = responseData.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('').trim().replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim() || '';
+            const jsonText = text.match(/\{[\s\S]*\}/)?.[0];
+            if (!jsonText) throw new Error('A IA não devolveu os dados em JSON.');
+            const parsed = JSON.parse(jsonText);
+            const members = Array.isArray(parsed.members) ? parsed.members.slice(0,6) : [];
+            if (!members.length) throw new Error('Não encontrei membros legíveis na imagem.');
+            let imported = 0, movesSeen = 0, unsupported = 0;
+            for (let index = 0; index < members.length; index++) {
+                const item = members[index] || {};
+                const slot = index + 1;
+                const name = String(item.pokemon || item.name || item.nome || '').trim();
+                if (!name) continue;
+                const pokemonInput = pokemonInputs.find(input => memberSlotForPokemonField(input.name) === slot);
+                if (!pokemonInput) continue;
+                clearSlotMoves(pokemonInput);
+                pokemonInput.value = name;
+                const levelInput = document.querySelector(`[name="raidLevel${slot}"]`);
+                const rawLevel = item.level ?? item.nivel;
+                const level = Number(rawLevel);
+                if (levelInput) {
+                    levelInput.value = Number.isFinite(level) && level >= 1 && level <= 100 ? String(Math.round(level)) : '';
+                    levelInput.dispatchEvent(new Event('change', {bubbles:true}));
+                }
+                const rawMoves = Array.isArray(item.moves) ? item.moves : (Array.isArray(item.tms) ? item.tms : (Array.isArray(item.golpes) ? item.golpes : []));
+                const selectedTMs = [];
+                for (const rawMove of rawMoves) {
+                    const moveName = String(rawMove || '').trim();
+                    if (!moveName) continue;
+                    movesSeen++;
+                    const match = TMS_DISPONIVEIS.find(tm => normalizeMoveKey(tm.nome) === normalizeMoveKey(moveName));
+                    if (match && selectedTMs.length < 4) selectedTMs.push(match.nome);
+                    else unsupported++;
+                }
+                selectedTMs.forEach((moveName, moveIndex) => pendingSavedMoves.set(`raidMoves${slot}_${moveIndex + 1}`, moveName));
+                pokemonInput.dispatchEvent(new Event('change', {bubbles:true}));
+                schedulePokemonLookup(pokemonInput, 0, true);
+                imported++;
+            }
+            if (!imported) throw new Error('A imagem não trouxe nomes de Pokémon legíveis.');
+            window.clearTimeout(saveTimer);
+            saveRaidData();
+            const moveNote = movesSeen ? ` ${movesSeen - unsupported} de ${movesSeen} golpes estavam no catálogo; os incompatíveis por espécie serão descartados.` : '';
+            setRaidPhotoStatus(`${imported} Pokémon importado(s). Confira os nomes, níveis e TMs antes de salvar.${moveNote}${unsupported ? ` ${unsupported} golpe(s) não foram reconhecidos como TM do catálogo.` : ''}`);
+        } catch (error) {
+            console.error('Erro ao importar foto da Raid Boss:', error);
+            setRaidPhotoStatus(error.name === 'AbortError' ? 'A leitura demorou demais. Tente outra imagem.' : `Falha na leitura: ${error.message}`, true);
+        } finally { raidPhotoButton.disabled = !raidPhotoFile; }
+    }
+    raidPhotoButton?.addEventListener('click', importRaidTeamFromPhoto);
+
     async function analyzeRaidWithGemini() {
         if (!aiButton || !aiOutput) return;
         const key = localStorage.getItem('geminiApiKey') || (typeof apiKey !== 'undefined' ? apiKey : '') || document.getElementById('apiKeyInput')?.value?.trim() || '';
@@ -2657,6 +3033,7 @@ document.getElementById('btnPdfTimes')?.addEventListener('click',()=>abrirPdfAna
                     slot,
                     pokemon: input.value.trim(),
                     owner: document.querySelector(`[name="raidOwner${slot}"]`)?.value.trim() || '',
+                    level: document.querySelector(`[name="raidLevel${slot}"]`)?.value.trim() || '',
                     selected_tms: slotMoveSelects(slot).map(select => select.value).filter(Boolean),
                     allowed_tms: allowed
                 });
@@ -2665,8 +3042,8 @@ document.getElementById('btnPdfTimes')?.addEventListener('click',()=>abrirPdfAna
             const boss = document.getElementById('raidBossName')?.value.trim() || 'não informado';
             const details = document.getElementById('raidBossDetails')?.value.trim() || '';
             const notes = document.getElementById('raidStrategy')?.value.trim() || '';
-            const prompt = `Você é estrategista de raids Pokémon. Analise o boss e equipe abaixo. Regra obrigatória: para cada membro, recomende TM somente entre os nomes do campo allowed_tms daquele mesmo Pokémon. Nunca invente TM, nunca sugira movimento fora da lista. As listas são a interseção do catálogo com o aprendizado por máquina registrado pela PokéAPI. Não mencione nomes de golpes nos campos summary, battle_plan ou role; os únicos nomes de movimentos podem aparecer em recommended_tms. Se a lista allowed_tms estiver vazia, retorne recommended_tms vazio. Responda SOMENTE JSON válido com formato: {"summary":"...","battle_plan":["..."],"members":[{"slot":1,"role":"...","recommended_tms":["nome exato da lista allowed_tms"]}]}. Boss: ${boss}. Detalhes: ${details}. Observações do treinador: ${notes}. Equipe e listas permitidas: ${JSON.stringify(team)}`;
-            const model = (typeof modelSelect !== 'undefined' && modelSelect?.value) || 'gemini-2.5-flash-lite';
+            const prompt = `Você é estrategista de raids Pokémon. Analise o boss e equipe abaixo. Regra obrigatória: para cada membro, recomende TM somente entre os nomes do campo allowed_tms daquele mesmo Pokémon. Nunca invente TM, nunca sugira movimento fora da lista. As listas allowed_tms vêm da lista local original do app, dos métodos machine já usados pelo código e das exceções manuais; não use outra fonte. Não mencione nomes de golpes nos campos summary, battle_plan ou role; os únicos nomes de movimentos podem aparecer em recommended_tms. Se a lista allowed_tms estiver vazia, retorne recommended_tms vazio. Responda SOMENTE JSON válido com formato: {"summary":"...","battle_plan":["..."],"members":[{"slot":1,"role":"...","recommended_tms":["nome exato da lista allowed_tms"]}]}. Boss: ${boss}. Detalhes: ${details}. Observações do treinador: ${notes}. Equipe e listas permitidas: ${JSON.stringify(team)}`;
+            const model = (typeof modelSelectRaid !== 'undefined' && modelSelectRaid?.value) || (typeof modelSelect !== 'undefined' && modelSelect?.value) || 'gemini-2.5-flash-lite';
             const controller = new AbortController();
             const timeout = window.setTimeout(() => controller.abort(), 45000);
             let response;
@@ -2709,4 +3086,3 @@ document.getElementById('btnPdfTimes')?.addEventListener('click',()=>abrirPdfAna
     }
     aiButton?.addEventListener('click', analyzeRaidWithGemini);
 })();
-

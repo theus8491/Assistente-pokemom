@@ -638,3 +638,30 @@ body::after { content:''; position:fixed; bottom:-20%; left:-10%; width:600px; h
 .raid-preset-button.principal { border-color:#7c3aed; color:#fff; background:#7c3aed; }
 .raid-preset-status { grid-column:1/-1; color:#64748b; font-size:.7rem; }
 @media(max-width:560px) { .raid-presets { grid-template-columns:1fr; } .raid-presets-title,.raid-presets-actions,.raid-preset-status { grid-column:1; } }
+
+.raid-ai-settings { display:grid; grid-template-columns:minmax(220px,1.3fr) minmax(180px,.7fr); gap:.8rem; align-items:start; }
+.raid-ai-settings .api-key-container,.raid-ai-settings .model-selector { margin:0; }
+@media(max-width:600px) { .raid-ai-settings { grid-template-columns:1fr; } }
+
+
+/* Qualidade por estrelas: faixas do IdleDex, exibidas nas análises PvP e PvE */
+.quality-stars-card { display:none; margin:.8rem 0 1rem; padding:.9rem 1rem; border:1.5px solid #fbbf24; border-radius:14px; background:linear-gradient(135deg,#fffbeb,#fff7ed); color:#334155; }
+.quality-stars-card.visivel { display:block; }
+.quality-stars-card > strong,.quality-stars-card > span { display:block; }
+.quality-stars-row { display:flex; align-items:center; gap:.65rem; flex-wrap:wrap; }
+.quality-stars-row strong { color:#92400e; font-size:.82rem; }
+.quality-stars-row b { margin-left:auto; color:#78350f; font-size:1rem; }
+.quality-stars-glyph { color:#f59e0b; font-size:1.15rem; letter-spacing:.04em; }
+.quality-stars-meter { height:7px; margin:.55rem 0; overflow:hidden; border-radius:99px; background:#fde68a; }
+.quality-stars-meter span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#f59e0b,#f97316); }
+.quality-stars-card small { display:block; color:#64748b; font-size:.65rem; line-height:1.45; }
+
+/* Importação de screenshot da Raid Boss */
+.raid-photo-import { display:flex; flex-direction:column; gap:.55rem; padding:.9rem; border:1px dashed #a78bfa; border-radius:14px; background:#ffffffb8; }
+.raid-photo-import > label { color:#4c1d95; font-size:.82rem; font-weight:900; }
+.raid-photo-import > p { margin:0; color:#475569; font-size:.7rem; line-height:1.5; }
+.raid-photo-import input[type=file] { width:100%; padding:.55rem; border:1px solid #cbd5e1; border-radius:9px; background:#fff; font-size:.72rem; }
+.raid-photo-preview { max-width:100%; max-height:280px; align-self:flex-start; border:1px solid #cbd5e1; border-radius:10px; object-fit:contain; background:#f8fafc; }
+.raid-photo-status { color:#475569; font-size:.7rem; font-weight:700; line-height:1.45; }
+.raid-photo-status.salvo { color:#15803d; }
+.raid-photo-status.erro { color:#b91c1c; }
